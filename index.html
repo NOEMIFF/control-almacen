@@ -119,6 +119,8 @@
     margin-bottom:6px;
   }
   .field{margin-bottom:14px;}
+  .two-col{display:block;}
+  .two-col .col{min-width:0;}
   select, input[type=text], input[type=number]{
     width:100%;
     padding:12px 12px;
@@ -311,6 +313,37 @@
   #lockScreen input:focus{outline:2px solid var(--accent-out);border-color:var(--accent-out);}
   #lockScreen .btn{margin-top:14px;background:var(--accent-out);border-color:var(--accent-out);color:#fff;}
   #lockScreen .err{color:#F0A98A;font-size:12px;margin-top:10px;min-height:16px;}
+
+  /* ---- Desktop / web layout ---- */
+  @media (min-width:860px){
+    body{ padding-bottom:0; padding-top:66px; }
+    #app{ max-width:960px; padding:0 32px 48px; }
+    header.topbar{ padding-top:22px; }
+    .tabbar{
+      top:0; bottom:auto;
+      border-top:none; border-bottom:2px solid var(--ink);
+      justify-content:center; gap:4px;
+      padding:10px calc(env(safe-area-inset-bottom) + 4px);
+    }
+    .tabbar button{ flex:0 0 auto; flex-direction:row; gap:7px; padding:9px 20px; font-size:12px; }
+    .tabbar svg{ width:18px; height:18px; }
+    .card{ padding:26px 28px; max-width:760px; margin-left:auto; margin-right:auto; }
+    #tab-content > .card:first-child{ margin-left:auto; margin-right:auto; }
+    .list-row{ padding:14px 2px; }
+    .two-col{ display:grid; grid-template-columns:1fr 1fr; gap:0 24px; align-items:start; }
+    dialog.formsheet{
+      border-radius:16px; margin:auto; max-width:480px;
+      max-height:85vh;
+    }
+    .sheet-inner{ max-height:85vh; }
+  }
+  @media (min-width:860px) and (min-height:1){
+    /* Historial / Catálogo benefit from a wider reading column than the form cards */
+    #tab-content .card:has(#histList),
+    #tab-content .card:has(#matList),
+    #tab-content .card:has(#obraList),
+    #tab-content .card:has(#respList){ max-width:760px; }
+  }
   @media print{
     #app,.tabbar,.toast{display:none !important;}
     #label-print-content{
@@ -338,18 +371,19 @@
 
 <script>
 /* ---------------- STATE ---------------- */
-const state = { materiales: [], obras: [], movimientos: [], tab: 'escanear', catalogSub: 'materiales', loaded:false };
-const formState = { tipo:'Entrada', obraCodigo:null, materialCodigo:null, cantidad:1, responsable:'', nota:'' };
+const state = { materiales: [], obras: [], responsables: [], movimientos: [], tab: 'escanear', catalogSub: 'materiales', loaded:false };
+const formState = { tipo:'Salida', obraCodigo:null, obraLibre:'', obraDetalle:'', lineas:[], responsableCodigo:null, nota:'' };
 let scanning = false, scanMode = null, stream = null, rafId = null, detector = null, audioCtx = null;
 
-const seedMateriales = [{codigo:'MAT-001', descripcion:'Cemento gris 25kg', unidad:'sacos', stockMinimo:20, ean:'', ejemplo:true}];
+const seedMateriales = [{codigo:'MAT-001', descripcion:'Cemento gris 25kg', unidad:'sacos', codigoProveedor:'', codigoPropio:'', ejemplo:true}];
 const seedObras = [{codigo:'OBR-001', nombre:'Reforma Calle Mayor 12', responsable:'Encargado', estado:'Activa', ejemplo:true}];
+const seedResponsables = [{codigo:'RESP-001', nombre:'Encargado de almacén', ejemplo:true}];
 
 /* ---------------- STORAGE (JSONBin.io) ---------------- */
 // 1) Crea una cuenta gratuita en https://jsonbin.io
 // 2) Copia tu API Key en https://jsonbin.io/api-keys y pégala abajo en JSONBIN_API_KEY
 // 3) Crea un Bin nuevo con este contenido inicial y pega su ID en JSONBIN_BIN_ID:
-//    {"materiales":[{"codigo":"MAT-001","descripcion":"Cemento gris 25kg","unidad":"sacos","stockMinimo":20,"ean":"","ejemplo":true}],"obras":[{"codigo":"OBR-001","nombre":"Reforma Calle Mayor 12","responsable":"Encargado","estado":"Activa","ejemplo":true}],"movimientos":[]}
+//    {"materiales":[{"codigo":"MAT-001","descripcion":"Cemento gris 25kg","unidad":"sacos","codigoProveedor":"","codigoPropio":"","ejemplo":true}],"obras":[{"codigo":"OBR-001","nombre":"Reforma Calle Mayor 12","responsable":"Encargado","estado":"Activa","ejemplo":true}],"responsables":[{"codigo":"RESP-001","nombre":"Encargado de almacén","ejemplo":true}],"movimientos":[]}
 const JSONBIN_API_KEY = '$2a$10$5DKABYP8CsU.TCkAeSesNOwMQaCRfbMhtwPa4Cd5R2nZBJbhSR8NC';
 const JSONBIN_BIN_ID  = '6a7afae3f5f4af5e2906a31b';
 const JSONBIN_URL = 'https://api.jsonbin.io/v3/b/' + JSONBIN_BIN_ID;
@@ -365,11 +399,12 @@ async function loadAll(){
     const record = data.record || {};
     state.materiales = record.materiales || seedMateriales;
     state.obras = record.obras || seedObras;
+    state.responsables = record.responsables || seedResponsables;
     state.movimientos = record.movimientos || [];
   }catch(e){
     console.error('load error', e);
     toast('No se pudo cargar el almacenamiento (revisa conexión o configuración)');
-    if(!state.loaded){ state.materiales = seedMateriales; state.obras = seedObras; state.movimientos = []; }
+    if(!state.loaded){ state.materiales = seedMateriales; state.obras = seedObras; state.responsables = seedResponsables; state.movimientos = []; }
   }
   state.loaded = true;
 }
@@ -378,7 +413,7 @@ async function saveAll(){
     const res = await fetch(JSONBIN_URL, {
       method:'PUT',
       headers:{ 'Content-Type':'application/json', 'X-Master-Key': JSONBIN_API_KEY },
-      body: JSON.stringify({ materiales: state.materiales, obras: state.obras, movimientos: state.movimientos })
+      body: JSON.stringify({ materiales: state.materiales, obras: state.obras, responsables: state.responsables, movimientos: state.movimientos })
     });
     if(!res.ok) throw new Error('HTTP '+res.status);
   }catch(e){
@@ -395,16 +430,6 @@ function toast(msg){
   clearTimeout(window.__toastTimer);
   window.__toastTimer = setTimeout(()=>t.classList.remove('show'), 2200);
 }
-function computeStock(codigo){
-  let ent=0, sal=0;
-  state.movimientos.forEach(m=>{
-    if(m.codigoMaterial===codigo){
-      if(m.tipo==='Entrada') ent+=Number(m.cantidad);
-      else sal+=Number(m.cantidad);
-    }
-  });
-  return {ent, sal, stock: ent-sal};
-}
 function nextCodigo(prefix, arr){
   let max=0;
   arr.forEach(x=>{
@@ -413,8 +438,9 @@ function nextCodigo(prefix, arr){
   });
   return prefix+'-'+String(max+1).padStart(3,'0');
 }
-function findMaterial(codigo){ return state.materiales.find(m=>m.codigo===codigo || (m.ean && m.ean===codigo)); }
+function findMaterial(codigo){ return state.materiales.find(m=>m.codigo===codigo); }
 function findObra(codigo){ return state.obras.find(o=>o.codigo===codigo); }
+function findResponsable(codigo){ return state.responsables.find(r=>r.codigo===codigo); }
 function fmtDate(iso){
   const d = new Date(iso);
   return d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'2-digit'}) + ' ' + d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
@@ -461,7 +487,7 @@ function playBeep(){
 /* ---------------- ICONS ---------------- */
 const ICONS = {
   scan:'<svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" stroke-linecap="round"/><rect x="7" y="7" width="10" height="10" rx="1"/></svg>',
-  stock:'<svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" stroke-linecap="round"/></svg>',
+  settings:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>',
   catalog:'<svg viewBox="0 0 24 24"><path d="M20.6 12.5 12.5 20.6a2 2 0 0 1-2.8 0l-7-7a2 2 0 0 1 0-2.9L10.8 2.6c.4-.4.9-.6 1.4-.6H19a2 2 0 0 1 2 2v6.7c0 .5-.2 1-.6 1.4Z"/><circle cx="15.5" cy="8.5" r="1.5"/></svg>',
   history:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2" stroke-linecap="round"/></svg>',
   plus:'<svg viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>',
@@ -487,14 +513,14 @@ function renderTabbar(){
   if(old) old.remove();
   const bar = document.createElement('div');
   bar.className='tabbar';
-  const tabs = [['escanear','Escanear','scan'],['stock','Stock','stock'],['catalogo','Catálogo','catalog'],['historial','Historial','history']];
+  const tabs = [['escanear','Movimiento','scan'],['catalogo','Catálogo','catalog'],['historial','Historial','history'],['configuracion','Config.','settings']];
   bar.innerHTML = tabs.map(([id,label,icon])=>`
     <button data-tab="${id}" class="${state.tab===id?'active':''}">${ICONS[icon]}<span>${label}</span></button>
   `).join('');
   document.body.appendChild(bar);
   bar.querySelectorAll('button').forEach(b=>b.addEventListener('click', async ()=>{
     state.tab=b.dataset.tab;
-    if(state.tab==='stock' || state.tab==='historial'){ await refreshData(); }
+    if(state.tab==='historial' || state.tab==='catalogo'){ await refreshData(); }
     else { render(); }
   }));
 }
@@ -502,118 +528,170 @@ function renderTabbar(){
 function renderTab(){
   const c = document.getElementById('tab-content');
   if(state.tab==='escanear') return renderEscanear(c);
-  if(state.tab==='stock') return renderStock(c);
   if(state.tab==='catalogo') return renderCatalogo(c);
   if(state.tab==='historial') return renderHistorial(c);
+  if(state.tab==='configuracion') return renderConfiguracion(c);
 }
 
-/* ---------------- TAB: ESCANEAR ---------------- */
+/* ---------------- TAB: ESCANEAR (Movimiento) ---------------- */
 function renderEscanear(c){
-  const mat = formState.materialCodigo ? findMaterial(formState.materialCodigo) : null;
-  const obra = formState.obraCodigo ? findObra(formState.obraCodigo) : null;
-  const stockInfo = mat ? computeStock(mat.codigo) : null;
+  const tieneObra = !!(formState.obraCodigo || (formState.obraLibre && formState.obraLibre.trim()));
+  const tieneLineas = formState.lineas.length>0 && formState.lineas.every(l=>Number(l.cantidad)>0);
+  const obrasActivas = state.obras.filter(o=>o.estado==='Activa');
   c.innerHTML = `
     <div class="card">
       <h2 class="section-title">Nuevo movimiento</h2>
       <div class="seg">
-        <button class="${formState.tipo==='Entrada'?'active entrada':''}" data-tipo="Entrada">↓ Entrada</button>
         <button class="${formState.tipo==='Salida'?'active salida':''}" data-tipo="Salida">↑ Salida</button>
+        <button class="${formState.tipo==='Entrada'?'active entrada':''}" data-tipo="Entrada">↓ Entrada</button>
       </div>
 
-      <label>Obra ${formState.tipo==='Entrada' ? '(destino / almacén)' : '(destino)'}</label>
-      <div class="field">
-        <select id="obraSelect">
-          <option value="">— Selecciona una obra —</option>
-          ${state.obras.map(o=>`<option value="${o.codigo}" ${o.codigo===formState.obraCodigo?'selected':''}>${escapeHtml(o.nombre)} (${o.codigo})</option>`).join('')}
-        </select>
-      </div>
-      <div class="btn-row" style="margin-bottom:14px;">
-        <button class="btn ghost small" id="scanObraBtn" style="flex:1;">Escanear QR de obra</button>
-        ${obra ? `<button class="btn ghost small" id="clearObraBtn" style="flex:0 0 auto;">✕ Quitar</button>` : ''}
+      <div class="two-col">
+        <div class="col">
+          <label>Obra ${formState.tipo==='Entrada' ? '(destino / almacén)' : '(destino)'}</label>
+          <div class="field">
+            <select id="obraSelect">
+              <option value="">— Selecciona una obra —</option>
+              ${obrasActivas.map(o=>`<option value="${o.codigo}" ${o.codigo===formState.obraCodigo?'selected':''}>${escapeHtml(o.nombre)} (${o.codigo})</option>`).join('')}
+              <option value="__OPERARIO__" ${formState.obraLibre==='Operario'?'selected':''}>Operario</option>
+              <option value="__OTROS__" ${formState.obraLibre==='Otros'?'selected':''}>Otros</option>
+            </select>
+          </div>
+          ${(formState.obraLibre==='Operario' || formState.obraLibre==='Otros') ? `
+            <label>${formState.obraLibre==='Operario' ? 'Nombre del operario' : 'Especifica'}</label>
+            <div class="field"><input type="text" id="obraDetalleInput" placeholder="${formState.obraLibre==='Operario' ? 'Nombre del operario' : 'Detalle'}" value="${escapeHtml(formState.obraDetalle)}"></div>
+          ` : ''}
+        </div>
+        <div class="col">
+          <label>Responsable</label>
+          <div class="field">
+            <select id="responsableSelect">
+              <option value="">— Selecciona un responsable —</option>
+              ${state.responsables.map(r=>`<option value="${r.codigo}" ${r.codigo===formState.responsableCodigo?'selected':''}>${escapeHtml(r.nombre)}</option>`).join('')}
+            </select>
+          </div>
+          ${state.responsables.length===0?`<div style="font-size:12px;color:var(--ink-soft);margin:-8px 0 14px;">No hay responsables creados. Añádelos en Config.</div>`:''}
+        </div>
       </div>
 
       <label>Material</label>
-      ${mat ? `
-        <div class="scan-target filled">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
-            <div>
-              <div class="code">${mat.codigo}${mat.ean?' · EAN '+mat.ean:''}</div>
-              <div class="name">${escapeHtml(mat.descripcion)}</div>
-              <div style="font-size:12px;color:var(--ink-soft);margin-top:4px;">Stock actual: <strong>${stockInfo.stock} ${mat.unidad}</strong></div>
-            </div>
-            <button class="icon-btn" id="clearMaterialBtn" title="Quitar material" style="font-size:18px;line-height:1;flex-shrink:0;">✕</button>
-          </div>
-        </div>
-      ` : `
-        <div class="scan-target">
-          <div style="font-size:13px;color:var(--ink-soft);">Sin material seleccionado</div>
-        </div>
-      `}
       <div class="btn-row" style="margin-bottom:14px;">
         <button class="btn primary" id="scanMaterialBtn">Escanear código</button>
         <button class="btn ghost small" id="pickMaterialBtn" style="flex:0 0 auto;">Elegir de lista</button>
       </div>
 
-      <label>Cantidad ${mat?('('+mat.unidad+')'):''}</label>
-      <div class="field stepper">
-        <button id="qtyMinus" type="button">−</button>
-        <input type="number" id="qtyInput" min="0" step="1" value="${formState.cantidad}">
-        <button id="qtyPlus" type="button">+</button>
-      </div>
-
-      <label>Responsable (opcional)</label>
-      <div class="field"><input type="text" id="respInput" placeholder="Quién entrega o retira" value="${escapeHtml(formState.responsable)}"></div>
+      <div id="lineasList">${renderLineasHtml()}</div>
 
       <label>Nota / nº albarán (opcional)</label>
       <div class="field"><input type="text" id="notaInput" placeholder="Ej. ALB-2201" value="${escapeHtml(formState.nota)}"></div>
 
-      <button class="btn ${formState.tipo==='Entrada'?'in':'out'}" id="guardarBtn" ${(!mat||!obra||!formState.cantidad||formState.cantidad<=0)?'disabled':''}>
-        Guardar ${formState.tipo.toLowerCase()}
+      <button class="btn ${formState.tipo==='Entrada'?'in':'out'}" id="guardarBtn" ${(!tieneLineas||!tieneObra)?'disabled':''}>
+        Guardar ${formState.tipo.toLowerCase()} ${formState.lineas.length ? '('+formState.lineas.length+')' : ''}
       </button>
     </div>
   `;
 
   c.querySelectorAll('[data-tipo]').forEach(b=>b.addEventListener('click',()=>{ formState.tipo=b.dataset.tipo; render(); }));
-  c.querySelector('#obraSelect').addEventListener('change', e=>{ formState.obraCodigo = e.target.value || null; render(); });
-  c.querySelector('#scanObraBtn').addEventListener('click', ()=> openScan('obra'));
-  const clearObraBtn = c.querySelector('#clearObraBtn');
-  if(clearObraBtn) clearObraBtn.addEventListener('click', ()=>{ formState.obraCodigo = null; render(); });
+  c.querySelector('#obraSelect').addEventListener('change', e=>{
+    const v = e.target.value;
+    if(v === '__OPERARIO__'){ formState.obraCodigo = null; formState.obraLibre = 'Operario'; }
+    else if(v === '__OTROS__'){ formState.obraCodigo = null; formState.obraLibre = 'Otros'; }
+    else { formState.obraCodigo = v || null; formState.obraLibre = ''; formState.obraDetalle = ''; }
+    render();
+  });
+  const obraDetalleInput = c.querySelector('#obraDetalleInput');
+  if(obraDetalleInput) obraDetalleInput.addEventListener('input', e=> formState.obraDetalle = e.target.value);
+  c.querySelector('#responsableSelect').addEventListener('change', e=> formState.responsableCodigo = e.target.value || null);
   c.querySelector('#scanMaterialBtn').addEventListener('click', ()=> openScan('material'));
-  const clearMaterialBtn = c.querySelector('#clearMaterialBtn');
-  if(clearMaterialBtn) clearMaterialBtn.addEventListener('click', ()=>{ formState.materialCodigo = null; render(); });
   c.querySelector('#pickMaterialBtn').addEventListener('click', ()=> openMaterialPicker());
-  c.querySelector('#qtyInput').addEventListener('input', e=>{ formState.cantidad = e.target.value; syncGuardarBtn(); });
-  c.querySelector('#qtyMinus').addEventListener('click', ()=>{ formState.cantidad = Math.max(0,(Number(formState.cantidad)||0)-1); render(); });
-  c.querySelector('#qtyPlus').addEventListener('click', ()=>{ formState.cantidad = (Number(formState.cantidad)||0)+1; render(); });
-  c.querySelector('#respInput').addEventListener('input', e=> formState.responsable=e.target.value);
   c.querySelector('#notaInput').addEventListener('input', e=> formState.nota=e.target.value);
   c.querySelector('#guardarBtn').addEventListener('click', guardarMovimiento);
+  wireLineasEvents(c);
 }
-function syncGuardarBtn(){
-  const btn = document.getElementById('guardarBtn');
-  if(!btn) return;
-  const mat = formState.materialCodigo ? findMaterial(formState.materialCodigo) : null;
-  btn.disabled = !mat || !formState.obraCodigo || !formState.cantidad || Number(formState.cantidad)<=0;
+function renderLineasHtml(){
+  if(!formState.lineas.length){
+    return `<div class="scan-target" style="margin-bottom:14px;"><div style="font-size:13px;color:var(--ink-soft);">Todavía no has añadido ningún material</div></div>`;
+  }
+  return formState.lineas.map((l,i)=>{
+    const mat = findMaterial(l.materialCodigo);
+    return `
+    <div class="list-row" data-linea="${i}">
+      <div class="main">
+        <div class="t1">${escapeHtml(mat?mat.descripcion:l.materialCodigo)}</div>
+        <div class="t2">${mat?mat.codigo:''}${mat&&mat.unidad?' · '+mat.unidad:''}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="stepper" style="gap:4px;">
+          <button type="button" data-lminus="${i}" style="width:32px;height:32px;font-size:16px;">−</button>
+          <input type="number" min="0" step="1" data-lqty="${i}" value="${l.cantidad}" style="width:52px;padding:6px 4px;text-align:center;">
+          <button type="button" data-lplus="${i}" style="width:32px;height:32px;font-size:16px;">+</button>
+        </div>
+        <button class="icon-btn" data-lremove="${i}" title="Quitar" style="font-size:18px;line-height:1;">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function wireLineasEvents(c){
+  const list = c.querySelector('#lineasList');
+  if(!list) return;
+  list.querySelectorAll('[data-lqty]').forEach(inp=>{
+    inp.addEventListener('focus', e=> e.target.select());
+    inp.addEventListener('input', e=>{
+      const i = Number(e.target.dataset.lqty);
+      formState.lineas[i].cantidad = e.target.value;
+      const btn = document.getElementById('guardarBtn');
+      if(btn){
+        const tieneObra = !!(formState.obraCodigo || (formState.obraLibre && formState.obraLibre.trim()));
+        const tieneLineas = formState.lineas.length>0 && formState.lineas.every(l=>Number(l.cantidad)>0);
+        btn.disabled = !tieneLineas || !tieneObra;
+      }
+    });
+  });
+  list.querySelectorAll('[data-lminus]').forEach(b=>b.addEventListener('click', ()=>{
+    const i = Number(b.dataset.lminus);
+    formState.lineas[i].cantidad = Math.max(0,(Number(formState.lineas[i].cantidad)||0)-1);
+    render();
+  }));
+  list.querySelectorAll('[data-lplus]').forEach(b=>b.addEventListener('click', ()=>{
+    const i = Number(b.dataset.lplus);
+    formState.lineas[i].cantidad = (Number(formState.lineas[i].cantidad)||0)+1;
+    render();
+  }));
+  list.querySelectorAll('[data-lremove]').forEach(b=>b.addEventListener('click', ()=>{
+    const i = Number(b.dataset.lremove);
+    formState.lineas.splice(i,1);
+    render();
+  }));
+}
+function addMaterialALineas(codigoMaterial){
+  const existente = formState.lineas.find(l=>l.materialCodigo===codigoMaterial);
+  if(existente){ existente.cantidad = (Number(existente.cantidad)||0)+1; }
+  else { formState.lineas.push({materialCodigo: codigoMaterial, cantidad: 1}); }
 }
 async function guardarMovimiento(){
-  if(!formState.obraCodigo || !formState.materialCodigo || !formState.cantidad || Number(formState.cantidad)<=0){
+  const tieneObra = !!(formState.obraCodigo || (formState.obraLibre && formState.obraLibre.trim()));
+  const lineasValidas = formState.lineas.filter(l=>Number(l.cantidad)>0);
+  if(!tieneObra || lineasValidas.length===0){
     toast('Faltan datos por completar'); return;
   }
-  const mov = {
-    id: 'M'+Date.now()+Math.floor(Math.random()*1000),
-    fecha: new Date().toISOString(),
-    tipo: formState.tipo,
-    codigoMaterial: formState.materialCodigo,
-    cantidad: Number(formState.cantidad),
-    codigoObra: formState.obraCodigo,
-    responsable: formState.responsable||'',
-    nota: formState.nota||''
-  };
-  state.movimientos.push(mov);
+  const fecha = new Date().toISOString();
+  lineasValidas.forEach(l=>{
+    state.movimientos.push({
+      id: 'M'+Date.now()+Math.floor(Math.random()*10000),
+      fecha,
+      tipo: formState.tipo,
+      codigoMaterial: l.materialCodigo,
+      cantidad: Number(l.cantidad),
+      codigoObra: formState.obraCodigo || null,
+      obraLibre: formState.obraCodigo ? '' : (formState.obraLibre || '').trim(),
+      obraDetalle: formState.obraCodigo ? '' : (formState.obraDetalle || '').trim(),
+      responsableCodigo: formState.responsableCodigo || null,
+      nota: formState.nota || ''
+    });
+  });
   await saveAll();
-  toast((formState.tipo==='Entrada'?'Entrada guardada ✓':'Salida guardada ✓'));
-  formState.materialCodigo = null;
-  formState.cantidad = 1;
+  toast((formState.tipo==='Entrada'?'Entrada guardada ✓':'Salida guardada ✓')+' ('+lineasValidas.length+' material'+(lineasValidas.length===1?'':'es')+')');
+  formState.lineas = [];
   formState.nota = '';
   render();
 }
@@ -632,8 +710,9 @@ function openMaterialPicker(){
       </div>
     `).join('') : `<div class="empty">Sin resultados</div>`;
     document.querySelectorAll('[data-pick]').forEach(r=>r.addEventListener('click', ()=>{
-      formState.materialCodigo = r.dataset.pick;
+      addMaterialALineas(r.dataset.pick);
       document.getElementById('formsheet').close();
+      toast('Añadido a la lista ✓');
       render();
     }));
   }
@@ -656,7 +735,7 @@ function openScan(mode){
       <div class="scan-corner tl"></div><div class="scan-corner tr"></div>
       <div class="scan-corner bl"></div><div class="scan-corner br"></div>
     </div>
-    <div class="scan-hint">${mode==='material' ? 'Enfoca el código QR o de barras del material' : 'Enfoca el código QR de la obra'}</div>
+    <div class="scan-hint">Enfoca el código QR o de barras del material</div>
     <div class="modal-actions">
       <button class="btn ghost" id="manualEntryBtn">Introducir código manualmente</button>
       <button class="btn ghost" id="cancelScanBtn">Cancelar</button>
@@ -721,53 +800,17 @@ function closeScan(){
 }
 function onScanResult(value){
   playBeep();
-  if(scanMode==='material'){
-    const mat = findMaterial(value);
-    if(mat){ formState.materialCodigo = mat.codigo; toast('Material: '+mat.descripcion); render(); }
-    else {
-      if(confirm('Código no reconocido: "'+value+'".\n¿Quieres darlo de alta como material nuevo?')){
-        state.tab = 'catalogo'; state.catalogSub = 'materiales'; render();
-        openMaterialForm(null, value);
-      }
-    }
+  const mat = findMaterial(value);
+  if(mat){
+    addMaterialALineas(mat.codigo);
+    toast('Añadido: '+mat.descripcion);
+    render();
   } else {
-    const obra = findObra(value);
-    if(obra){ formState.obraCodigo = obra.codigo; toast('Obra: '+obra.nombre); render(); }
-    else { toast('Código de obra no reconocido: '+value); }
+    if(confirm('Código no reconocido: "'+value+'".\n¿Quieres darlo de alta como material nuevo?')){
+      state.tab = 'catalogo'; state.catalogSub = 'materiales'; render();
+      openMaterialForm(null, value);
+    }
   }
-}
-
-/* ---------------- TAB: STOCK ---------------- */
-function renderStock(c){
-  c.innerHTML = `
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <h2 class="section-title">Stock actual</h2>
-        <button class="btn ghost small" id="refreshStockBtn">↻ Actualizar</button>
-      </div>
-      <div class="searchbox"><input type="text" id="stockSearch" placeholder="Buscar material..."></div>
-      <div id="stockList"></div>
-    </div>
-  `;
-  function draw(q){
-    let list = state.materiales.map(m=>({...m, ...computeStock(m.codigo)}));
-    if(q) list = list.filter(m=>m.descripcion.toLowerCase().includes(q.toLowerCase())||m.codigo.toLowerCase().includes(q.toLowerCase()));
-    list.sort((a,b)=>a.descripcion.localeCompare(b.descripcion));
-    document.getElementById('stockList').innerHTML = list.length ? list.map(m=>{
-      const low = m.stock < Number(m.stockMinimo||0);
-      return `
-      <div class="list-row">
-        <div class="main">
-          <div class="t1">${escapeHtml(m.descripcion)} ${low?'<span class="badge warn">Bajo mínimo</span>':''}</div>
-          <div class="t2">${m.codigo} · mínimo ${m.stockMinimo} ${m.unidad}</div>
-        </div>
-        <div class="num" style="color:${low?'var(--warn)':'var(--ink)'}">${m.stock}<span style="font-size:11px;color:var(--ink-soft);font-family:var(--font-body);"> ${m.unidad}</span></div>
-      </div>`;
-    }).join('') : `<div class="empty">No hay materiales. Añádelos desde la pestaña Catálogo.</div>`;
-  }
-  draw('');
-  c.querySelector('#stockSearch').addEventListener('input', e=>draw(e.target.value));
-  c.querySelector('#refreshStockBtn').addEventListener('click', refreshData);
 }
 
 /* ---------------- TAB: CATALOGO ---------------- */
@@ -796,7 +839,7 @@ function renderMaterialesCatalog(el){
     <div class="list-row">
       <div class="main">
         <div class="t1">${escapeHtml(m.descripcion)} ${m.ejemplo?'<span class="badge example">Ejemplo</span>':''}</div>
-        <div class="t2">${m.codigo}${m.ean?' · EAN '+m.ean:''} · ${m.unidad} · mín. ${m.stockMinimo}</div>
+        <div class="t2">${m.codigo}${m.codigoProveedor?' · Prov. '+escapeHtml(m.codigoProveedor):''}${m.codigoPropio?' · Propio '+escapeHtml(m.codigoPropio):''} · ${m.unidad}</div>
       </div>
       <div class="btn-row" style="width:auto;">
         <button class="btn ghost small" data-label="${m.codigo}">Etiqueta</button>
@@ -817,7 +860,6 @@ function renderMaterialesCatalog(el){
 }
 function openMaterialForm(existing, prefillCodigo){
   const isEdit = !!existing;
-  const looksEan = prefillCodigo && /^\d{8}$|^\d{12,14}$/.test(prefillCodigo);
   const inner = document.getElementById('sheet-inner-content');
   inner.innerHTML = `
     <div class="sheet-head"><h3>${isEdit?'Editar material':'Nuevo material'}</h3><button class="icon-btn" id="closeSheet">✕</button></div>
@@ -825,25 +867,25 @@ function openMaterialForm(existing, prefillCodigo){
     <div class="field"><input type="text" id="f_desc" value="${escapeHtml(existing?.descripcion||'')}" placeholder="Ej. Cemento gris 25kg"></div>
     <label>Unidad</label>
     <div class="field"><input type="text" id="f_unidad" value="${escapeHtml(existing?.unidad||'')}" placeholder="sacos, unidades, metros..."></div>
-    <label>Stock mínimo (aviso de reposición)</label>
-    <div class="field"><input type="number" id="f_min" value="${existing?.stockMinimo??0}" min="0"></div>
-    <label>Código de barras de fábrica (EAN, opcional)</label>
-    <div class="field"><input type="text" id="f_ean" value="${escapeHtml(existing?.ean || (looksEan?prefillCodigo:'')||'')}" placeholder="Si el producto ya trae uno"></div>
-    ${isEdit ? `<div class="field"><label>Código interno</label><input type="text" value="${existing.codigo}" disabled></div>` : ''}
+    <label>Código proveedor</label>
+    <div class="field"><input type="text" id="f_codprov" value="${escapeHtml(existing?.codigoProveedor||'')}" placeholder="Código que usa el proveedor"></div>
+    <label>Código propio</label>
+    <div class="field"><input type="text" id="f_codpropio" value="${escapeHtml(existing?.codigoPropio || prefillCodigo || '')}" placeholder="Nuestro código interno"></div>
+    ${isEdit ? `<div class="field"><label>Código interno (sistema)</label><input type="text" value="${existing.codigo}" disabled></div>` : ''}
     <button class="btn primary" id="saveMatBtn">Guardar material</button>
   `;
   inner.querySelector('#closeSheet').addEventListener('click', ()=>document.getElementById('formsheet').close());
   inner.querySelector('#saveMatBtn').addEventListener('click', async ()=>{
     const desc = inner.querySelector('#f_desc').value.trim();
     const unidad = inner.querySelector('#f_unidad').value.trim();
-    const min = Number(inner.querySelector('#f_min').value)||0;
-    const ean = inner.querySelector('#f_ean').value.trim();
+    const codigoProveedor = inner.querySelector('#f_codprov').value.trim();
+    const codigoPropio = inner.querySelector('#f_codpropio').value.trim();
     if(!desc || !unidad){ toast('Descripción y unidad son obligatorias'); return; }
     if(isEdit){
-      Object.assign(existing, {descripcion:desc, unidad, stockMinimo:min, ean});
+      Object.assign(existing, {descripcion:desc, unidad, codigoProveedor, codigoPropio});
     } else {
-      const codigo = (prefillCodigo && !looksEan) ? prefillCodigo : nextCodigo('MAT', state.materiales);
-      state.materiales.push({codigo, descripcion:desc, unidad, stockMinimo:min, ean, ejemplo:false});
+      const codigo = nextCodigo('MAT', state.materiales);
+      state.materiales.push({codigo, descripcion:desc, unidad, codigoProveedor, codigoPropio, ejemplo:false});
     }
     await saveAll();
     document.getElementById('formsheet').close();
@@ -866,13 +908,13 @@ function renderObrasCatalog(el){
         <div class="t2">${o.codigo} · ${escapeHtml(o.responsable||'—')} · ${o.estado}</div>
       </div>
       <div class="btn-row" style="width:auto;">
-        <button class="btn ghost small" data-label="${o.codigo}">Etiqueta</button>
+        <button class="btn ghost small" data-resumen="${o.codigo}">Resumen</button>
         <button class="btn ghost small" data-edit="${o.codigo}">Editar</button>
         <button class="btn ghost small" data-del="${o.codigo}">🗑</button>
       </div>
     </div>
   `).join('') : `<div class="empty">Aún no hay obras dadas de alta.</div>`;
-  el.querySelectorAll('[data-label]').forEach(b=>b.addEventListener('click', ()=>imprimirEtiqueta('obra', findObra(b.dataset.label))));
+  el.querySelectorAll('[data-resumen]').forEach(b=>b.addEventListener('click', ()=>openObraResumen(findObra(b.dataset.resumen))));
   el.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click', ()=>openObraForm(findObra(b.dataset.edit))));
   el.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click', async ()=>{
     if(confirm('¿Eliminar esta obra? El historial de movimientos no se borrará.')){
@@ -881,6 +923,45 @@ function renderObrasCatalog(el){
       render();
     }
   }));
+}
+function openObraResumen(obra){
+  if(!obra) return;
+  const inner = document.getElementById('sheet-inner-content');
+  const mapa = {};
+  state.movimientos.forEach(m=>{
+    if(m.codigoObra !== obra.codigo) return;
+    if(!mapa[m.codigoMaterial]) mapa[m.codigoMaterial] = {salida:0, entrada:0};
+    if(m.tipo==='Salida') mapa[m.codigoMaterial].salida += Number(m.cantidad)||0;
+    else mapa[m.codigoMaterial].entrada += Number(m.cantidad)||0;
+  });
+  const filas = Object.keys(mapa).map(codigo=>{
+    const mat = findMaterial(codigo);
+    const {salida, entrada} = mapa[codigo];
+    return {
+      codigo,
+      nombre: mat ? mat.descripcion : codigo,
+      unidad: mat ? mat.unidad : '',
+      salida, entrada,
+      neto: salida - entrada
+    };
+  }).sort((a,b)=>a.nombre.localeCompare(b.nombre));
+  const totalMovs = state.movimientos.filter(m=>m.codigoObra===obra.codigo).length;
+
+  inner.innerHTML = `
+    <div class="sheet-head"><h3>Resumen — ${escapeHtml(obra.nombre)}</h3><button class="icon-btn" id="closeSheet">✕</button></div>
+    <p style="font-size:12.5px;color:var(--ink-soft);margin-top:-6px;">Material llevado a esta obra (salidas menos entradas/devoluciones). ${totalMovs} movimiento${totalMovs===1?'':'s'} registrado${totalMovs===1?'':'s'}.</p>
+    ${filas.length ? filas.map(f=>`
+      <div class="list-row">
+        <div class="main">
+          <div class="t1">${escapeHtml(f.nombre)}</div>
+          <div class="t2">${f.codigo} · salidas ${f.salida} · entradas ${f.entrada}</div>
+        </div>
+        <div class="num">${f.neto}<span style="font-size:11px;color:var(--ink-soft);font-family:var(--font-body);"> ${f.unidad}</span></div>
+      </div>
+    `).join('') : `<div class="empty">Todavía no hay movimientos registrados para esta obra.</div>`}
+  `;
+  inner.querySelector('#closeSheet').addEventListener('click', ()=>document.getElementById('formsheet').close());
+  document.getElementById('formsheet').showModal();
 }
 function openObraForm(existing){
   const isEdit = !!existing;
@@ -946,11 +1027,26 @@ function renderHistorial(c){
         <h2 class="section-title">Historial de movimientos</h2>
         <button class="btn ghost small" id="refreshHistBtn">↻ Actualizar</button>
       </div>
-      <div class="field">
-        <select id="filtObra">
-          <option value="">Todas las obras</option>
-          ${state.obras.map(o=>`<option value="${o.codigo}">${escapeHtml(o.nombre)}</option>`).join('')}
-        </select>
+      <div class="two-col">
+        <div class="col">
+          <label>Estado de la obra</label>
+          <div class="field">
+            <select id="filtEstado">
+              <option value="activas">Solo obras activas</option>
+              <option value="todas">Todas</option>
+              <option value="cerradas">Solo cerradas</option>
+            </select>
+          </div>
+        </div>
+        <div class="col">
+          <label>Obra</label>
+          <div class="field">
+            <select id="filtObra">
+              <option value="">Todas las obras</option>
+              ${state.obras.map(o=>`<option value="${o.codigo}">${escapeHtml(o.nombre)}${o.estado==='Cerrada'?' (cerrada)':''}</option>`).join('')}
+            </select>
+          </div>
+        </div>
       </div>
       <div class="field">
         <select id="filtTipo">
@@ -962,28 +1058,203 @@ function renderHistorial(c){
       <div id="histList"></div>
     </div>
   `;
+  function obraLabel(m){
+    if(m.codigoObra){ const o = findObra(m.codigoObra); return o ? o.nombre : m.codigoObra; }
+    if(m.obraLibre) return m.obraLibre + (m.obraDetalle ? ': '+m.obraDetalle : '');
+    return '—';
+  }
+  function obraEstado(m){
+    if(!m.codigoObra) return null;
+    const o = findObra(m.codigoObra);
+    return o ? o.estado : null;
+  }
   function draw(){
     const fo = c.querySelector('#filtObra').value;
     const ft = c.querySelector('#filtTipo').value;
+    const fe = c.querySelector('#filtEstado').value;
     let list = [...state.movimientos].filter(m=> (!fo||m.codigoObra===fo) && (!ft||m.tipo===ft) );
+    if(fe==='activas') list = list.filter(m=> obraEstado(m) !== 'Cerrada');
+    else if(fe==='cerradas') list = list.filter(m=> obraEstado(m) === 'Cerrada');
     list.sort((a,b)=> new Date(b.fecha) - new Date(a.fecha));
     document.getElementById('histList').innerHTML = list.length ? list.map(m=>{
       const mat = findMaterial(m.codigoMaterial);
-      const obra = findObra(m.codigoObra);
+      const resp = m.responsableCodigo ? findResponsable(m.responsableCodigo) : null;
+      const detalles = [obraLabel(m)];
+      if(resp) detalles.push('Resp: '+escapeHtml(resp.nombre));
+      const codigos = [];
+      if(mat && mat.codigoProveedor) codigos.push(`Prov: <span class="code-copy" data-copy="${escapeHtml(mat.codigoProveedor)}" title="Tocar para copiar" style="text-decoration:underline dotted;cursor:pointer;">${escapeHtml(mat.codigoProveedor)}</span>`);
+      if(mat && mat.codigoPropio) codigos.push('Propio: '+escapeHtml(mat.codigoPropio));
       return `
       <div class="list-row">
         <div class="main">
           <div class="t1"><span class="badge ${m.tipo==='Entrada'?'in':'out'}">${m.tipo}</span> ${escapeHtml(mat?mat.descripcion:m.codigoMaterial)}</div>
-          <div class="t2">${fmtDate(m.fecha)} · ${escapeHtml(obra?obra.nombre:m.codigoObra)} ${m.responsable?'· '+escapeHtml(m.responsable):''}</div>
+          <div class="t2">${fmtDate(m.fecha)} · ${detalles.join(' · ')}</div>
+          ${codigos.length ? `<div class="t2" style="margin-top:2px;">${codigos.join(' · ')}</div>` : ''}
         </div>
-        <div class="num">${m.cantidad}</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="num">${m.cantidad}</div>
+          <button class="icon-btn" data-editmov="${m.id}" title="Editar">✎</button>
+        </div>
       </div>`;
     }).join('') : `<div class="empty">No hay movimientos con estos filtros.</div>`;
+    document.querySelectorAll('[data-editmov]').forEach(b=>b.addEventListener('click', ()=>{
+      const mov = state.movimientos.find(x=>x.id===b.dataset.editmov);
+      if(mov) openEditMovimientoForm(mov);
+    }));
+    document.querySelectorAll('[data-copy]').forEach(el=>el.addEventListener('click', ()=>{
+      const val = el.dataset.copy;
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(val).then(()=>toast('Copiado ✓')).catch(()=>toast('No se pudo copiar'));
+      } else {
+        toast('Copiar no está disponible en este navegador');
+      }
+    }));
   }
   draw();
+  c.querySelector('#filtEstado').addEventListener('change', draw);
   c.querySelector('#filtObra').addEventListener('change', draw);
   c.querySelector('#filtTipo').addEventListener('change', draw);
   c.querySelector('#refreshHistBtn').addEventListener('click', refreshData);
+}
+function openEditMovimientoForm(mov){
+  const inner = document.getElementById('sheet-inner-content');
+  inner.innerHTML = `
+    <div class="sheet-head"><h3>Editar movimiento</h3><button class="icon-btn" id="closeSheet">✕</button></div>
+    <label>Tipo</label>
+    <div class="field">
+      <select id="e_tipo">
+        <option value="Salida" ${mov.tipo==='Salida'?'selected':''}>Salida</option>
+        <option value="Entrada" ${mov.tipo==='Entrada'?'selected':''}>Entrada</option>
+      </select>
+    </div>
+    <label>Obra</label>
+    <div class="field">
+      <select id="e_obra">
+        <option value="">— Selecciona una obra —</option>
+        ${state.obras.map(o=>`<option value="${o.codigo}" ${o.codigo===mov.codigoObra?'selected':''}>${escapeHtml(o.nombre)}</option>`).join('')}
+        <option value="__OPERARIO__" ${mov.obraLibre==='Operario'?'selected':''}>Operario</option>
+        <option value="__OTROS__" ${mov.obraLibre==='Otros'?'selected':''}>Otros</option>
+      </select>
+    </div>
+    <label>Nombre del operario / detalle (si aplica)</label>
+    <div class="field"><input type="text" id="e_obraDetalle" value="${escapeHtml(mov.obraDetalle||'')}"></div>
+    <label>Material</label>
+    <div class="field">
+      <select id="e_material">
+        ${state.materiales.map(m=>`<option value="${m.codigo}" ${m.codigo===mov.codigoMaterial?'selected':''}>${escapeHtml(m.descripcion)} (${m.codigo})</option>`).join('')}
+      </select>
+    </div>
+    <label>Cantidad</label>
+    <div class="field"><input type="number" id="e_cantidad" min="0" value="${mov.cantidad}"></div>
+    <label>Responsable</label>
+    <div class="field">
+      <select id="e_responsable">
+        <option value="">— Sin responsable —</option>
+        ${state.responsables.map(r=>`<option value="${r.codigo}" ${r.codigo===mov.responsableCodigo?'selected':''}>${escapeHtml(r.nombre)}</option>`).join('')}
+      </select>
+    </div>
+    <label>Nota / nº albarán</label>
+    <div class="field"><input type="text" id="e_nota" value="${escapeHtml(mov.nota||'')}"></div>
+    <div class="btn-row">
+      <button class="btn ghost" id="deleteMovBtn" style="border-color:var(--warn);color:var(--warn);">Eliminar movimiento</button>
+      <button class="btn primary" id="saveMovBtn">Guardar cambios</button>
+    </div>
+  `;
+  inner.querySelector('#closeSheet').addEventListener('click', ()=>document.getElementById('formsheet').close());
+  inner.querySelector('#saveMovBtn').addEventListener('click', async ()=>{
+    const eObraVal = inner.querySelector('#e_obra').value;
+    let obraCodigo = null, obraLibre = '';
+    if(eObraVal === '__OPERARIO__') obraLibre = 'Operario';
+    else if(eObraVal === '__OTROS__') obraLibre = 'Otros';
+    else obraCodigo = eObraVal || null;
+    const cantidad = Number(inner.querySelector('#e_cantidad').value)||0;
+    if(!obraCodigo && !obraLibre){ toast('Indica una obra'); return; }
+    if(cantidad<=0){ toast('La cantidad debe ser mayor que 0'); return; }
+    Object.assign(mov, {
+      tipo: inner.querySelector('#e_tipo').value,
+      codigoObra: obraCodigo,
+      obraLibre: obraCodigo ? '' : obraLibre,
+      codigoMaterial: inner.querySelector('#e_material').value,
+      cantidad,
+      obraDetalle: obraLibre ? inner.querySelector('#e_obraDetalle').value.trim() : '',
+      responsableCodigo: inner.querySelector('#e_responsable').value || null,
+      nota: inner.querySelector('#e_nota').value.trim()
+    });
+    await saveAll();
+    document.getElementById('formsheet').close();
+    toast('Movimiento actualizado ✓');
+    render();
+  });
+  inner.querySelector('#deleteMovBtn').addEventListener('click', async ()=>{
+    if(confirm('¿Eliminar este movimiento del historial? No se puede deshacer.')){
+      state.movimientos = state.movimientos.filter(m=>m.id!==mov.id);
+      await saveAll();
+      document.getElementById('formsheet').close();
+      toast('Movimiento eliminado');
+      render();
+    }
+  });
+  document.getElementById('formsheet').showModal();
+}
+
+/* ---------------- TAB: CONFIGURACION ---------------- */
+function renderConfiguracion(c){
+  c.innerHTML = `
+    <div class="card">
+      <h2 class="section-title">Responsables</h2>
+      <p style="font-size:12.5px;color:var(--ink-soft);margin-top:-6px;">Personas que pueden aparecer como responsables de un movimiento.</p>
+      <button class="btn primary" id="addRespBtn" style="margin:10px 0 14px;">${ICONS.plus} Añadir responsable</button>
+      <div id="respList"></div>
+    </div>
+  `;
+  c.querySelector('#addRespBtn').addEventListener('click', ()=>openResponsableForm(null));
+  const list = [...state.responsables].sort((a,b)=>a.nombre.localeCompare(b.nombre));
+  c.querySelector('#respList').innerHTML = list.length ? list.map(r=>`
+    <div class="list-row">
+      <div class="main">
+        <div class="t1">${escapeHtml(r.nombre)} ${r.ejemplo?'<span class="badge example">Ejemplo</span>':''}</div>
+        <div class="t2">${r.codigo}</div>
+      </div>
+      <div class="btn-row" style="width:auto;">
+        <button class="btn ghost small" data-edit="${r.codigo}">Editar</button>
+        <button class="btn ghost small" data-del="${r.codigo}">🗑</button>
+      </div>
+    </div>
+  `).join('') : `<div class="empty">Aún no hay responsables dados de alta.</div>`;
+  c.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click', ()=>openResponsableForm(findResponsable(b.dataset.edit))));
+  c.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click', async ()=>{
+    if(confirm('¿Eliminar este responsable? Los movimientos ya guardados mantendrán su nombre en el historial hasta que se editen.')){
+      state.responsables = state.responsables.filter(r=>r.codigo!==b.dataset.del);
+      await saveAll();
+      render();
+    }
+  }));
+}
+function openResponsableForm(existing){
+  const isEdit = !!existing;
+  const inner = document.getElementById('sheet-inner-content');
+  inner.innerHTML = `
+    <div class="sheet-head"><h3>${isEdit?'Editar responsable':'Nuevo responsable'}</h3><button class="icon-btn" id="closeSheet">✕</button></div>
+    <label>Nombre</label>
+    <div class="field"><input type="text" id="f_nombre" value="${escapeHtml(existing?.nombre||'')}" placeholder="Nombre y apellidos"></div>
+    ${isEdit ? `<div class="field"><label>Código interno</label><input type="text" value="${existing.codigo}" disabled></div>` : ''}
+    <button class="btn primary" id="saveRespBtn">Guardar</button>
+  `;
+  inner.querySelector('#closeSheet').addEventListener('click', ()=>document.getElementById('formsheet').close());
+  inner.querySelector('#saveRespBtn').addEventListener('click', async ()=>{
+    const nombre = inner.querySelector('#f_nombre').value.trim();
+    if(!nombre){ toast('El nombre es obligatorio'); return; }
+    if(isEdit){ Object.assign(existing, {nombre}); }
+    else {
+      const codigo = nextCodigo('RESP', state.responsables);
+      state.responsables.push({codigo, nombre, ejemplo:false});
+    }
+    await saveAll();
+    document.getElementById('formsheet').close();
+    toast('Responsable guardado ✓');
+    render();
+  });
+  document.getElementById('formsheet').showModal();
 }
 
 /* ---------------- INIT ---------------- */
