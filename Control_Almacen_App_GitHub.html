@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Control de Almacén — Obras</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root{
+    --bg:#F2EFE8;
+    --surface:#FFFFFF;
+    --surface-alt:#EAE5D9;
+    --ink:#22231F;
+    --ink-soft:#6B6A61;
+    --border:#DCD5C4;
+    --accent-in:#2E7D4F;
+    --accent-in-soft:#DCEFE0;
+    --accent-out:#D9631E;
+    --accent-out-soft:#FBE4D3;
+    --warn:#C0392B;
+    --warn-soft:#F7D9D4;
+    --radius:12px;
+    --font-display:'Oswald',system-ui,sans-serif;
+    --font-body:'Inter',system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:calc(78px + env(safe-area-inset-bottom));
+  }
+  #app{
+    max-width:520px;
+    margin:0 auto;
+    min-height:100vh;
+    padding:16px 16px 8px;
+  }
+  header.topbar{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    padding:6px 2px 16px;
+    border-bottom:3px solid var(--ink);
+    margin-bottom:18px;
+  }
+  header.topbar h1{
+    font-family:var(--font-display);
+    font-size:20px;
+    letter-spacing:0.02em;
+    text-transform:uppercase;
+    margin:0;
+  }
+  header.topbar .sub{
+    font-size:11px;
+    color:var(--ink-soft);
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+  }
+  h2.section-title{
+    font-family:var(--font-display);
+    font-size:15px;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    color:var(--ink);
+    margin:0 0 12px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  h2.section-title::before{
+    content:"";
+    width:6px;height:18px;
+    background:var(--accent-out);
+    display:inline-block;
+  }
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:16px;
+    margin-bottom:12px;
+  }
+  .seg{
+    display:flex;
+    border:2px solid var(--ink);
+    border-radius:10px;
+    overflow:hidden;
+    margin-bottom:14px;
+  }
+  .seg button{
+    flex:1;
+    padding:12px 8px;
+    border:none;
+    background:var(--surface);
+    font-family:var(--font-display);
+    font-size:14px;
+    letter-spacing:0.03em;
+    text-transform:uppercase;
+    font-weight:600;
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .seg button.active.entrada{background:var(--accent-in);color:#fff;}
+  .seg button.active.salida{background:var(--accent-out);color:#fff;}
+  label{
+    display:block;
+    font-size:11px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .field{margin-bottom:14px;}
+  select, input[type=text], input[type=number]{
+    width:100%;
+    padding:12px 12px;
+    border:1.5px solid var(--border);
+    border-radius:8px;
+    font-size:15px;
+    font-family:var(--font-body);
+    background:var(--surface);
+    color:var(--ink);
+  }
+  select:focus, input:focus{outline:2px solid var(--ink);outline-offset:1px;}
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    padding:13px 16px;
+    border-radius:9px;
+    border:2px solid var(--ink);
+    background:var(--surface);
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:14px;
+    text-transform:uppercase;
+    letter-spacing:0.03em;
+    cursor:pointer;
+    width:100%;
+  }
+  .btn.primary{background:var(--ink);color:#fff;}
+  .btn.in{background:var(--accent-in);border-color:var(--accent-in);color:#fff;}
+  .btn.out{background:var(--accent-out);border-color:var(--accent-out);color:#fff;}
+  .btn.ghost{background:transparent;}
+  .btn.small{padding:8px 10px;font-size:11px;width:auto;}
+  .btn:disabled{opacity:0.4;cursor:not-allowed;}
+  .btn-row{display:flex;gap:8px;}
+  .scan-target{
+    border:2px dashed var(--border);
+    border-radius:var(--radius);
+    padding:16px;
+    text-align:center;
+    margin-bottom:14px;
+  }
+  .scan-target.filled{
+    border-style:solid;
+    border-color:var(--ink);
+    text-align:left;
+  }
+  .scan-target .code{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:13px;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+  }
+  .scan-target .name{font-size:16px;font-weight:600;margin-top:2px;}
+  .stepper{display:flex;align-items:center;gap:10px;}
+  .stepper button{
+    width:44px;height:44px;
+    border-radius:8px;
+    border:2px solid var(--ink);
+    background:var(--surface);
+    font-size:20px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .stepper input{text-align:center;font-weight:700;font-size:18px;}
+  .tabbar{
+    position:fixed;
+    bottom:0;left:0;right:0;
+    background:var(--surface);
+    border-top:2px solid var(--ink);
+    display:flex;
+    padding:8px calc(env(safe-area-inset-bottom) + 4px) calc(6px + env(safe-area-inset-bottom));
+    z-index:40;
+  }
+  .tabbar button{
+    flex:1;
+    background:none;
+    border:none;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:3px;
+    padding:6px 2px;
+    color:var(--ink-soft);
+    font-family:var(--font-body);
+    font-size:10px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.02em;
+    cursor:pointer;
+  }
+  .tabbar button.active{color:var(--ink);}
+  .tabbar button.active svg{stroke:var(--accent-out);}
+  .tabbar svg{width:22px;height:22px;stroke:var(--ink-soft);fill:none;stroke-width:2;}
+  .badge{
+    display:inline-block;
+    padding:2px 8px;
+    border-radius:20px;
+    font-size:10px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.03em;
+  }
+  .badge.in{background:var(--accent-in-soft);color:var(--accent-in);}
+  .badge.out{background:var(--accent-out-soft);color:var(--accent-out);}
+  .badge.warn{background:var(--warn-soft);color:var(--warn);}
+  .badge.example{background:var(--surface-alt);color:var(--ink-soft);}
+  .list-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:12px 0;
+    border-bottom:1px solid var(--border);
+    gap:10px;
+  }
+  .list-row:last-child{border-bottom:none;}
+  .list-row .main{flex:1;min-width:0;}
+  .list-row .main .t1{font-weight:600;font-size:14.5px;}
+  .list-row .main .t2{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+  .list-row .num{font-family:var(--font-display);font-size:20px;font-weight:600;}
+  .subtabs{display:flex;gap:6px;margin-bottom:14px;}
+  .subtabs button{
+    flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--border);
+    background:var(--surface);font-weight:600;font-size:12.5px;cursor:pointer;
+    text-transform:uppercase;letter-spacing:0.02em;
+  }
+  .subtabs button.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .searchbox{margin-bottom:14px;}
+  .empty{
+    text-align:center;padding:28px 12px;color:var(--ink-soft);font-size:13.5px;
+  }
+  .icon-btn{
+    background:none;border:none;cursor:pointer;padding:6px;
+    color:var(--ink-soft);
+  }
+  .toast{
+    position:fixed;left:50%;bottom:100px;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:#fff;padding:11px 20px;border-radius:30px;
+    font-size:13.5px;font-weight:600;opacity:0;transition:all .25s ease;
+    z-index:100;pointer-events:none;white-space:nowrap;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(20,20,18,0.9);
+    z-index:80;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;padding:20px;
+  }
+  .scan-frame{
+    position:relative;width:100%;max-width:340px;aspect-ratio:1/1;
+    border-radius:16px;overflow:hidden;background:#000;
+  }
+  .scan-frame video{width:100%;height:100%;object-fit:cover;}
+  .scan-corner{
+    position:absolute;width:36px;height:36px;border-color:var(--accent-out);
+    pointer-events:none;
+  }
+  .scan-corner.tl{top:10px;left:10px;border-top:4px solid var(--accent-out);border-left:4px solid var(--accent-out);border-radius:6px 0 0 0;}
+  .scan-corner.tr{top:10px;right:10px;border-top:4px solid var(--accent-out);border-right:4px solid var(--accent-out);border-radius:0 6px 0 0;}
+  .scan-corner.bl{bottom:10px;left:10px;border-bottom:4px solid var(--accent-out);border-left:4px solid var(--accent-out);border-radius:0 0 0 6px;}
+  .scan-corner.br{bottom:10px;right:10px;border-bottom:4px solid var(--accent-out);border-right:4px solid var(--accent-out);border-radius:0 0 6px 0;}
+  .scan-hint{color:#fff;text-align:center;margin-top:18px;font-size:13.5px;opacity:0.85;}
+  .modal-actions{margin-top:22px;width:100%;max-width:340px;display:flex;flex-direction:column;gap:10px;}
+  .modal-actions .btn.ghost{border-color:#fff;color:#fff;}
+  dialog.formsheet{
+    border:none;border-radius:16px 16px 0 0;padding:0;width:100%;max-width:520px;
+    margin:auto auto 0;
+  }
+  dialog.formsheet::backdrop{background:rgba(20,20,18,0.55);}
+  .sheet-inner{padding:18px 18px calc(20px + env(safe-area-inset-bottom));max-height:80vh;overflow-y:auto;}
+  .sheet-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+  .sheet-head h3{font-family:var(--font-display);text-transform:uppercase;font-size:15px;margin:0;}
+  #label-print-content{display:none;}
+  #lockScreen{
+    position:fixed;inset:0;background:var(--ink);z-index:200;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:24px;
+  }
+  #lockScreen .lock-card{width:100%;max-width:300px;text-align:center;}
+  #lockScreen h1{
+    font-family:var(--font-display);color:#fff;text-transform:uppercase;
+    font-size:19px;letter-spacing:0.03em;margin:0 0 4px;
+  }
+  #lockScreen p{color:#B9B7AC;font-size:12.5px;margin:0 0 26px;}
+  #lockScreen input{
+    width:100%;text-align:center;font-size:26px;letter-spacing:0.5em;
+    padding:14px 10px 14px 16px;border-radius:9px;border:2px solid #45463E;
+    background:#2C2D27;color:#fff;font-family:var(--font-display);
+  }
+  #lockScreen input:focus{outline:2px solid var(--accent-out);border-color:var(--accent-out);}
+  #lockScreen .btn{margin-top:14px;background:var(--accent-out);border-color:var(--accent-out);color:#fff;}
+  #lockScreen .err{color:#F0A98A;font-size:12px;margin-top:10px;min-height:16px;}
+  @media print{
+    #app,.tabbar,.toast{display:none !important;}
+    #label-print-content{
+      display:flex !important;align-items:center;gap:16px;
+      position:fixed;top:30px;left:30px;
+    }
+    .label-text{font-family:sans-serif;font-size:16px;line-height:1.4;}
+  }
+</style>
+</head>
+<body>
+<div id="lockScreen">
+  <div class="lock-card">
+    <h1>Control de Almacén</h1>
+    <p>Introduce el código de acceso</p>
+    <input type="tel" inputmode="numeric" maxlength="4" id="lockInput" autocomplete="off" placeholder="••••">
+    <button class="btn" id="lockBtn">Entrar</button>
+    <div class="err" id="lockErr"></div>
+  </div>
+</div>
+<div id="app"></div>
+<div id="toast" class="toast"></div>
+<div id="label-print-content"></div>
+<dialog id="formsheet" class="formsheet"><div class="sheet-inner" id="sheet-inner-content"></div></dialog>
+
+<script>
+/* ---------------- STATE ---------------- */
+const state = { materiales: [], obras: [], movimientos: [], tab: 'escanear', catalogSub: 'materiales', loaded:false };
+const formState = { tipo:'Entrada', obraCodigo:null, materialCodigo:null, cantidad:1, responsable:'', nota:'' };
+let scanning = false, scanMode = null, stream = null, rafId = null, detector = null;
+
+const seedMateriales = [{codigo:'MAT-001', descripcion:'Cemento gris 25kg', unidad:'sacos', stockMinimo:20, ean:'', ejemplo:true}];
+const seedObras = [{codigo:'OBR-001', nombre:'Reforma Calle Mayor 12', responsable:'Encargado', estado:'Activa', ejemplo:true}];
+
+/* ---------------- STORAGE (JSONBin.io) ---------------- */
+// 1) Crea una cuenta gratuita en https://jsonbin.io
+// 2) Copia tu API Key en https://jsonbin.io/api-keys y pégala abajo en JSONBIN_API_KEY
+// 3) Crea un Bin nuevo con este contenido inicial y pega su ID en JSONBIN_BIN_ID:
+//    {"materiales":[{"codigo":"MAT-001","descripcion":"Cemento gris 25kg","unidad":"sacos","stockMinimo":20,"ean":"","ejemplo":true}],"obras":[{"codigo":"OBR-001","nombre":"Reforma Calle Mayor 12","responsable":"Encargado","estado":"Activa","ejemplo":true}],"movimientos":[]}
+const JSONBIN_API_KEY = 'PASTE_TU_API_KEY_AQUI';
+const JSONBIN_BIN_ID  = 'PASTE_TU_BIN_ID_AQUI';
+const JSONBIN_URL = 'https://api.jsonbin.io/v3/b/' + JSONBIN_BIN_ID;
+
+function jsonbinConfigured(){
+  return JSONBIN_API_KEY && !JSONBIN_API_KEY.includes('PASTE') && JSONBIN_BIN_ID && !JSONBIN_BIN_ID.includes('PASTE');
+}
+async function loadAll(){
+  try{
+    const res = await fetch(JSONBIN_URL + '/latest', { headers:{ 'X-Master-Key': JSONBIN_API_KEY } });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    const record = data.record || {};
+    state.materiales = record.materiales || seedMateriales;
+    state.obras = record.obras || seedObras;
+    state.movimientos = record.movimientos || [];
+  }catch(e){
+    console.error('load error', e);
+    toast('No se pudo cargar el almacenamiento (revisa conexión o configuración)');
+    if(!state.loaded){ state.materiales = seedMateriales; state.obras = seedObras; state.movimientos = []; }
+  }
+  state.loaded = true;
+}
+async function saveAll(){
+  try{
+    const res = await fetch(JSONBIN_URL, {
+      method:'PUT',
+      headers:{ 'Content-Type':'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+      body: JSON.stringify({ materiales: state.materiales, obras: state.obras, movimientos: state.movimientos })
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+  }catch(e){
+    console.error('save error', e);
+    toast('No se pudo guardar (revisa conexión o configuración)');
+  }
+}
+
+/* ---------------- HELPERS ---------------- */
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+function computeStock(codigo){
+  let ent=0, sal=0;
+  state.movimientos.forEach(m=>{
+    if(m.codigoMaterial===codigo){
+      if(m.tipo==='Entrada') ent+=Number(m.cantidad);
+      else sal+=Number(m.cantidad);
+    }
+  });
+  return {ent, sal, stock: ent-sal};
+}
+function nextCodigo(prefix, arr){
+  let max=0;
+  arr.forEach(x=>{
+    const m=/-(\d+)$/.exec(x.codigo);
+    if(m) max = Math.max(max, parseInt(m[1],10));
+  });
+  return prefix+'-'+String(max+1).padStart(3,'0');
+}
+function findMaterial(codigo){ return state.materiales.find(m=>m.codigo===codigo || (m.ean && m.ean===codigo)); }
+function findObra(codigo){ return state.obras.find(o=>o.codigo===codigo); }
+function fmtDate(iso){
+  const d = new Date(iso);
+  return d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'2-digit'}) + ' ' + d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+}
+function todayCount(){
+  const today = new Date().toDateString();
+  return state.movimientos.filter(m=> new Date(m.fecha).toDateString()===today).length;
+}
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+/* ---------------- ICONS ---------------- */
+const ICONS = {
+  scan:'<svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" stroke-linecap="round"/><rect x="7" y="7" width="10" height="10" rx="1"/></svg>',
+  stock:'<svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" stroke-linecap="round"/></svg>',
+  catalog:'<svg viewBox="0 0 24 24"><path d="M20.6 12.5 12.5 20.6a2 2 0 0 1-2.8 0l-7-7a2 2 0 0 1 0-2.9L10.8 2.6c.4-.4.9-.6 1.4-.6H19a2 2 0 0 1 2 2v6.7c0 .5-.2 1-.6 1.4Z"/><circle cx="15.5" cy="8.5" r="1.5"/></svg>',
+  history:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2" stroke-linecap="round"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>',
+};
+
+/* ---------------- RENDER ROOT ---------------- */
+function render(){
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <header class="topbar">
+      <div>
+        <h1>Control de Almacén</h1>
+        <div class="sub">${state.movimientos.length} movimientos registrados · ${todayCount()} hoy</div>
+      </div>
+    </header>
+    <div id="tab-content"></div>
+  `;
+  renderTab();
+  renderTabbar();
+}
+function renderTabbar(){
+  const old = document.querySelector('.tabbar');
+  if(old) old.remove();
+  const bar = document.createElement('div');
+  bar.className='tabbar';
+  const tabs = [['escanear','Escanear','scan'],['stock','Stock','stock'],['catalogo','Catálogo','catalog'],['historial','Historial','history']];
+  bar.innerHTML = tabs.map(([id,label,icon])=>`
+    <button data-tab="${id}" class="${state.tab===id?'active':''}">${ICONS[icon]}<span>${label}</span></button>
+  `).join('');
+  document.body.appendChild(bar);
+  bar.querySelectorAll('button').forEach(b=>b.addEventListener('click', async ()=>{
+    state.tab=b.dataset.tab;
+    if(state.tab==='stock' || state.tab==='historial'){ await refreshData(); }
+    else { render(); }
+  }));
+}
+
+function renderTab(){
+  const c = document.getElementById('tab-content');
+  if(state.tab==='escanear') return renderEscanear(c);
+  if(state.tab==='stock') return renderStock(c);
+  if(state.tab==='catalogo') return renderCatalogo(c);
+  if(state.tab==='historial') return renderHistorial(c);
+}
+
+/* ---------------- TAB: ESCANEAR ---------------- */
+function renderEscanear(c){
+  const mat = formState.materialCodigo ? findMaterial(formState.materialCodigo) : null;
+  const obra = formState.obraCodigo ? findObra(formState.obraCodigo) : null;
+  const stockInfo = mat ? computeStock(mat.codigo) : null;
+  c.innerHTML = `
+    <div class="card">
+      <h2 class="section-title">Nuevo movimiento</h2>
+      <div class="seg">
+        <button class="${formState.tipo==='Entrada'?'active entrada':''}" data-tipo="Entrada">↓ Entrada</button>
+        <button class="${formState.tipo==='Salida'?'active salida':''}" data-tipo="Salida">↑ Salida</button>
+      </div>
+
+      <label>Obra ${formState.tipo==='Entrada' ? '(destino / almacén)' : '(destino)'}</label>
+      <div class="field">
+        <select id="obraSelect">
+          <option value="">— Selecciona una obra —</option>
+          ${state.obras.map(o=>`<option value="${o.codigo}" ${o.codigo===formState.obraCodigo?'selected':''}>${escapeHtml(o.nombre)} (${o.codigo})</option>`).join('')}
+        </select>
+      </div>
+      <button class="btn ghost small" id="scanObraBtn" style="margin-bottom:14px;width:100%;">Escanear QR de obra</button>
+
+      <label>Material</label>
+      ${mat ? `
+        <div class="scan-target filled">
+          <div class="code">${mat.codigo}${mat.ean?' · EAN '+mat.ean:''}</div>
+          <div class="name">${escapeHtml(mat.descripcion)}</div>
+          <div style="font-size:12px;color:var(--ink-soft);margin-top:4px;">Stock actual: <strong>${stockInfo.stock} ${mat.unidad}</strong></div>
+        </div>
+      ` : `
+        <div class="scan-target">
+          <div style="font-size:13px;color:var(--ink-soft);">Sin material seleccionado</div>
+        </div>
+      `}
+      <div class="btn-row" style="margin-bottom:14px;">
+        <button class="btn primary" id="scanMaterialBtn">Escanear código</button>
+        <button class="btn ghost small" id="pickMaterialBtn" style="flex:0 0 auto;">Elegir de lista</button>
+      </div>
+
+      <label>Cantidad ${mat?('('+mat.unidad+')'):''}</label>
+      <div class="field stepper">
+        <button id="qtyMinus" type="button">−</button>
+        <input type="number" id="qtyInput" min="0" step="1" value="${formState.cantidad}">
+        <button id="qtyPlus" type="button">+</button>
+      </div>
+
+      <label>Responsable (opcional)</label>
+      <div class="field"><input type="text" id="respInput" placeholder="Quién entrega o retira" value="${escapeHtml(formState.responsable)}"></div>
+
+      <label>Nota / nº albarán (opcional)</label>
+      <div class="field"><input type="text" id="notaInput" placeholder="Ej. ALB-2201" value="${escapeHtml(formState.nota)}"></div>
+
+      <button class="btn ${formState.tipo==='Entrada'?'in':'out'}" id="guardarBtn" ${(!mat||!obra||!formState.cantidad||formState.cantidad<=0)?'disabled':''}>
+        Guardar ${formState.tipo.toLowerCase()}
+      </button>
+    </div>
+  `;
+
+  c.querySelectorAll('[data-tipo]').forEach(b=>b.addEventListener('click',()=>{ formState.tipo=b.dataset.tipo; render(); }));
+  c.querySelector('#obraSelect').addEventListener('change', e=>{ formState.obraCodigo = e.target.value || null; render(); });
+  c.querySelector('#scanObraBtn').addEventListener('click', ()=> openScan('obra'));
+  c.querySelector('#scanMaterialBtn').addEventListener('click', ()=> openScan('material'));
+  c.querySelector('#pickMaterialBtn').addEventListener('click', ()=> openMaterialPicker());
+  c.querySelector('#qtyInput').addEventListener('input', e=>{ formState.cantidad = e.target.value; syncGuardarBtn(); });
+  c.querySelector('#qtyMinus').addEventListener('click', ()=>{ formState.cantidad = Math.max(0,(Number(formState.cantidad)||0)-1); render(); });
+  c.querySelector('#qtyPlus').addEventListener('click', ()=>{ formState.cantidad = (Number(formState.cantidad)||0)+1; render(); });
+  c.querySelector('#respInput').addEventListener('input', e=> formState.responsable=e.target.value);
+  c.querySelector('#notaInput').addEventListener('input', e=> formState.nota=e.target.value);
+  c.querySelector('#guardarBtn').addEventListener('click', guardarMovimiento);
+}
+function syncGuardarBtn(){
+  const btn = document.getElementById('guardarBtn');
+  if(!btn) return;
+  const mat = formState.materialCodigo ? findMaterial(formState.materialCodigo) : null;
+  btn.disabled = !mat || !formState.obraCodigo || !formState.cantidad || Number(formState.cantidad)<=0;
+}
+async function guardarMovimiento(){
+  if(!formState.obraCodigo || !formState.materialCodigo || !formState.cantidad || Number(formState.cantidad)<=0){
+    toast('Faltan datos por completar'); return;
+  }
+  const mov = {
+    id: 'M'+Date.now()+Math.floor(Math.random()*1000),
+    fecha: new Date().toISOString(),
+    tipo: formState.tipo,
+    codigoMaterial: formState.materialCodigo,
+    cantidad: Number(formState.cantidad),
+    codigoObra: formState.obraCodigo,
+    responsable: formState.responsable||'',
+    nota: formState.nota||''
+  };
+  state.movimientos.push(mov);
+  await saveAll();
+  toast((formState.tipo==='Entrada'?'Entrada guardada ✓':'Salida guardada ✓'));
+  formState.materialCodigo = null;
+  formState.cantidad = 1;
+  formState.nota = '';
+  render();
+}
+function openMaterialPicker(){
+  const inner = document.getElementById('sheet-inner-content');
+  inner.innerHTML = `
+    <div class="sheet-head"><h3>Elegir material</h3><button class="icon-btn" id="closeSheet">✕</button></div>
+    <div class="field"><input type="text" id="pickerSearch" placeholder="Buscar material..."></div>
+    <div id="pickerList"></div>
+  `;
+  function renderList(q){
+    const list = state.materiales.filter(m=> !q || m.descripcion.toLowerCase().includes(q.toLowerCase()) || m.codigo.toLowerCase().includes(q.toLowerCase()));
+    document.getElementById('pickerList').innerHTML = list.length ? list.map(m=>`
+      <div class="list-row" data-pick="${m.codigo}" style="cursor:pointer;">
+        <div class="main"><div class="t1">${escapeHtml(m.descripcion)}</div><div class="t2">${m.codigo} · ${m.unidad}</div></div>
+      </div>
+    `).join('') : `<div class="empty">Sin resultados</div>`;
+    document.querySelectorAll('[data-pick]').forEach(r=>r.addEventListener('click', ()=>{
+      formState.materialCodigo = r.dataset.pick;
+      document.getElementById('formsheet').close();
+      render();
+    }));
+  }
+  renderList('');
+  inner.querySelector('#pickerSearch').addEventListener('input', e=>renderList(e.target.value));
+  inner.querySelector('#closeSheet').addEventListener('click', ()=>document.getElementById('formsheet').close());
+  document.getElementById('formsheet').showModal();
+}
+
+/* ---------------- SCANNING ---------------- */
+function openScan(mode){
+  scanMode = mode;
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'scanOverlay';
+  overlay.innerHTML = `
+    <div class="scan-frame">
+      <video id="scanVideo" autoplay playsinline muted></video>
+      <div class="scan-corner tl"></div><div class="scan-corner tr"></div>
+      <div class="scan-corner bl"></div><div class="scan-corner br"></div>
+    </div>
+    <div class="scan-hint">${mode==='material' ? 'Enfoca el código QR o de barras del material' : 'Enfoca el código QR de la obra'}</div>
+    <div class="modal-actions">
+      <button class="btn ghost" id="manualEntryBtn">Introducir código manualmente</button>
+      <button class="btn ghost" id="cancelScanBtn">Cancelar</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  overlay.querySelector('#cancelScanBtn').addEventListener('click', closeScan);
+  overlay.querySelector('#manualEntryBtn').addEventListener('click', ()=>{
+    const val = prompt('Introduce el código:');
+    closeScan();
+    if(val) onScanResult(val.trim());
+  });
+  startCamera();
+}
+async function startCamera(){
+  const video = document.getElementById('scanVideo');
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+    video.srcObject = stream;
+    await video.play();
+    scanning = true;
+    detectLoop(video);
+  }catch(e){
+    toast('No se pudo acceder a la cámara');
+    closeScan();
+  }
+}
+let scanCanvas = null;
+function detectLoop(video){
+  if(!scanning) return;
+  if('BarcodeDetector' in window){
+    if(!detector){
+      try{ detector = new BarcodeDetector({formats:['qr_code','ean_13','ean_8','upc_a','upc_e','code_128','code_39']}); }
+      catch(e){ detector = new BarcodeDetector(); }
+    }
+    detector.detect(video).then(codes=>{
+      if(codes && codes.length>0){ const v=codes[0].rawValue; closeScan(); onScanResult(v); }
+      else { rafId = requestAnimationFrame(()=>detectLoop(video)); }
+    }).catch(()=>{ rafId = requestAnimationFrame(()=>detectLoop(video)); });
+  } else if(typeof jsQR === 'function'){
+    if(!scanCanvas) scanCanvas = document.createElement('canvas');
+    const w = video.videoWidth, h = video.videoHeight;
+    if(w && h){
+      scanCanvas.width = w; scanCanvas.height = h;
+      const ctx = scanCanvas.getContext('2d');
+      ctx.drawImage(video,0,0,w,h);
+      const imgData = ctx.getImageData(0,0,w,h);
+      const code = jsQR(imgData.data, w, h);
+      if(code && code.data){ const v=code.data; closeScan(); onScanResult(v); return; }
+    }
+    rafId = requestAnimationFrame(()=>detectLoop(video));
+  } else {
+    rafId = requestAnimationFrame(()=>detectLoop(video));
+  }
+}
+function closeScan(){
+  scanning = false;
+  if(rafId) cancelAnimationFrame(rafId);
+  if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
+  const overlay = document.getElementById('scanOverlay');
+  if(overlay) overlay.remove();
+}
+function onScanResult(value){
+  if(scanMode==='material'){
+    const mat = findMaterial(value);
+    if(mat){ formState.materialCodigo = mat.codigo; toast('Material: '+mat.descripcion); render(); }
+    else {
+      if(confirm('Código no reconocido: "'+value+'".\n¿Quieres darlo de alta como material nuevo?')){
+        state.tab = 'catalogo'; state.catalogSub = 'materiales'; render();
+        openMaterialForm(null, value);
+      }
+    }
+  } else {
+    const obra = findObra(value);
+    if(obra){ formState.obraCodigo = obra.codigo; toast('Obra: '+obra.nombre); render(); }
+    else { toast('Código de obra no reconocido: '+value); }
+  }
+}
+
+/* ---------------- TAB: STOCK ---------------- */
+function renderStock(c){
+  c.innerHTML = `
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <h2 class="section-title">Stock actual</h2>
+        <button class="btn ghost small" id="refreshStockBtn">↻ Actualizar</button>
+      </div>
+      <div class="searchbox"><input type="text" id="stockSearch" placeholder="Buscar material..."></div>
+      <div id="stockList"></div>
+    </div>
+  `;
+  function draw(q){
+    let list = state.materiales.map(m=>({...m, ...computeStock(m.codigo)}));
+    if(q) list = list.filter(m=>m.descripcion.toLowerCase().includes(q.toLowerCase())||m.codigo.toLowerCase().includes(q.toLowerCase()));
+    list.sort((a,b)=>a.descripcion.localeCompare(b.descripcion));
+    document.getElementById('stockList').innerHTML = list.length ? list.map(m=>{
+      const low = m.stock < Number(m.stockMinimo||0);
+      return `
+      <div class="list-row">
+        <div class="main">
+          <div class="t1">${escapeHtml(m.descripcion)} ${low?'<span class="badge warn">Bajo mínimo</span>':''}</div>
+          <div class="t2">${m.codigo} · mínimo ${m.stockMinimo} ${m.unidad}</div>
+        </div>
+        <div class="num" style="color:${low?'var(--warn)':'var(--ink)'}">${m.stock}<span style="font-size:11px;color:var(--ink-soft);font-family:var(--font-body);"> ${m.unidad}</span></div>
+      </div>`;
+    }).join('') : `<div class="empty">No hay materiales. Añádelos desde la pestaña Catálogo.</div>`;
+  }
+  draw('');
+  c.querySelector('#stockSearch').addEventListener('input', e=>draw(e.target.value));
+  c.querySelector('#refreshStockBtn').addEventListener('click', refreshData);
+}
+
+/* ---------------- TAB: CATALOGO ---------------- */
+function renderCatalogo(c){
+  c.innerHTML = `
+    <div class="card">
+      <div class="subtabs">
+        <button data-s="materiales" class="${state.catalogSub==='materiales'?'active':''}">Materiales</button>
+        <button data-s="obras" class="${state.catalogSub==='obras'?'active':''}">Obras</button>
+      </div>
+      <div id="catBody"></div>
+    </div>
+  `;
+  c.querySelectorAll('[data-s]').forEach(b=>b.addEventListener('click', ()=>{ state.catalogSub=b.dataset.s; render(); }));
+  if(state.catalogSub==='materiales') renderMaterialesCatalog(c.querySelector('#catBody'));
+  else renderObrasCatalog(c.querySelector('#catBody'));
+}
+function renderMaterialesCatalog(el){
+  el.innerHTML = `
+    <button class="btn primary" id="addMatBtn" style="margin-bottom:14px;">${ICONS.plus} Añadir material</button>
+    <div id="matList"></div>
+  `;
+  el.querySelector('#addMatBtn').addEventListener('click', ()=>openMaterialForm(null,''));
+  const list = [...state.materiales].sort((a,b)=>a.descripcion.localeCompare(b.descripcion));
+  el.querySelector('#matList').innerHTML = list.length ? list.map(m=>`
+    <div class="list-row">
+      <div class="main">
+        <div class="t1">${escapeHtml(m.descripcion)} ${m.ejemplo?'<span class="badge example">Ejemplo</span>':''}</div>
+        <div class="t2">${m.codigo}${m.ean?' · EAN '+m.ean:''} · ${m.unidad} · mín. ${m.stockMinimo}</div>
+      </div>
+      <div class="btn-row" style="width:auto;">
+        <button class="btn ghost small" data-label="${m.codigo}">Etiqueta</button>
+        <button class="btn ghost small" data-edit="${m.codigo}">Editar</button>
+        <button class="btn ghost small" data-del="${m.codigo}">🗑</button>
+      </div>
+    </div>
+  `).join('') : `<div class="empty">Aún no hay materiales dados de alta.</div>`;
+  el.querySelectorAll('[data-label]').forEach(b=>b.addEventListener('click', ()=>imprimirEtiqueta('material', findMaterial(b.dataset.label))));
+  el.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click', ()=>openMaterialForm(findMaterial(b.dataset.edit))));
+  el.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click', async ()=>{
+    if(confirm('¿Eliminar este material del catálogo? El historial de movimientos no se borrará.')){
+      state.materiales = state.materiales.filter(m=>m.codigo!==b.dataset.del);
+      await saveAll();
+      render();
+    }
+  }));
+}
+function openMaterialForm(existing, prefillCodigo){
+  const isEdit = !!existing;
+  const looksEan = prefillCodigo && /^\d{8}$|^\d{12,14}$/.test(prefillCodigo);
+  const inner = document.getElementById('sheet-inner-content');
+  inner.innerHTML = `
+    <div class="sheet-head"><h3>${isEdit?'Editar material':'Nuevo material'}</h3><button class="icon-btn" id="closeSheet">✕</button></div>
+    <label>Descripción</label>
+    <div class="field"><input type="text" id="f_desc" value="${escapeHtml(existing?.descripcion||'')}" placeholder="Ej. Cemento gris 25kg"></div>
+    <label>Unidad</label>
+    <div class="field"><input type="text" id="f_unidad" value="${escapeHtml(existing?.unidad||'')}" placeholder="sacos, unidades, metros..."></div>
+    <label>Stock mínimo (aviso de reposición)</label>
+    <div class="field"><input type="number" id="f_min" value="${existing?.stockMinimo??0}" min="0"></div>
+    <label>Código de barras de fábrica (EAN, opcional)</label>
+    <div class="field"><input type="text" id="f_ean" value="${escapeHtml(existing?.ean || (looksEan?prefillCodigo:'')||'')}" placeholder="Si el producto ya trae uno"></div>
+    ${isEdit ? `<div class="field"><label>Código interno</label><input type="text" value="${existing.codigo}" disabled></div>` : ''}
+    <button class="btn primary" id="saveMatBtn">Guardar material</button>
+  `;
+  inner.querySelector('#closeSheet').addEventListener('click', ()=>document.getElementById('formsheet').close());
+  inner.querySelector('#saveMatBtn').addEventListener('click', async ()=>{
+    const desc = inner.querySelector('#f_desc').value.trim();
+    const unidad = inner.querySelector('#f_unidad').value.trim();
+    const min = Number(inner.querySelector('#f_min').value)||0;
+    const ean = inner.querySelector('#f_ean').value.trim();
+    if(!desc || !unidad){ toast('Descripción y unidad son obligatorias'); return; }
+    if(isEdit){
+      Object.assign(existing, {descripcion:desc, unidad, stockMinimo:min, ean});
+    } else {
+      const codigo = (prefillCodigo && !looksEan) ? prefillCodigo : nextCodigo('MAT', state.materiales);
+      state.materiales.push({codigo, descripcion:desc, unidad, stockMinimo:min, ean, ejemplo:false});
+    }
+    await saveAll();
+    document.getElementById('formsheet').close();
+    toast('Material guardado ✓');
+    render();
+  });
+  document.getElementById('formsheet').showModal();
+}
+function renderObrasCatalog(el){
+  el.innerHTML = `
+    <button class="btn primary" id="addObraBtn" style="margin-bottom:14px;">${ICONS.plus} Añadir obra</button>
+    <div id="obraList"></div>
+  `;
+  el.querySelector('#addObraBtn').addEventListener('click', ()=>openObraForm(null));
+  const list = [...state.obras].sort((a,b)=>a.nombre.localeCompare(b.nombre));
+  el.querySelector('#obraList').innerHTML = list.length ? list.map(o=>`
+    <div class="list-row">
+      <div class="main">
+        <div class="t1">${escapeHtml(o.nombre)} ${o.ejemplo?'<span class="badge example">Ejemplo</span>':''}</div>
+        <div class="t2">${o.codigo} · ${escapeHtml(o.responsable||'—')} · ${o.estado}</div>
+      </div>
+      <div class="btn-row" style="width:auto;">
+        <button class="btn ghost small" data-label="${o.codigo}">Etiqueta</button>
+        <button class="btn ghost small" data-edit="${o.codigo}">Editar</button>
+        <button class="btn ghost small" data-del="${o.codigo}">🗑</button>
+      </div>
+    </div>
+  `).join('') : `<div class="empty">Aún no hay obras dadas de alta.</div>`;
+  el.querySelectorAll('[data-label]').forEach(b=>b.addEventListener('click', ()=>imprimirEtiqueta('obra', findObra(b.dataset.label))));
+  el.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click', ()=>openObraForm(findObra(b.dataset.edit))));
+  el.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click', async ()=>{
+    if(confirm('¿Eliminar esta obra? El historial de movimientos no se borrará.')){
+      state.obras = state.obras.filter(o=>o.codigo!==b.dataset.del);
+      await saveAll();
+      render();
+    }
+  }));
+}
+function openObraForm(existing){
+  const isEdit = !!existing;
+  const inner = document.getElementById('sheet-inner-content');
+  inner.innerHTML = `
+    <div class="sheet-head"><h3>${isEdit?'Editar obra':'Nueva obra'}</h3><button class="icon-btn" id="closeSheet">✕</button></div>
+    <label>Nombre de la obra</label>
+    <div class="field"><input type="text" id="f_nombre" value="${escapeHtml(existing?.nombre||'')}" placeholder="Ej. Reforma Calle Mayor 12"></div>
+    <label>Responsable</label>
+    <div class="field"><input type="text" id="f_resp" value="${escapeHtml(existing?.responsable||'')}" placeholder="Nombre del encargado"></div>
+    <label>Estado</label>
+    <div class="field">
+      <select id="f_estado">
+        <option value="Activa" ${existing?.estado==='Activa'?'selected':''}>Activa</option>
+        <option value="Cerrada" ${existing?.estado==='Cerrada'?'selected':''}>Cerrada</option>
+      </select>
+    </div>
+    ${isEdit ? `<div class="field"><label>Código interno</label><input type="text" value="${existing.codigo}" disabled></div>` : ''}
+    <button class="btn primary" id="saveObraBtn">Guardar obra</button>
+  `;
+  inner.querySelector('#closeSheet').addEventListener('click', ()=>document.getElementById('formsheet').close());
+  inner.querySelector('#saveObraBtn').addEventListener('click', async ()=>{
+    const nombre = inner.querySelector('#f_nombre').value.trim();
+    const responsable = inner.querySelector('#f_resp').value.trim();
+    const estado = inner.querySelector('#f_estado').value;
+    if(!nombre){ toast('El nombre de la obra es obligatorio'); return; }
+    if(isEdit){ Object.assign(existing, {nombre, responsable, estado}); }
+    else {
+      const codigo = nextCodigo('OBR', state.obras);
+      state.obras.push({codigo, nombre, responsable, estado, ejemplo:false});
+    }
+    await saveAll();
+    document.getElementById('formsheet').close();
+    toast('Obra guardada ✓');
+    render();
+  });
+  document.getElementById('formsheet').showModal();
+}
+
+/* ---------------- LABEL PRINTING ---------------- */
+function imprimirEtiqueta(tipo, item){
+  if(!item) return;
+  const cont = document.getElementById('label-print-content');
+  cont.innerHTML = '';
+  const qrDiv = document.createElement('div');
+  cont.appendChild(qrDiv);
+  const text = document.createElement('div');
+  text.className = 'label-text';
+  text.innerHTML = `<strong>${item.codigo}</strong><br>${escapeHtml(tipo==='material'?item.descripcion:item.nombre)}`;
+  cont.appendChild(text);
+  try{
+    if(typeof QRCode === 'function'){ new QRCode(qrDiv, {text:item.codigo, width:160, height:160}); }
+    else { qrDiv.textContent = '(QR no disponible, usa el código: '+item.codigo+')'; }
+  }catch(e){ qrDiv.textContent = 'Código: '+item.codigo; }
+  setTimeout(()=>window.print(), 250);
+}
+
+/* ---------------- TAB: HISTORIAL ---------------- */
+function renderHistorial(c){
+  c.innerHTML = `
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <h2 class="section-title">Historial de movimientos</h2>
+        <button class="btn ghost small" id="refreshHistBtn">↻ Actualizar</button>
+      </div>
+      <div class="field">
+        <select id="filtObra">
+          <option value="">Todas las obras</option>
+          ${state.obras.map(o=>`<option value="${o.codigo}">${escapeHtml(o.nombre)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field">
+        <select id="filtTipo">
+          <option value="">Entradas y salidas</option>
+          <option value="Entrada">Solo entradas</option>
+          <option value="Salida">Solo salidas</option>
+        </select>
+      </div>
+      <div id="histList"></div>
+    </div>
+  `;
+  function draw(){
+    const fo = c.querySelector('#filtObra').value;
+    const ft = c.querySelector('#filtTipo').value;
+    let list = [...state.movimientos].filter(m=> (!fo||m.codigoObra===fo) && (!ft||m.tipo===ft) );
+    list.sort((a,b)=> new Date(b.fecha) - new Date(a.fecha));
+    document.getElementById('histList').innerHTML = list.length ? list.map(m=>{
+      const mat = findMaterial(m.codigoMaterial);
+      const obra = findObra(m.codigoObra);
+      return `
+      <div class="list-row">
+        <div class="main">
+          <div class="t1"><span class="badge ${m.tipo==='Entrada'?'in':'out'}">${m.tipo}</span> ${escapeHtml(mat?mat.descripcion:m.codigoMaterial)}</div>
+          <div class="t2">${fmtDate(m.fecha)} · ${escapeHtml(obra?obra.nombre:m.codigoObra)} ${m.responsable?'· '+escapeHtml(m.responsable):''}</div>
+        </div>
+        <div class="num">${m.cantidad}</div>
+      </div>`;
+    }).join('') : `<div class="empty">No hay movimientos con estos filtros.</div>`;
+  }
+  draw();
+  c.querySelector('#filtObra').addEventListener('change', draw);
+  c.querySelector('#filtTipo').addEventListener('change', draw);
+  c.querySelector('#refreshHistBtn').addEventListener('click', refreshData);
+}
+
+/* ---------------- INIT ---------------- */
+const ACCESS_CODE = '1234';
+
+function setupLock(){
+  const lockScreen = document.getElementById('lockScreen');
+  const input = document.getElementById('lockInput');
+  const btn = document.getElementById('lockBtn');
+  const err = document.getElementById('lockErr');
+  function tryUnlock(){
+    if(input.value.trim() === ACCESS_CODE){
+      lockScreen.style.display = 'none';
+      startApp();
+    } else {
+      err.textContent = 'Código incorrecto, inténtalo de nuevo';
+      input.value = '';
+      input.focus();
+    }
+  }
+  btn.addEventListener('click', tryUnlock);
+  input.addEventListener('keydown', e=>{ if(e.key==='Enter') tryUnlock(); });
+  setTimeout(()=>input.focus(), 200);
+}
+
+async function startApp(){
+  if(!jsonbinConfigured()){
+    renderSetupNeeded();
+    return;
+  }
+  toast('Cargando datos...');
+  await loadAll();
+  render();
+}
+function renderSetupNeeded(){
+  document.getElementById('app').innerHTML = `
+    <div style="padding:60px 24px;text-align:center;max-width:380px;margin:0 auto;">
+      <h2 style="font-family:var(--font-display);text-transform:uppercase;font-size:18px;letter-spacing:0.03em;margin-bottom:12px;">
+        Falta configurar el almacenamiento
+      </h2>
+      <p style="color:var(--ink-soft);font-size:14px;line-height:1.6;">
+        Abre el archivo HTML con un editor de texto, busca <code>JSONBIN_API_KEY</code> y <code>JSONBIN_BIN_ID</code>
+        cerca del principio del script, y rellénalos con tus datos de
+        <a href="https://jsonbin.io" target="_blank" style="color:var(--accent-out);">jsonbin.io</a>.
+        Luego vuelve a subir el archivo.
+      </p>
+    </div>`;
+}
+async function refreshData(){
+  toast('Actualizando...');
+  await loadAll();
+  render();
+}
+
+setupLock();
+</script>
+</body>
+</html>
