@@ -6,7 +6,7 @@
 <title>Control de Almacén — Obras</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   :root{
@@ -340,7 +340,7 @@
 /* ---------------- STATE ---------------- */
 const state = { materiales: [], obras: [], movimientos: [], tab: 'escanear', catalogSub: 'materiales', loaded:false };
 const formState = { tipo:'Entrada', obraCodigo:null, materialCodigo:null, cantidad:1, responsable:'', nota:'' };
-let scanning = false, scanMode = null, stream = null, rafId = null, detector = null;
+let scanning = false, scanMode = null, stream = null, rafId = null, detector = null, audioCtx = null;
 
 const seedMateriales = [{codigo:'MAT-001', descripcion:'Cemento gris 25kg', unidad:'sacos', stockMinimo:20, ean:'', ejemplo:true}];
 const seedObras = [{codigo:'OBR-001', nombre:'Reforma Calle Mayor 12', responsable:'Encargado', estado:'Activa', ejemplo:true}];
@@ -350,8 +350,8 @@ const seedObras = [{codigo:'OBR-001', nombre:'Reforma Calle Mayor 12', responsab
 // 2) Copia tu API Key en https://jsonbin.io/api-keys y pégala abajo en JSONBIN_API_KEY
 // 3) Crea un Bin nuevo con este contenido inicial y pega su ID en JSONBIN_BIN_ID:
 //    {"materiales":[{"codigo":"MAT-001","descripcion":"Cemento gris 25kg","unidad":"sacos","stockMinimo":20,"ean":"","ejemplo":true}],"obras":[{"codigo":"OBR-001","nombre":"Reforma Calle Mayor 12","responsable":"Encargado","estado":"Activa","ejemplo":true}],"movimientos":[]}
-const JSONBIN_API_KEY = 'PASTE_TU_API_KEY_AQUI';
-const JSONBIN_BIN_ID  = 'PASTE_TU_BIN_ID_AQUI';
+const JSONBIN_API_KEY = '$2a$10$5DKABYP8CsU.TCkAeSesNOwMQaCRfbMhtwPa4Cd5R2nZBJbhSR8NC';
+const JSONBIN_BIN_ID  = '6a7afae3f5f4af5e2906a31b';
 const JSONBIN_URL = 'https://api.jsonbin.io/v3/b/' + JSONBIN_BIN_ID;
 
 function jsonbinConfigured(){
@@ -424,6 +424,39 @@ function todayCount(){
   return state.movimientos.filter(m=> new Date(m.fecha).toDateString()===today).length;
 }
 function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function unlockAudio(){
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    // iOS Safari needs a real sound played synchronously within the tap to fully unlock audio
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.frequency.value = 440;
+    gain.gain.setValueAtTime(0.00001, audioCtx.currentTime);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(audioCtx.currentTime);
+    osc.stop(audioCtx.currentTime + 0.05);
+  }catch(e){ console.error('unlock audio error', e); }
+}
+function playBeep(){
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = 1046.5;
+    gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.35, audioCtx.currentTime + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.16);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.17);
+  }catch(e){ console.error('beep error', e); }
+  if(navigator.vibrate){ try{ navigator.vibrate(60); }catch(e){} }
+}
 
 /* ---------------- ICONS ---------------- */
 const ICONS = {
@@ -494,14 +527,22 @@ function renderEscanear(c){
           ${state.obras.map(o=>`<option value="${o.codigo}" ${o.codigo===formState.obraCodigo?'selected':''}>${escapeHtml(o.nombre)} (${o.codigo})</option>`).join('')}
         </select>
       </div>
-      <button class="btn ghost small" id="scanObraBtn" style="margin-bottom:14px;width:100%;">Escanear QR de obra</button>
+      <div class="btn-row" style="margin-bottom:14px;">
+        <button class="btn ghost small" id="scanObraBtn" style="flex:1;">Escanear QR de obra</button>
+        ${obra ? `<button class="btn ghost small" id="clearObraBtn" style="flex:0 0 auto;">✕ Quitar</button>` : ''}
+      </div>
 
       <label>Material</label>
       ${mat ? `
         <div class="scan-target filled">
-          <div class="code">${mat.codigo}${mat.ean?' · EAN '+mat.ean:''}</div>
-          <div class="name">${escapeHtml(mat.descripcion)}</div>
-          <div style="font-size:12px;color:var(--ink-soft);margin-top:4px;">Stock actual: <strong>${stockInfo.stock} ${mat.unidad}</strong></div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+            <div>
+              <div class="code">${mat.codigo}${mat.ean?' · EAN '+mat.ean:''}</div>
+              <div class="name">${escapeHtml(mat.descripcion)}</div>
+              <div style="font-size:12px;color:var(--ink-soft);margin-top:4px;">Stock actual: <strong>${stockInfo.stock} ${mat.unidad}</strong></div>
+            </div>
+            <button class="icon-btn" id="clearMaterialBtn" title="Quitar material" style="font-size:18px;line-height:1;flex-shrink:0;">✕</button>
+          </div>
         </div>
       ` : `
         <div class="scan-target">
@@ -535,7 +576,11 @@ function renderEscanear(c){
   c.querySelectorAll('[data-tipo]').forEach(b=>b.addEventListener('click',()=>{ formState.tipo=b.dataset.tipo; render(); }));
   c.querySelector('#obraSelect').addEventListener('change', e=>{ formState.obraCodigo = e.target.value || null; render(); });
   c.querySelector('#scanObraBtn').addEventListener('click', ()=> openScan('obra'));
+  const clearObraBtn = c.querySelector('#clearObraBtn');
+  if(clearObraBtn) clearObraBtn.addEventListener('click', ()=>{ formState.obraCodigo = null; render(); });
   c.querySelector('#scanMaterialBtn').addEventListener('click', ()=> openScan('material'));
+  const clearMaterialBtn = c.querySelector('#clearMaterialBtn');
+  if(clearMaterialBtn) clearMaterialBtn.addEventListener('click', ()=>{ formState.materialCodigo = null; render(); });
   c.querySelector('#pickMaterialBtn').addEventListener('click', ()=> openMaterialPicker());
   c.querySelector('#qtyInput').addEventListener('input', e=>{ formState.cantidad = e.target.value; syncGuardarBtn(); });
   c.querySelector('#qtyMinus').addEventListener('click', ()=>{ formState.cantidad = Math.max(0,(Number(formState.cantidad)||0)-1); render(); });
@@ -601,6 +646,7 @@ function openMaterialPicker(){
 /* ---------------- SCANNING ---------------- */
 function openScan(mode){
   scanMode = mode;
+  unlockAudio();
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
   overlay.id = 'scanOverlay';
@@ -674,6 +720,7 @@ function closeScan(){
   if(overlay) overlay.remove();
 }
 function onScanResult(value){
+  playBeep();
   if(scanMode==='material'){
     const mat = findMaterial(value);
     if(mat){ formState.materialCodigo = mat.codigo; toast('Material: '+mat.descripcion); render(); }
