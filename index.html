@@ -28,6 +28,7 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0}
+html{overflow-y:scroll}
 body{background:var(--canvas);color:var(--ink);
   font:400 16px/1.45 Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased;padding-bottom:154px}
 body.locked{overflow:hidden}
@@ -113,6 +114,13 @@ select{appearance:none;padding-right:48px;cursor:pointer;
 
 /* FILAS */
 .row{display:flex;align-items:center;gap:12px;padding:14px 0;border-top:1px solid var(--line)}
+.cat-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;padding:14px 0;border-top:1px solid var(--line)}
+.cat-row:first-child{border-top:0}
+.cat-row .t{flex:1 1 150px;min-width:0}
+.cat-row .acts{display:flex;align-items:center;gap:8px;margin-left:auto}
+@media (max-width:480px){
+  .cat-row .acts{flex-basis:100%;margin-left:0;justify-content:flex-end}
+}
 .row:first-child{border-top:0}
 .row .t{flex:1;min-width:0}
 .row .t b{display:block;font-size:15.5px;font-weight:700;line-height:1.3}
@@ -132,6 +140,7 @@ select{appearance:none;padding-right:48px;cursor:pointer;
 .tag.off{background:transparent;border:2px solid var(--line);color:var(--ink-3)}
 .tag.click{cursor:pointer}
 .pill{display:inline-flex;align-items:center;gap:9px;padding:9px 11px 9px 15px;border-radius:999px;background:var(--ink);color:var(--card);font-size:14px;font-weight:700}
+.code-copy{text-decoration:underline dotted;cursor:pointer;}
 [data-theme="dark"] .pill{color:var(--canvas)}
 .pill button{border:0;background:transparent;cursor:pointer;font-size:15px;padding:0;opacity:.65;color:inherit}
 
@@ -284,10 +293,12 @@ details.more dd{margin:0}
 .empty{text-align:center;padding:28px 12px;color:var(--ink-2);font-size:14px;font-weight:500}
 
 @media (min-width:920px){
-  body{padding-bottom:44px}
+  body{padding-bottom:44px;padding-top:96px}
   .wrap{max-width:780px}
   .actionbar{position:static;background:none;padding:16px 0 0}
-  .nav{position:static;max-width:780px;margin:22px auto 0;border-radius:18px;border:1px solid var(--line)}
+  .nav{position:fixed;top:0;bottom:auto;left:0;right:0;max-width:780px;margin:0 auto;
+    border-radius:0 0 18px 18px;border:1px solid var(--line);border-top:0;z-index:40;
+    box-shadow:0 8px 20px rgba(0,0,0,.06)}
   .nav button{padding:14px 4px;font-size:12.5px}
   h1{font-size:46px}
 }
@@ -316,7 +327,7 @@ details.more dd{margin:0}
 </div>
 
 <!-- ===== MOVIMIENTO ===== -->
-<section class="panel" id="panel-mov">
+<section class="panel on" id="panel-mov">
   <div class="wrap" id="content-mov"></div>
   <div class="actionbar" id="movActionbar"><div class="in">
     <button class="save" id="movSaveBtn" data-kind="out">Guardar salida <span class="n" id="movSaveN"></span></button>
@@ -409,7 +420,7 @@ const recibiState = { obraCodigo:null, obraLibre:'', seleccion:{}, nombre:'', fi
 let ultimoMovimiento = null;
 let scanning=false, stream=null, rafId=null, detector=null, audioCtx=null, scanCanvas=null, currentSigCanvas=null;
 let currentTab='mov', catalogSub='materiales', movStep=2, recStep=1, currentTheme='auto';
-let hisQuickFecha=null, hisQuickObra=null, hisQuickTipo=null;
+let hisQuickFecha=null, hisQuickObra=null, hisQuickTipo=null, hisPage=1;
 
 const seedMateriales = [{codigo:'MAT-001', descripcion:'Cemento gris 25kg', unidad:'sacos', proveedor:'', codigoProveedor:'', codigoPropio:'', ejemplo:true, actualizadoEn:1}];
 const seedObras = [{codigo:'OBR-001', nombre:'Reforma Calle Mayor 12', responsable:'Encargado', estado:'Activa', ejemplo:true, actualizadoEn:1}];
@@ -512,6 +523,7 @@ function nextCodigo(prefix, arr){
   return prefix+'-'+String(max+1).padStart(3,'0');
 }
 function findMaterial(codigo){ return state.materiales.find(m=>m.codigo===codigo || (m.codigoPropio && m.codigoPropio===codigo)); }
+function materialFoto(m){ return m.foto || (m.fotoId ? state.assets[m.fotoId] : null); }
 function findObra(codigo){ return state.obras.find(o=>o.codigo===codigo); }
 function findResponsable(codigo){ return state.responsables.find(r=>r.codigo===codigo); }
 function fmtDate(iso){ const d=new Date(iso); return d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'2-digit'})+' '+d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}); }
@@ -572,8 +584,29 @@ const ICON_TRASH='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" st
 const ICON_SEARCH='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>';
 const ICON_X='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
 const ICON_CHEVRON='<svg width="8" height="13" viewBox="0 0 8 13" fill="none" stroke="var(--ink-3)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5 6.5 6.5 1.5 11.5"/></svg>';
+const ICON_PREV='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg>';
+const ICON_NEXT='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>';
+const PER_PAGE = 10;
+function pagerHtml(page, totalPages, idPrefix){
+  if(totalPages<=1) return '';
+  return `<div style="display:flex;justify-content:center;align-items:center;gap:16px;padding:18px 0 4px;">
+    <button class="icon-btn" id="${idPrefix}Prev" ${page<=1?'disabled':''} aria-label="Anterior">${ICON_PREV}</button>
+    <span class="muted" style="font-size:13px;font-weight:700;">Página ${page} de ${totalPages}</span>
+    <button class="icon-btn" id="${idPrefix}Next" ${page>=totalPages?'disabled':''} aria-label="Siguiente">${ICON_NEXT}</button>
+  </div>`;
+}
+function wireCopyButtons(){
+  $$('[data-copy]').forEach(el=>el.addEventListener('click', e=>{
+    e.stopPropagation();
+    const val = el.dataset.copy;
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(val).then(()=>toast('Copiado')).catch(()=>toast('No se pudo copiar')); }
+    else toast('Copiar no disponible en este navegador');
+  }));
+}
 const ICON_CHECK='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 const ICON_SCAN='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M4 9V6.5A2.5 2.5 0 0 1 6.5 4H9M20 9V6.5A2.5 2.5 0 0 0 17.5 4H15M4 15v2.5A2.5 2.5 0 0 0 6.5 20H9M20 15v2.5a2.5 2.5 0 0 1-2.5 2.5H15M7 12h10"/></svg>';
+const ICON_ADD='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
+const ICON_TAG='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 12.5 12.5 20.6a2 2 0 0 1-2.8 0l-7-7a2 2 0 0 1 0-2.9L10.8 2.6c.4-.4.9-.6 1.4-.6H19a2 2 0 0 1 2 2v6.7c0 .5-.2 1-.6 1.4Z"/><circle cx="15.5" cy="8.5" r="1.5"/></svg>';
 
 /* ================= NAVEGACIÓN ================= */
 function goTab(name){
@@ -764,10 +797,10 @@ function renderMatSearchHtml(){
   ));
   if(!list.length) return `<p class="note" style="padding:10px 2px">Sin resultados.</p>`;
   return `<div class="card" style="margin:8px 0 0;padding:6px 18px">` + list.map(m=>{
-    const foto = state.assets[m.fotoId];
+    const foto = materialFoto(m);
     return `<div class="row" data-searchpick="${m.codigo}" style="cursor:pointer">
       ${foto?`<img class="thumb" src="${foto}">`:'<div class="thumb"></div>'}
-      <div class="t"><b>${escapeHtml(m.descripcion)}</b><small>${m.codigo} · ${escapeHtml(m.unidad)}</small></div>
+      <div class="t"><b>${escapeHtml(m.descripcion)}</b><small>${[m.unidad, m.proveedor, m.codigoProveedor].filter(Boolean).map(escapeHtml).join(' · ')}</small></div>
     </div>`;
   }).join('') + `</div>`;
 }
@@ -903,9 +936,10 @@ $('#scanManualBtn').addEventListener('click', ()=>{
   const val = prompt('Introduce el código:');
   if(val) onScanResult(val.trim());
 });
-function onScanResult(value){
+function onScanResult(rawValue){
   playBeep();
-  const mat = findMaterial(value);
+  const value = (rawValue.split('\n')[0] || rawValue).trim();
+  const mat = findMaterial(value) || findMaterial(rawValue.trim());
   if(mat){
     addMaterialALineas(mat.codigo);
     toast('Añadido: '+mat.descripcion);
@@ -1098,9 +1132,9 @@ function renderHistorial(){
     <div id="hisList"></div>
   `;
   const searchInput=$('#hisSearch'), estadoSel=$('#hisEstado'), obraSel=$('#hisObraSel');
-  searchInput.addEventListener('input', drawHistorial);
-  estadoSel.addEventListener('change', drawHistorial);
-  obraSel.addEventListener('change', ()=>{ hisQuickObra=null; drawHistorial(); });
+  searchInput.addEventListener('input', ()=>{ hisPage=1; drawHistorial(); });
+  estadoSel.addEventListener('change', ()=>{ hisPage=1; drawHistorial(); });
+  obraSel.addEventListener('change', ()=>{ hisQuickObra=null; hisPage=1; drawHistorial(); });
   drawHistorial();
 
   function drawHistorial(){
@@ -1129,51 +1163,62 @@ function renderHistorial(){
     if(obraActiva && findObra(obraActiva)) pillsHtml += `<button class="btn btn-line btn-sm" id="hisVerResumen" data-obra="${obraActiva}">Ver resumen</button>`;
     pillsHtml += `<span style="flex:1"></span><button class="btn btn-line btn-sm" id="hisExportCsv">Exportar CSV</button>`;
     $('#hisPills').innerHTML = pillsHtml;
-    const clrf=$('[data-clrfecha]'); if(clrf) clrf.onclick=()=>{ hisQuickFecha=null; drawHistorial(); };
-    const clro=$('[data-clrobra]'); if(clro) clro.onclick=()=>{ hisQuickObra=null; obraSel.value=''; drawHistorial(); };
-    const clrt=$('[data-clrtipo]'); if(clrt) clrt.onclick=()=>{ hisQuickTipo=null; drawHistorial(); };
+    const clrf=$('[data-clrfecha]'); if(clrf) clrf.onclick=()=>{ hisQuickFecha=null; hisPage=1; drawHistorial(); };
+    const clro=$('[data-clrobra]'); if(clro) clro.onclick=()=>{ hisQuickObra=null; obraSel.value=''; hisPage=1; drawHistorial(); };
+    const clrt=$('[data-clrtipo]'); if(clrt) clrt.onclick=()=>{ hisQuickTipo=null; hisPage=1; drawHistorial(); };
     const verR=$('#hisVerResumen'); if(verR) verR.onclick=()=>openResumenModal(findObra(verR.dataset.obra));
     $('#hisExportCsv').onclick = exportHistorialCsv;
 
     if(!list.length){ $('#hisList').innerHTML = '<p class="empty">No hay movimientos con estos filtros.</p>'; return; }
 
-    const porFecha={}, ordenFechas=[];
-    list.forEach(m=>{ const dia=fmtDateOnly(m.fecha); if(!porFecha[dia]){porFecha[dia]=[];ordenFechas.push(dia);} porFecha[dia].push(m); });
-    let html='';
-    ordenFechas.forEach(dia=>{
-      html += `<p class="sec">${escapeHtml(dia)}</p>`;
-      const gm={}, orden=[];
-      porFecha[dia].forEach(m=>{ const key=m.grupoId||m.id; if(!gm[key]){gm[key]=[];orden.push(key);} gm[key].push(m); });
-      orden.forEach(key=>{
-        const grupo=gm[key], m0=grupo[0];
-        const resp = m0.responsableCodigo?findResponsable(m0.responsableCodigo):null;
-        const hora = new Date(m0.fecha).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
-        const todosRecibidos = grupo.every(m=>m.recibido);
-        html += `<div class="card">
-          <div class="card-head">
-            <button class="tag click ${m0.tipo==='Entrada'?'in':'out'}" data-filtertipo="${m0.tipo}">${m0.tipo}</button>
-            <b ${m0.codigoObra?`data-filterobra="${m0.codigoObra}"`:''}>${escapeHtml(obraLabelHis(m0))}</b>
-            <span class="sp"></span><span class="muted" style="font-size:13.5px;font-weight:600">${hora}</span>
-            <span class="tag">${grupo.length} art.</span>${todosRecibidos?'<span class="tag in">Recibido</span>':''}
-          </div>
-          ${grupo.map(m=>{
-            const mat=findMaterial(m.codigoMaterial);
-            return `<div class="row"><div class="t"><b>${escapeHtml(mat?mat.descripcion:m.codigoMaterial)}</b><small>${mat&&mat.codigoProveedor?escapeHtml(mat.codigoProveedor):''}</small></div>
-              <span style="font-weight:800">${m.cantidad}${mat?' '+escapeHtml(mat.unidad):''}</span>
-              <button class="icon-btn" data-editmov="${m.id}" aria-label="Editar">${ICON_EDIT}</button></div>`;
-          }).join('')}
-          <details class="more"><summary>Más info</summary>
-            <dl><dt>Responsable</dt><dd>${resp?escapeHtml(resp.nombre):'—'}</dd>
-            ${m0.nota?`<dt>Nota</dt><dd>${escapeHtml(m0.nota)}</dd>`:''}
-            ${todosRecibidos?`<dt>Recibido</dt><dd>${escapeHtml(m0.recibidoPor||'')} · ${fmtDate(m0.recibidoFecha)}</dd>`:''}</dl>
-          </details>
-        </div>`;
+    // agrupar en tarjetas (mismo grupoId = mismo guardado) preservando el orden
+    const gruposFlat = [];
+    { const gm={};
+      list.forEach(m=>{
+        const key=m.grupoId||m.id;
+        if(!gm[key]){ const g={key, dia:fmtDateOnly(m.fecha), movs:[m]}; gm[key]=g; gruposFlat.push(g); }
+        else gm[key].movs.push(m);
       });
+    }
+    const totalPages = Math.max(1, Math.ceil(gruposFlat.length/PER_PAGE));
+    hisPage = Math.min(Math.max(1,hisPage), totalPages);
+    const pageGrupos = gruposFlat.slice((hisPage-1)*PER_PAGE, hisPage*PER_PAGE);
+
+    let html='', diaAnterior=null;
+    pageGrupos.forEach(g=>{
+      if(g.dia !== diaAnterior){ html += `<p class="sec">${escapeHtml(g.dia)}</p>`; diaAnterior = g.dia; }
+      const grupo=g.movs, m0=grupo[0];
+      const resp = m0.responsableCodigo?findResponsable(m0.responsableCodigo):null;
+      const hora = new Date(m0.fecha).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+      const todosRecibidos = grupo.every(m=>m.recibido);
+      html += `<div class="card">
+        <div class="card-head">
+          <button class="tag click ${m0.tipo==='Entrada'?'in':'out'}" data-filtertipo="${m0.tipo}">${m0.tipo}</button>
+          <b ${m0.codigoObra?`data-filterobra="${m0.codigoObra}"`:''}>${escapeHtml(obraLabelHis(m0))}</b>
+          <span class="sp"></span><span class="muted" style="font-size:13.5px;font-weight:600">${hora}</span>
+          <span class="tag">${grupo.length} art.</span>${todosRecibidos?'<span class="tag in">Recibido</span>':''}
+        </div>
+        ${grupo.map(m=>{
+          const mat=findMaterial(m.codigoMaterial);
+          return `<div class="row"><div class="t"><b>${escapeHtml(mat?mat.descripcion:m.codigoMaterial)}</b><small>${mat&&mat.codigoProveedor?escapeHtml(mat.codigoProveedor):''}</small></div>
+            <span style="font-weight:800">${m.cantidad}${mat?' '+escapeHtml(mat.unidad):''}</span>
+            <button class="icon-btn" data-editmov="${m.id}" aria-label="Editar">${ICON_EDIT}</button></div>`;
+        }).join('')}
+        <details class="more"><summary>Más info</summary>
+          <dl><dt>Responsable</dt><dd>${resp?escapeHtml(resp.nombre):'—'}</dd>
+          ${m0.nota?`<dt>Nota</dt><dd>${escapeHtml(m0.nota)}</dd>`:''}
+          ${todosRecibidos?`<dt>Recibido</dt><dd>${escapeHtml(m0.recibidoPor||'')} · ${fmtDate(m0.recibidoFecha)}</dd>`:''}</dl>
+        </details>
+      </div>`;
     });
+    html += pagerHtml(hisPage, totalPages, 'his');
     $('#hisList').innerHTML = html;
     $$('[data-editmov]').forEach(b=>b.addEventListener('click', ()=>{ const mov=state.movimientos.find(x=>x.id===b.dataset.editmov); if(mov) openEditMovModal(mov); }));
-    $$('[data-filtertipo]').forEach(b=>b.addEventListener('click', ()=>{ hisQuickTipo=b.dataset.filtertipo; drawHistorial(); }));
-    $$('[data-filterobra]').forEach(b=>b.addEventListener('click', ()=>{ hisQuickObra=b.dataset.filterobra; drawHistorial(); }));
+    $$('[data-filtertipo]').forEach(b=>b.addEventListener('click', ()=>{ hisQuickTipo=b.dataset.filtertipo; hisPage=1; drawHistorial(); }));
+    $$('[data-filterobra]').forEach(b=>b.addEventListener('click', ()=>{ hisQuickObra=b.dataset.filterobra; hisPage=1; drawHistorial(); }));
+    const hisPrev=$('#hisPrev'), hisNext=$('#hisNext');
+    if(hisPrev) hisPrev.addEventListener('click', ()=>{ hisPage--; drawHistorial(); });
+    if(hisNext) hisNext.addEventListener('click', ()=>{ hisPage++; drawHistorial(); });
   }
 }
 function exportHistorialCsv(){
@@ -1269,50 +1314,75 @@ function renderCatalogo(){
   el.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click', ()=>{ catalogSub=b.dataset.tab; renderCatalogo(); }));
   if(catalogSub==='materiales') renderMaterialesTab($('#catBody')); else renderObrasTab($('#catBody'));
 }
+let matCatPage = 1;
 function renderMaterialesTab(el){
   el.innerHTML = `
-    <div class="search" style="margin-bottom:10px">${ICON_SEARCH}<input type="search" id="matCatSearch" placeholder="Buscar material"></div>
+    <div class="two" style="margin-bottom:10px">
+      <div class="search" style="margin-bottom:0">${ICON_SEARCH}<input type="search" id="matCatSearch" placeholder="Buscar material"></div>
+      <select id="matCatGrupo" aria-label="Grupo"><option value="">Todos los grupos</option>${GRUPOS_MATERIAL.map(g=>`<option value="${g}">${g}</option>`).join('')}</select>
+    </div>
     <button class="btn btn-ink btn-block" style="margin-bottom:12px" id="addMatBtn">Añadir material</button>
     <div id="matCatList"></div>
   `;
   el.querySelector('#addMatBtn').addEventListener('click', ()=> openMaterialModal(null,''));
   const searchInput = el.querySelector('#matCatSearch');
-  searchInput.addEventListener('input', draw); draw();
+  const grupoSel = el.querySelector('#matCatGrupo');
+  searchInput.addEventListener('input', ()=>{ matCatPage=1; draw(); });
+  grupoSel.addEventListener('change', ()=>{ matCatPage=1; draw(); });
+  draw();
   function draw(){
     const q=(searchInput.value||'').trim().toLowerCase();
+    const grupo = grupoSel.value;
     let list = state.materiales.filter(m=>!m.eliminado);
+    if(grupo) list = list.filter(m=> (m.grupo||'Otros')===grupo);
     if(q) list = list.filter(m=> m.descripcion.toLowerCase().includes(q) || m.codigo.toLowerCase().includes(q) || (m.codigoPropio&&m.codigoPropio.toLowerCase().includes(q)) || (m.codigoProveedor&&m.codigoProveedor.toLowerCase().includes(q)) || (m.proveedor&&m.proveedor.toLowerCase().includes(q)));
     list.sort((a,b)=>a.descripcion.localeCompare(b.descripcion));
-    $('#matCatList').innerHTML = list.length ? `<div class="card">` + list.map(m=>{
-      const foto = state.assets[m.fotoId];
-      return `<div class="row">${foto?`<img class="thumb" src="${foto}">`:'<div class="thumb"></div>'}
-        <div class="t"><b>${escapeHtml(m.descripcion)}</b><small>${[m.proveedor,m.codigoProveedor,m.codigoPropio,m.unidad].filter(Boolean).map(escapeHtml).join(' · ')}</small></div>
-        <button class="btn btn-line btn-sm" data-label="${m.codigo}">Etiqueta</button>
-        <button class="icon-btn" data-edit="${m.codigo}" aria-label="Editar">${ICON_EDIT}</button>
-        <button class="icon-btn" data-del="${m.codigo}" aria-label="Borrar">${ICON_TRASH}</button></div>`;
-    }).join('') + `</div>` : `<p class="empty">Aún no hay materiales dados de alta.</p>`;
-    $$('[data-label]').forEach(b=>b.addEventListener('click', ()=>openEtiquetaModal(findMaterial(b.dataset.label))));
-    $$('[data-edit]').forEach(b=>b.addEventListener('click', ()=>openMaterialModal(findMaterial(b.dataset.edit))));
-    $$('[data-del]').forEach(b=>b.addEventListener('click', async ()=>{
-      const usos = movimientosActivos().filter(m=>m.codigoMaterial===b.dataset.del).length;
-      const aviso = usos>0 ? `Este material aparece en ${usos} movimiento${usos===1?'':'s'} del historial. ¿Seguro que quieres eliminarlo?` : '¿Eliminar este material?';
-      if(confirm(aviso)){
-        const mat=findMaterial(b.dataset.del); if(mat){ mat.eliminado=true; touch(mat); }
-        const ok = await saveAll(); if(ok) toast('Material eliminado'); renderCatalogo();
-      }
+    const totalPages = Math.max(1, Math.ceil(list.length/PER_PAGE));
+    matCatPage = Math.min(Math.max(1,matCatPage), totalPages);
+    const pageList = list.slice((matCatPage-1)*PER_PAGE, matCatPage*PER_PAGE);
+    $('#matCatList').innerHTML = (list.length ? `<div class="card">` + pageList.map(m=>{
+      const foto = materialFoto(m);
+      const provTxt = [m.proveedor, m.codigoProveedor?`<span class="code-copy" data-copy="${escapeHtml(m.codigoProveedor)}">${escapeHtml(m.codigoProveedor)}</span>`:null].filter(Boolean).join(' · ');
+      return `<div class="cat-row" style="align-items:flex-start;">
+        ${foto?`<img class="thumb" src="${foto}">`:'<div class="thumb"></div>'}
+        <div class="t">
+          <b>${escapeHtml(m.descripcion)}</b>
+          <small>${provTxt||'Sin proveedor'}</small>
+        </div>
+        <div class="acts">
+          <button class="btn btn-line btn-sm" data-addmov="${m.codigo}">Añadir a movimiento</button>
+          <button class="btn btn-ink btn-sm" data-edit="${m.codigo}">Editar</button>
+        </div>
+      </div>`;
+    }).join('') + `</div>` : `<p class="empty">Aún no hay materiales dados de alta.</p>`) + pagerHtml(matCatPage, totalPages, 'matCat');
+    $$('[data-addmov]').forEach(b=>b.addEventListener('click', ()=>{
+      addMaterialALineas(b.dataset.addmov);
+      const mat = findMaterial(b.dataset.addmov);
+      toast('Añadido al movimiento: '+(mat?mat.descripcion:''));
     }));
+    $$('[data-edit]').forEach(b=>b.addEventListener('click', ()=>openMaterialModal(findMaterial(b.dataset.edit))));
+    wireCopyButtons();
+    const prevBtn=$('#matCatPrev'), nextBtn=$('#matCatNext');
+    if(prevBtn) prevBtn.addEventListener('click', ()=>{ matCatPage--; draw(); });
+    if(nextBtn) nextBtn.addEventListener('click', ()=>{ matCatPage++; draw(); });
   }
 }
+let obraCatPage = 1;
 function renderObrasTab(el){
   el.innerHTML = `<button class="btn btn-ink btn-block" style="margin-bottom:12px" id="addObraBtn">Añadir obra</button><div id="obraCatList"></div>`;
   el.querySelector('#addObraBtn').addEventListener('click', ()=> openObraModal(null));
   const list = state.obras.filter(o=>!o.eliminado).sort((a,b)=>a.nombre.localeCompare(b.nombre));
-  $('#obraCatList').innerHTML = list.length ? `<div class="card">` + list.map(o=>`
-    <div class="row"><div class="t"><b>${escapeHtml(o.nombre)}</b><small>${escapeHtml(o.responsable||'—')}</small></div>
-      <span class="tag ${o.estado==='Activa'?'in':'off'}">${o.estado}</span>
-      <button class="btn btn-line btn-sm" data-resumen="${o.codigo}">Resumen</button>
-      <button class="icon-btn" data-edit="${o.codigo}" aria-label="Editar">${ICON_EDIT}</button>
-      <button class="icon-btn" data-del="${o.codigo}" aria-label="Borrar">${ICON_TRASH}</button></div>`).join('') + `</div>` : `<p class="empty">Aún no hay obras dadas de alta.</p>`;
+  const totalPages = Math.max(1, Math.ceil(list.length/PER_PAGE));
+  obraCatPage = Math.min(Math.max(1,obraCatPage), totalPages);
+  const pageList = list.slice((obraCatPage-1)*PER_PAGE, obraCatPage*PER_PAGE);
+  $('#obraCatList').innerHTML = (list.length ? `<div class="card">` + pageList.map(o=>`
+    <div class="cat-row"><div class="t"><b>${escapeHtml(o.nombre)}</b><small>${escapeHtml(o.responsable||'—')}</small></div>
+      <div class="acts">
+        <span class="tag ${o.estado==='Activa'?'in':'off'}">${o.estado}</span>
+        <button class="btn btn-line btn-sm" data-resumen="${o.codigo}">Resumen</button>
+        <button class="icon-btn" data-edit="${o.codigo}" aria-label="Editar">${ICON_EDIT}</button>
+        <button class="icon-btn" data-del="${o.codigo}" aria-label="Borrar">${ICON_TRASH}</button>
+      </div></div>`).join('') + `</div>` : `<p class="empty">Aún no hay obras dadas de alta.</p>`) + pagerHtml(obraCatPage, totalPages, 'obraCat');
   $$('[data-resumen]').forEach(b=>b.addEventListener('click', ()=>openResumenModal(findObra(b.dataset.resumen))));
   $$('[data-edit]').forEach(b=>b.addEventListener('click', ()=>openObraModal(findObra(b.dataset.edit))));
   $$('[data-del]').forEach(b=>b.addEventListener('click', async ()=>{
@@ -1323,10 +1393,15 @@ function renderObrasTab(el){
       const ok = await saveAll(); if(ok) toast('Obra eliminada'); renderCatalogo();
     }
   }));
+  const obraCatPrev=$('#obraCatPrev'), obraCatNext=$('#obraCatNext');
+  if(obraCatPrev) obraCatPrev.addEventListener('click', ()=>{ obraCatPage--; renderObrasTab(el); });
+  if(obraCatNext) obraCatNext.addEventListener('click', ()=>{ obraCatPage++; renderObrasTab(el); });
 }
+const UNIDADES_COMUNES = ['unidades','sacos','metros','m2','m3','kg','litros','cajas','rollos','palets','bidones'];
+const GRUPOS_MATERIAL = ['Escuadras','Perfiles','Tornillería','Anclajes','Consumibles','Otros'];
 function openMaterialModal(existing, prefillCodigo){
   const isEdit = !!existing;
-  let fotoDataUrl = existing?.fotoId ? state.assets[existing.fotoId] : null;
+  let fotoDataUrl = existing?.foto || (existing?.fotoId ? state.assets[existing.fotoId] : null);
   let fotoCambiada = false;
   const fotoId = existing?.fotoId || ('foto_'+(existing?.codigo || 'nuevo_'+Date.now()));
   $('#mMaterialTitle').textContent = isEdit?'Editar material':'Nuevo material';
@@ -1334,14 +1409,26 @@ function openMaterialModal(existing, prefillCodigo){
   body.innerHTML = `
     <div class="field"><label for="mDesc">Descripción</label><input id="mDesc" type="text" value="${escapeHtml(existing?.descripcion||'')}" placeholder="Ej. Cemento gris 25kg"></div>
     <div class="two">
-      <div class="field"><label for="mUni">Unidad</label><input id="mUni" type="text" value="${escapeHtml(existing?.unidad||'')}"></div>
-      <div class="field"><label for="mProv">Proveedor</label><input id="mProv" type="text" value="${escapeHtml(existing?.proveedor||'')}"></div>
+      <div class="field"><label for="mUniSel">Unidad</label>
+        <select id="mUniSel">
+          <option value="">Selecciona...</option>
+          ${UNIDADES_COMUNES.map(u=>`<option value="${u}" ${existing&&existing.unidad===u?'selected':''}>${u}</option>`).join('')}
+          <option value="__OTRA__" ${existing&&existing.unidad&&!UNIDADES_COMUNES.includes(existing.unidad)?'selected':''}>Otra...</option>
+        </select>
+      </div>
+      <div class="field"><label for="mGrupo">Grupo</label>
+        <select id="mGrupo">${GRUPOS_MATERIAL.map(g=>`<option value="${g}" ${(existing?.grupo||'Otros')===g?'selected':''}>${g}</option>`).join('')}</select>
+      </div>
     </div>
+    <div class="field" id="mUniOtraWrap" ${(!existing||!existing.unidad||UNIDADES_COMUNES.includes(existing.unidad))?'hidden':''}>
+      <label for="mUniOtra">Especifica la unidad</label><input id="mUniOtra" type="text" value="${escapeHtml(existing&&existing.unidad&&!UNIDADES_COMUNES.includes(existing.unidad)?existing.unidad:'')}">
+    </div>
+    <div class="field"><label for="mProv">Proveedor</label><input id="mProv" type="text" value="${escapeHtml(existing?.proveedor||'')}"></div>
     <div class="two">
       <div class="field"><label for="mCodP">Código proveedor</label><input id="mCodP" type="text" value="${escapeHtml(existing?.codigoProveedor||'')}"></div>
-      <div class="field"><label for="mCod">Código propio</label><input id="mCod" type="text" value="${escapeHtml(existing?.codigoPropio||prefillCodigo||'')}"></div>
+      <div class="field"><label for="mCod">Código propio (código interno)</label><input id="mCod" type="text" value="${escapeHtml(existing?.codigoPropio||existing?.codigo||prefillCodigo||'')}" ${isEdit?'readonly':''}></div>
     </div>
-    <p class="note">El código propio es el que se codifica en el QR. Si está vacío, la etiqueta no se puede generar.</p>
+    <p class="note">${isEdit ? 'El código propio no se puede cambiar una vez creado el material, porque identifica sus movimientos.' : 'Obligatorio: es el código interno del material y el que se codifica en la etiqueta QR.'}</p>
     <div class="field" style="margin-top:14px"><label>Foto</label>
       <div class="photo">
         <div class="prev" id="mFotoPrev">${fotoDataUrl?`<img src="${fotoDataUrl}">`:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="10.5" r="1.6"/><path d="m4 17 5-4 4 3 3-2 4 3"/></svg>'}</div>
@@ -1349,22 +1436,50 @@ function openMaterialModal(existing, prefillCodigo){
         <button class="btn btn-line btn-sm" id="mFotoBtn" type="button">Elegir foto</button>
       </div>
     </div>
-    ${isEdit?`<div class="field"><label for="mInt">Código interno del sistema</label><input id="mInt" type="text" value="${existing.codigo}" readonly></div>`:''}
+    ${isEdit ? `
+      <div class="two" style="margin-top:16px">
+        <button class="btn btn-line" id="mVerEtiquetaBtn" type="button">Ver etiqueta</button>
+        <button class="btn btn-red" id="mDelMatBtn" type="button">Eliminar material</button>
+      </div>
+    ` : ''}
   `;
+  if(isEdit){
+    body.querySelector('#mVerEtiquetaBtn').addEventListener('click', ()=>{ closeModals(); openEtiquetaModal(existing); });
+    body.querySelector('#mDelMatBtn').addEventListener('click', async ()=>{
+      const usos = movimientosActivos().filter(m=>m.codigoMaterial===existing.codigo).length;
+      const aviso = usos>0 ? `Este material aparece en ${usos} movimiento${usos===1?'':'s'} del historial. ¿Seguro que quieres eliminarlo?` : '¿Eliminar este material?';
+      if(confirm(aviso)){
+        existing.eliminado = true; touch(existing);
+        const ok = await saveAll(); closeModals();
+        if(ok) toast('Material eliminado');
+        renderCatalogo();
+      }
+    });
+  }
   body.querySelector('#mFotoBtn').addEventListener('click', ()=> body.querySelector('#mFotoInput').click());
   body.querySelector('#mFotoInput').addEventListener('change', async e=>{
     const file = e.target.files[0]; if(!file) return;
     try{ fotoDataUrl = await resizeImageFile(file); fotoCambiada=true; $('#mFotoPrev').innerHTML = `<img src="${fotoDataUrl}">`; }
     catch(err){ toast('No se pudo procesar la foto'); }
   });
+  const uniSel = body.querySelector('#mUniSel'), uniOtraWrap = body.querySelector('#mUniOtraWrap');
+  uniSel.addEventListener('change', ()=>{ uniOtraWrap.hidden = uniSel.value !== '__OTRA__'; });
   $('#mMaterialSave').onclick = async ()=>{
-    const desc=body.querySelector('#mDesc').value.trim(), unidad=body.querySelector('#mUni').value.trim(), proveedor=body.querySelector('#mProv').value.trim();
+    const desc=body.querySelector('#mDesc').value.trim(), proveedor=body.querySelector('#mProv').value.trim();
+    const unidad = uniSel.value==='__OTRA__' ? body.querySelector('#mUniOtra').value.trim() : uniSel.value;
+    const grupo = body.querySelector('#mGrupo').value;
     const codigoProveedor=body.querySelector('#mCodP').value.trim(), codigoPropio=body.querySelector('#mCod').value.trim();
     if(!desc || !unidad || !proveedor){ toast('Descripción, unidad y proveedor son obligatorios'); return; }
+    if(!codigoPropio){ toast('El código propio es obligatorio'); return; }
+    if(!isEdit && state.materiales.some(m=>!m.eliminado && (m.codigo===codigoPropio || m.codigoPropio===codigoPropio))){
+      toast('Ya existe un material con ese código propio'); return;
+    }
     const btn = $('#mMaterialSave'); btn.disabled=true;
-    if(isEdit){ touch(Object.assign(existing, {descripcion:desc, unidad, proveedor, codigoProveedor, codigoPropio, fotoId: fotoDataUrl?fotoId:null})); }
-    else{ const codigo=nextCodigo('MAT', state.materiales); state.materiales.push(touch({codigo, descripcion:desc, unidad, proveedor, codigoProveedor, codigoPropio, fotoId: fotoDataUrl?fotoId:null, ejemplo:false})); }
-    if(fotoCambiada && fotoDataUrl) await saveAsset(fotoId, fotoDataUrl);
+    const usarAssetsBin = assetsConfigured();
+    const fotoFields = usarAssetsBin ? {fotoId: fotoDataUrl?fotoId:(existing?.fotoId||null), foto:null} : {foto: fotoDataUrl||existing?.foto||null, fotoId:null};
+    if(isEdit){ touch(Object.assign(existing, {descripcion:desc, unidad, grupo, proveedor, codigoProveedor, ...fotoFields})); }
+    else{ state.materiales.push(touch({codigo:codigoPropio, descripcion:desc, unidad, grupo, proveedor, codigoProveedor, codigoPropio, ...fotoFields, ejemplo:false})); }
+    if(usarAssetsBin && fotoCambiada && fotoDataUrl) await saveAsset(fotoId, fotoDataUrl);
     const ok = await saveAll(); btn.disabled=false; closeModals();
     if(ok){ toast('Material guardado'); renderCatalogo(); }
   };
@@ -1398,15 +1513,21 @@ function openEtiquetaModal(material){
     return;
   }
   const body = $('#mEtiquetaBody');
+  const qrTexto = [
+    material.codigoPropio,
+    material.proveedor ? 'Proveedor: '+material.proveedor : null,
+    material.codigoProveedor ? 'Cód. proveedor: '+material.codigoProveedor : null,
+    'Concepto: '+material.descripcion
+  ].filter(Boolean).join('\n');
   body.innerHTML = `
     <div class="label-sheet">
       <div class="qr" id="realQr"></div>
       <div class="meta"><b>${escapeHtml(material.descripcion)}</b><small>${[material.proveedor,material.codigoProveedor].filter(Boolean).map(escapeHtml).join(' · ')}</small><div class="code">${escapeHtml(material.codigoPropio)}</div></div>
     </div>
-    <p class="note">La etiqueta codifica el código propio: ${escapeHtml(material.codigoPropio)}.</p>
+    <p class="note">El QR incluye proveedor, código de proveedor, código propio y concepto.</p>
   `;
   const qrDiv = $('#realQr');
-  try{ if(typeof QRCode==='function'){ new QRCode(qrDiv, {text: material.codigoPropio, width:118, height:118}); } else { qrDiv.textContent = material.codigoPropio; } }
+  try{ if(typeof QRCode==='function'){ new QRCode(qrDiv, {text: qrTexto, width:118, height:118, correctLevel: QRCode.CorrectLevel.M}); } else { qrDiv.textContent = material.codigoPropio; } }
   catch(e){ qrDiv.textContent = material.codigoPropio; }
   $('#mEtiquetaPrint').onclick = ()=>{ $('#printArea').innerHTML = body.innerHTML; setTimeout(()=>window.print(), 150); };
   openModal('mEtiqueta');
@@ -1437,19 +1558,29 @@ function openResumenModal(obra){
 /* ================= CONFIG ================= */
 function renderConfig(){
   const el = $('#content-cfg');
+  const notifSupported = 'Notification' in window;
+  const notifGranted = notifSupported && Notification.permission==='granted';
   el.innerHTML = `
     <div class="head"><div class="tx"><h1>Config.</h1></div></div>
+    ${currentUsuario ? `<div class="card"><p class="note" style="margin:0">Conectado como <b style="color:var(--ink)">${escapeHtml(currentUsuario.nombre)}</b></p></div>` : ''}
     <button class="btn btn-ink btn-block" style="margin-bottom:12px" id="addRespBtn">Añadir responsable</button>
     <div id="respCfgList"></div>
     <p class="sec">Apariencia</p>
     <div class="field"><label for="themeSel">Tema</label><select id="themeSel"><option value="auto">Automático</option><option value="light">Claro</option><option value="dark">Oscuro</option></select></div>
+    <p class="sec">Notificaciones</p>
+    <button class="btn btn-line btn-block" id="notifBtn" ${notifGranted?'disabled':''}>${!notifSupported?'No disponibles en este navegador':(notifGranted?'Notificaciones activadas ✓':'Activar notificaciones del navegador')}</button>
+    <p class="note">Además del aviso dentro de la app, esto te avisa aunque tengas otra pestaña abierta.</p>
+    <p class="sec">Sesión</p>
+    <button class="btn btn-line btn-block" id="cerrarSesionBtn">Cerrar sesión</button>
   `;
   el.querySelector('#addRespBtn').addEventListener('click', ()=> openResponsableModal(null));
   const list = state.responsables.filter(r=>!r.eliminado).sort((a,b)=>a.nombre.localeCompare(b.nombre));
   $('#respCfgList').innerHTML = list.length ? `<div class="card">` + list.map(r=>`
-    <div class="row"><div class="t"><b>${escapeHtml(r.nombre)}</b></div>
-      <button class="icon-btn" data-edit="${r.codigo}" aria-label="Editar">${ICON_EDIT}</button>
-      <button class="icon-btn" data-del="${r.codigo}" aria-label="Borrar">${ICON_TRASH}</button></div>`).join('') + `</div>` : `<p class="empty">Aún no hay responsables dados de alta.</p>`;
+    <div class="cat-row"><div class="t"><b>${escapeHtml(r.nombre)}</b><small>${r.pin?'Con PIN propio':'Sin PIN'}</small></div>
+      <div class="acts">
+        <button class="icon-btn" data-edit="${r.codigo}" aria-label="Editar">${ICON_EDIT}</button>
+        <button class="icon-btn" data-del="${r.codigo}" aria-label="Borrar">${ICON_TRASH}</button>
+      </div></div>`).join('') + `</div>` : `<p class="empty">Aún no hay responsables dados de alta.</p>`;
   $$('[data-edit]').forEach(b=>b.addEventListener('click', ()=>openResponsableModal(findResponsable(b.dataset.edit))));
   $$('[data-del]').forEach(b=>b.addEventListener('click', async ()=>{
     if(confirm('¿Eliminar este responsable?')){
@@ -1459,36 +1590,82 @@ function renderConfig(){
   }));
   const themeSel = $('#themeSel'); themeSel.value = currentTheme;
   themeSel.addEventListener('change', e=> applyTheme(e.target.value));
+  const notifBtn = $('#notifBtn');
+  if(notifBtn && notifSupported && !notifGranted) notifBtn.addEventListener('click', async ()=>{
+    const perm = await Notification.requestPermission();
+    if(perm==='granted'){ toast('Notificaciones activadas'); } else { toast('No se activaron los avisos'); }
+    renderConfig();
+  });
+  $('#cerrarSesionBtn').addEventListener('click', ()=>{
+    if(confirm('¿Cerrar sesión? Tendrás que volver a introducir el PIN.')){
+      clearStoredUnlock();
+      location.reload();
+    }
+  });
 }
 function openResponsableModal(existing){
   const isEdit = !!existing;
   $('#mRespTitle').textContent = isEdit?'Editar responsable':'Nuevo responsable';
   const body = $('#mRespBody');
-  body.innerHTML = `<div class="field"><label for="rNom">Nombre</label><input id="rNom" type="text" value="${escapeHtml(existing?.nombre||'')}" placeholder="Nombre y apellidos"></div>`;
+  body.innerHTML = `
+    <div class="field"><label for="rNom">Nombre</label><input id="rNom" type="text" value="${escapeHtml(existing?.nombre||'')}" placeholder="Nombre y apellidos"></div>
+    <div class="field"><label for="rPin">PIN de acceso (4 dígitos, opcional)</label><input id="rPin" type="text" inputmode="numeric" maxlength="4" value="${escapeHtml(existing?.pin||'')}" placeholder="Ej. 4821"></div>
+    <p class="note">Si le pones un PIN, esta persona podrá entrar a la app con su propio código, y quedará como responsable por defecto en sus movimientos.</p>
+  `;
   $('#mRespSave').onclick = async ()=>{
     const nombre = body.querySelector('#rNom').value.trim();
+    const pin = body.querySelector('#rPin').value.trim();
     if(!nombre){ toast('El nombre es obligatorio'); return; }
+    if(pin && !/^\d{4}$/.test(pin)){ toast('El PIN debe tener 4 dígitos'); return; }
+    if(pin && (pin===ACCESS_CODE || state.responsables.some(r=>!r.eliminado && r.pin===pin && r!==existing))){ toast('Ese PIN ya lo usa otra persona'); return; }
     const btn=$('#mRespSave'); btn.disabled=true;
-    if(isEdit){ touch(Object.assign(existing, {nombre})); }
-    else{ const codigo=nextCodigo('RESP', state.responsables); state.responsables.push(touch({codigo, nombre, ejemplo:false})); }
+    if(isEdit){ touch(Object.assign(existing, {nombre, pin})); }
+    else{ const codigo=nextCodigo('RESP', state.responsables); state.responsables.push(touch({codigo, nombre, pin, ejemplo:false})); }
     const ok = await saveAll(); btn.disabled=false; closeModals();
     if(ok){ toast('Responsable guardado'); renderConfig(); }
   };
   openModal('mResp');
 }
 
-/* ================= BLOQUEO ================= */
+/* ================= BLOQUEO Y SESIÓN ================= */
 const ACCESS_CODE = '1234';
+const UNLOCK_KEY = 'almacen_unlocked_until';
+const UNLOCK_USER_KEY = 'almacen_unlocked_user';
+const UNLOCK_HOURS = 12;
 let lockCode = '';
+let currentUsuario = null;
+let dataReadyPromise = jsonbinConfigured() ? loadAll() : Promise.resolve();
+
+function checkStoredUnlock(){
+  try{
+    const until = parseInt(localStorage.getItem(UNLOCK_KEY)||'0', 10);
+    if(until && Date.now() < until) return { ok:true, userCodigo: localStorage.getItem(UNLOCK_USER_KEY) || null };
+  }catch(e){}
+  return { ok:false };
+}
+function persistUnlock(userCodigo){
+  try{
+    localStorage.setItem(UNLOCK_KEY, String(Date.now() + UNLOCK_HOURS*3600*1000));
+    localStorage.setItem(UNLOCK_USER_KEY, userCodigo || '');
+  }catch(e){}
+}
+function clearStoredUnlock(){
+  try{ localStorage.removeItem(UNLOCK_KEY); localStorage.removeItem(UNLOCK_USER_KEY); }catch(e){}
+}
+
 function setupLock(){
   const dots = $$('#dots i');
-  $$('#pad button').forEach(b=>b.addEventListener('click', ()=>{
+  $$('#pad button').forEach(b=>b.addEventListener('click', async ()=>{
     if(b.dataset.act==='clr'){ lockCode = lockCode.slice(0,-1); }
     else if(b.dataset.d!==undefined && lockCode.length<4){ lockCode += b.dataset.d; }
     dots.forEach((d,i)=>d.classList.toggle('on', i<lockCode.length));
     if(lockCode.length===4){
-      if(lockCode===ACCESS_CODE){
-        setTimeout(()=>{ $('#lock').style.display='none'; document.body.classList.remove('locked'); startApp(); }, 220);
+      const code = lockCode;
+      await dataReadyPromise;
+      const matchUser = state.responsables.find(r=>!r.eliminado && r.pin && r.pin===code);
+      if(code===ACCESS_CODE || matchUser){
+        persistUnlock(matchUser?matchUser.codigo:null);
+        setTimeout(()=> unlockApp(matchUser||null), 220);
       } else {
         $('#dots').classList.add('err');
         setTimeout(()=>{ $('#dots').classList.remove('err'); lockCode=''; dots.forEach(d=>d.classList.remove('on')); }, 420);
@@ -1496,9 +1673,39 @@ function setupLock(){
     }
   }));
 }
+function unlockApp(usuario){
+  $('#lock').style.display='none';
+  document.body.classList.remove('locked');
+  currentUsuario = usuario || null;
+  if(currentUsuario) formState.responsableCodigo = currentUsuario.codigo;
+  startAppAfterUnlock();
+}
+
+/* ================= ACTUALIZACIÓN AUTOMÁTICA Y AVISOS ================= */
+let lastKnownMovIds = new Set();
+function startAutoRefresh(){
+  lastKnownMovIds = new Set(movimientosActivos().map(m=>m.id));
+  setInterval(async ()=>{
+    if(document.visibilityState!=='visible' || scanning || $$('.scrim.on').length) return;
+    await loadAll();
+    const nuevos = movimientosActivos().filter(m=> !lastKnownMovIds.has(m.id));
+    lastKnownMovIds = new Set(movimientosActivos().map(m=>m.id));
+    if(nuevos.length) notifyNuevosMovimientos(nuevos);
+    renderCurrentPanel();
+  }, 45000);
+}
+function notifyNuevosMovimientos(nuevos){
+  const primero = nuevos[0];
+  const mat = findMaterial(primero.codigoMaterial);
+  const texto = nuevos.length===1 ? `${primero.tipo}: ${mat?mat.descripcion:primero.codigoMaterial}` : `${nuevos.length} movimientos nuevos`;
+  toast('Nuevo · '+texto);
+  if('Notification' in window && Notification.permission==='granted'){
+    try{ new Notification('Control de Almacén', { body: texto }); }catch(e){}
+  }
+}
 
 /* ================= ARRANQUE ================= */
-async function startApp(){
+async function startAppAfterUnlock(){
   if(!jsonbinConfigured()){
     $('#content-mov').innerHTML = `<div class="head"><div class="tx"><h1>Movimiento</h1></div></div>
       <div class="card"><h3 style="margin-bottom:10px">Falta configurar el almacenamiento</h3>
@@ -1506,12 +1713,24 @@ async function startApp(){
     $('#movActionbar').style.display='none';
     return;
   }
-  await loadAll();
+  await dataReadyPromise;
   applyTheme('auto');
   renderMov();
+  startAutoRefresh();
 }
-setupLock();
+
+(async function init(){
+  const stored = checkStoredUnlock();
+  if(stored.ok){
+    await dataReadyPromise;
+    unlockApp(stored.userCodigo ? findResponsable(stored.userCodigo) : null);
+  } else {
+    setupLock();
+  }
+})();
 </script>
+
+
 
 </body>
 </html>
