@@ -1,395 +1,444 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="light">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Control de Almacén — Obras</title>
+<title>Control de Almacén</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
-  :root{
-    --bg:#F2EFE8;
-    --surface:#FFFFFF;
-    --surface-alt:#EAE5D9;
-    --ink:#22231F;
-    --ink-soft:#6B6A61;
-    --border:#DCD5C4;
-    --accent-in:#2E7D4F;
-    --accent-in-soft:#DCEFE0;
-    --accent-out:#D9631E;
-    --accent-out-soft:#FBE4D3;
-    --warn:#C0392B;
-    --warn-soft:#F7D9D4;
-    --radius:12px;
-    --font-display:'Oswald',system-ui,sans-serif;
-    --font-body:'Inter',system-ui,-apple-system,sans-serif;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{
-    background:var(--bg);
-    color:var(--ink);
-    font-family:var(--font-body);
-    -webkit-font-smoothing:antialiased;
-    padding-bottom:calc(78px + env(safe-area-inset-bottom));
-  }
-  #app{
-    max-width:520px;
-    margin:0 auto;
-    min-height:100vh;
-    padding:16px 16px 8px;
-  }
-  header.topbar{
-    display:flex;
-    align-items:baseline;
-    justify-content:space-between;
-    padding:6px 2px 16px;
-    border-bottom:3px solid var(--ink);
-    margin-bottom:18px;
-  }
-  header.topbar h1{
-    font-family:var(--font-display);
-    font-size:20px;
-    letter-spacing:0.02em;
-    text-transform:uppercase;
-    margin:0;
-  }
-  header.topbar .sub{
-    font-size:11px;
-    color:var(--ink-soft);
-    font-weight:600;
-    text-transform:uppercase;
-    letter-spacing:0.06em;
-  }
-  h2.section-title{
-    font-family:var(--font-display);
-    font-size:15px;
-    text-transform:uppercase;
-    letter-spacing:0.04em;
-    color:var(--ink);
-    margin:0 0 12px;
-    display:flex;
-    align-items:center;
-    gap:8px;
-  }
-  h2.section-title::before{
-    content:"";
-    width:6px;height:18px;
-    background:var(--accent-out);
-    display:inline-block;
-  }
-  .card{
-    background:var(--surface);
-    border:1px solid var(--border);
-    border-radius:var(--radius);
-    padding:16px;
-    margin-bottom:12px;
-  }
-  .seg{
-    display:flex;
-    border:2px solid var(--ink);
-    border-radius:10px;
-    overflow:hidden;
-    margin-bottom:14px;
-  }
-  .seg button{
-    flex:1;
-    padding:12px 8px;
-    border:none;
-    background:var(--surface);
-    font-family:var(--font-display);
-    font-size:14px;
-    letter-spacing:0.03em;
-    text-transform:uppercase;
-    font-weight:600;
-    color:var(--ink);
-    cursor:pointer;
-  }
-  .seg button.active.entrada{background:var(--accent-in);color:#fff;}
-  .seg button.active.salida{background:var(--accent-out);color:#fff;}
-  label{
-    display:block;
-    font-size:11px;
-    font-weight:700;
-    text-transform:uppercase;
-    letter-spacing:0.05em;
-    color:var(--ink-soft);
-    margin-bottom:6px;
-  }
-  .field{margin-bottom:14px;}
-  .two-col{display:block;}
-  .two-col .col{min-width:0;}
-  select, input[type=text], input[type=number]{
-    width:100%;
-    padding:12px 12px;
-    border:1.5px solid var(--border);
-    border-radius:8px;
-    font-size:15px;
-    font-family:var(--font-body);
-    background:var(--surface);
-    color:var(--ink);
-  }
-  select:focus, input:focus{outline:2px solid var(--ink);outline-offset:1px;}
-  .btn{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    gap:8px;
-    padding:13px 16px;
-    border-radius:9px;
-    border:2px solid var(--ink);
-    background:var(--surface);
-    font-family:var(--font-display);
-    font-weight:600;
-    font-size:14px;
-    text-transform:uppercase;
-    letter-spacing:0.03em;
-    cursor:pointer;
-    width:100%;
-  }
-  .btn.primary{background:var(--ink);color:#fff;}
-  .btn.in{background:var(--accent-in);border-color:var(--accent-in);color:#fff;}
-  .btn.out{background:var(--accent-out);border-color:var(--accent-out);color:#fff;}
-  .btn.ghost{background:transparent;}
-  .btn.small{padding:8px 10px;font-size:11px;width:auto;}
-  .btn:disabled{opacity:0.4;cursor:not-allowed;}
-  .btn-row{display:flex;gap:8px;}
-  .scan-target{
-    border:2px dashed var(--border);
-    border-radius:var(--radius);
-    padding:16px;
-    text-align:center;
-    margin-bottom:14px;
-  }
-  .scan-target.filled{
-    border-style:solid;
-    border-color:var(--ink);
-    text-align:left;
-  }
-  .scan-target .code{
-    font-family:var(--font-display);
-    font-weight:600;
-    font-size:13px;
-    color:var(--ink-soft);
-    text-transform:uppercase;
-  }
-  .scan-target .name{font-size:16px;font-weight:600;margin-top:2px;}
-  .stepper{display:flex;align-items:center;gap:10px;}
-  .stepper button{
-    width:44px;height:44px;
-    border-radius:8px;
-    border:2px solid var(--ink);
-    background:var(--surface);
-    font-size:20px;
-    font-weight:700;
-    cursor:pointer;
-  }
-  .stepper input{text-align:center;font-weight:700;font-size:18px;}
-  .tabbar{
-    position:fixed;
-    bottom:0;left:0;right:0;
-    background:var(--surface);
-    border-top:2px solid var(--ink);
-    display:flex;
-    padding:8px calc(env(safe-area-inset-bottom) + 4px) calc(6px + env(safe-area-inset-bottom));
-    z-index:40;
-  }
-  .tabbar button{
-    flex:1;
-    background:none;
-    border:none;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:3px;
-    padding:6px 2px;
-    color:var(--ink-soft);
-    font-family:var(--font-body);
-    font-size:10px;
-    font-weight:700;
-    text-transform:uppercase;
-    letter-spacing:0.02em;
-    cursor:pointer;
-  }
-  .tabbar button.active{color:var(--ink);}
-  .tabbar button.active svg{stroke:var(--accent-out);}
-  .tabbar svg{width:22px;height:22px;stroke:var(--ink-soft);fill:none;stroke-width:2;}
-  .badge{
-    display:inline-block;
-    padding:2px 8px;
-    border-radius:20px;
-    font-size:10px;
-    font-weight:700;
-    text-transform:uppercase;
-    letter-spacing:0.03em;
-  }
-  .badge.in{background:var(--accent-in-soft);color:var(--accent-in);}
-  .badge.out{background:var(--accent-out-soft);color:var(--accent-out);}
-  .badge.warn{background:var(--warn-soft);color:var(--warn);}
-  .badge.example{background:var(--surface-alt);color:var(--ink-soft);}
-  .list-row{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:12px 0;
-    border-bottom:1px solid var(--border);
-    gap:10px;
-  }
-  .list-row:last-child{border-bottom:none;}
-  .list-row .main{flex:1;min-width:0;}
-  .list-row .main .t1{font-weight:600;font-size:14.5px;}
-  .list-row .main .t2{font-size:12px;color:var(--ink-soft);margin-top:2px;}
-  .list-row .num{font-family:var(--font-display);font-size:20px;font-weight:600;}
-  .subtabs{display:flex;gap:6px;margin-bottom:14px;}
-  .subtabs button{
-    flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--border);
-    background:var(--surface);font-weight:600;font-size:12.5px;cursor:pointer;
-    text-transform:uppercase;letter-spacing:0.02em;
-  }
-  .subtabs button.active{background:var(--ink);color:#fff;border-color:var(--ink);}
-  .searchbox{margin-bottom:14px;}
-  .empty{
-    text-align:center;padding:28px 12px;color:var(--ink-soft);font-size:13.5px;
-  }
-  .icon-btn{
-    background:none;border:none;cursor:pointer;padding:6px;
-    color:var(--ink-soft);
-  }
-  .toast{
-    position:fixed;left:50%;bottom:100px;transform:translateX(-50%) translateY(20px);
-    background:var(--ink);color:#fff;padding:11px 20px;border-radius:30px;
-    font-size:13.5px;font-weight:600;opacity:0;transition:all .25s ease;
-    z-index:100;pointer-events:none;white-space:nowrap;
-  }
-  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-  .modal-overlay{
-    position:fixed;inset:0;background:rgba(20,20,18,0.9);
-    z-index:80;display:flex;flex-direction:column;
-    align-items:center;justify-content:center;padding:20px;
-  }
-  .scan-frame{
-    position:relative;width:100%;max-width:340px;aspect-ratio:1/1;
-    border-radius:16px;overflow:hidden;background:#000;
-  }
-  .scan-frame video{width:100%;height:100%;object-fit:cover;}
-  .scan-corner{
-    position:absolute;width:36px;height:36px;border-color:var(--accent-out);
-    pointer-events:none;
-  }
-  .scan-corner.tl{top:10px;left:10px;border-top:4px solid var(--accent-out);border-left:4px solid var(--accent-out);border-radius:6px 0 0 0;}
-  .scan-corner.tr{top:10px;right:10px;border-top:4px solid var(--accent-out);border-right:4px solid var(--accent-out);border-radius:0 6px 0 0;}
-  .scan-corner.bl{bottom:10px;left:10px;border-bottom:4px solid var(--accent-out);border-left:4px solid var(--accent-out);border-radius:0 0 0 6px;}
-  .scan-corner.br{bottom:10px;right:10px;border-bottom:4px solid var(--accent-out);border-right:4px solid var(--accent-out);border-radius:0 0 6px 0;}
-  .scan-hint{color:#fff;text-align:center;margin-top:18px;font-size:13.5px;opacity:0.85;}
-  .modal-actions{margin-top:22px;width:100%;max-width:340px;display:flex;flex-direction:column;gap:10px;}
-  .modal-actions .btn.ghost{border-color:#fff;color:#fff;}
-  dialog.formsheet{
-    border:none;border-radius:16px 16px 0 0;padding:0;width:100%;max-width:520px;
-    margin:auto auto 0;
-  }
-  dialog.formsheet::backdrop{background:rgba(20,20,18,0.55);}
-  .sheet-inner{padding:18px 18px calc(20px + env(safe-area-inset-bottom));max-height:80vh;overflow-y:auto;}
-  .sheet-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
-  .sheet-head h3{font-family:var(--font-display);text-transform:uppercase;font-size:15px;margin:0;}
-  #label-print-content{display:none;}
-  #lockScreen{
-    position:fixed;inset:0;background:var(--ink);z-index:200;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
-    padding:24px;
-  }
-  #lockScreen .lock-card{width:100%;max-width:300px;text-align:center;}
-  #lockScreen h1{
-    font-family:var(--font-display);color:#fff;text-transform:uppercase;
-    font-size:19px;letter-spacing:0.03em;margin:0 0 4px;
-  }
-  #lockScreen p{color:#B9B7AC;font-size:12.5px;margin:0 0 26px;}
-  #lockScreen input{
-    width:100%;text-align:center;font-size:26px;letter-spacing:0.5em;
-    padding:14px 10px 14px 16px;border-radius:9px;border:2px solid #45463E;
-    background:#2C2D27;color:#fff;font-family:var(--font-display);
-  }
-  #lockScreen input:focus{outline:2px solid var(--accent-out);border-color:var(--accent-out);}
-  #lockScreen .btn{margin-top:14px;background:var(--accent-out);border-color:var(--accent-out);color:#fff;}
-  #lockScreen .err{color:#F0A98A;font-size:12px;margin-top:10px;min-height:16px;}
+:root{
+  --canvas:#F0EFEC; --card:#FFFFFF; --sunk:#F4F3F0;
+  --ink:#16171A; --ink-2:#6A6C71; --ink-3:#A2A4A9; --line:#E5E4DF;
+  --signal:#FFC800; --signal-ink:#16171A;
+  --out:#C74A11; --out-soft:#F9E9E0;
+  --in:#20794A;  --in-soft:#E1EFE7;
+  --red:#C22E2E; --red-soft:#FAE7E7;
+  --r:18px;
+}
+[data-theme="dark"]{
+  --canvas:#0F0F11; --card:#1A1A1D; --sunk:#242428;
+  --ink:#F5F4F2; --ink-2:#9EA0A6; --ink-3:#6B6D73; --line:#2A2A2E;
+  --out:#F0844B; --out-soft:#2A1911;
+  --in:#4FBE7A;  --in-soft:#12251A;
+  --red:#F27070; --red-soft:#2A1515;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--canvas);color:var(--ink);
+  font:400 16px/1.45 Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased;padding-bottom:154px}
+body.locked{overflow:hidden}
+h1,h2,h3{margin:0;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:800;letter-spacing:-.035em;line-height:1.02}
+h1{font-size:36px}
+button{font-family:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--ink);outline-offset:2px;border-radius:8px}
+[data-theme="dark"] :focus-visible{outline-color:var(--signal)}
+.wrap{max-width:680px;margin:0 auto;padding:0 16px}
+.muted{color:var(--ink-2)}
+.head{padding:24px 0 18px;display:flex;align-items:flex-end;gap:12px}
+.head .tx{flex:1}
+.head p{margin:8px 0 0;color:var(--ink-2);font-size:14.5px}
+.sec{font-family:"Bricolage Grotesque",sans-serif;font-weight:600;font-size:14px;color:var(--ink-2);margin:24px 0 10px}
 
-  /* ---- Desktop / web layout ---- */
-  @media (min-width:860px){
-    body{ padding-bottom:0; padding-top:66px; }
-    #app{ max-width:960px; padding:0 32px 48px; }
-    header.topbar{ padding-top:22px; }
-    .tabbar{
-      top:0; bottom:auto;
-      border-top:none; border-bottom:2px solid var(--ink);
-      justify-content:center; gap:4px;
-      padding:10px calc(env(safe-area-inset-bottom) + 4px);
-    }
-    .tabbar button{ flex:0 0 auto; flex-direction:row; gap:7px; padding:9px 20px; font-size:12px; }
-    .tabbar svg{ width:18px; height:18px; }
-    .card{ padding:26px 28px; max-width:760px; margin-left:auto; margin-right:auto; }
-    #tab-content > .card:first-child{ margin-left:auto; margin-right:auto; }
-    .list-row{ padding:14px 2px; }
-    .two-col{ display:grid; grid-template-columns:1fr 1fr; gap:0 24px; align-items:start; }
-    dialog.formsheet{
-      border-radius:16px; margin:auto; max-width:480px;
-      max-height:85vh;
-    }
-    .sheet-inner{ max-height:85vh; }
-  }
-  @media (min-width:860px) and (min-height:1){
-    /* Historial / Catálogo benefit from a wider reading column than the form cards */
-    #tab-content .card:has(#histList),
-    #tab-content .card:has(#matList),
-    #tab-content .card:has(#obraList),
-    #tab-content .card:has(#respList){ max-width:760px; }
-  }
-  @media print{
-    #app,.tabbar,.toast{display:none !important;}
-    #label-print-content{
-      display:flex !important;align-items:center;gap:16px;
-      position:fixed;top:30px;left:30px;
-    }
-    .label-text{font-family:sans-serif;font-size:16px;line-height:1.4;}
-  }
+/* PASOS */
+.step{background:var(--card);border-radius:var(--r);margin-bottom:10px;overflow:hidden;transition:box-shadow .2s}
+.step[data-state="active"]{box-shadow:0 0 0 2px var(--ink)}
+[data-theme="dark"] .step[data-state="active"]{box-shadow:0 0 0 2px var(--signal)}
+.step-top{display:flex;align-items:center;gap:14px;width:100%;background:transparent;border:0;padding:18px;cursor:pointer;text-align:left}
+.num{width:32px;height:32px;border-radius:50%;background:var(--sunk);color:var(--ink-3);flex:none;
+  display:grid;place-items:center;font-weight:800;font-size:14px;transition:.18s}
+.step[data-state="active"] .num{background:var(--ink);color:var(--card)}
+[data-theme="dark"] .step[data-state="active"] .num{background:var(--signal);color:var(--signal-ink)}
+.step[data-state="done"] .num{background:var(--signal);color:var(--signal-ink)}
+.num .tick{display:none}.step[data-state="done"] .num .tick{display:block}
+.step[data-state="done"] .num .digit{display:none}
+.step-top .tx{flex:1;min-width:0}.step-top h3{font-size:17px;font-weight:800}
+.step-top .sum{display:none;font-size:13.5px;color:var(--ink-2);margin-top:3px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.step[data-state="done"] .sum{display:block}
+.step-top .arrow{color:var(--ink-3);transition:transform .2s;flex:none}
+.step[data-state="active"] .arrow{transform:rotate(180deg)}
+.step-body{padding:0 18px 20px;display:none}
+.step[data-state="active"] .step-body{display:block}
+.step.bad{box-shadow:0 0 0 2px var(--red)}.step.bad .num{background:var(--red);color:#fff}
+
+/* CAMPOS */
+.field{margin-bottom:12px}.field:last-child{margin-bottom:0}
+.field > label{display:block;font-size:13px;font-weight:700;color:var(--ink-2);margin-bottom:8px}
+select,input[type=text],input[type=search],input[type=number],input[type=file],textarea{
+  width:100%;min-height:56px;padding:16px;background:var(--sunk);color:var(--ink);
+  border:2px solid transparent;border-radius:14px;font:500 16px/1.3 Manrope,sans-serif}
+select{font-weight:600}
+select:focus,input:focus,textarea:focus{outline:none;border-color:var(--ink)}
+input::placeholder{color:var(--ink-3);font-weight:400}
+input[readonly]{color:var(--ink-3);font-weight:600}
+select{appearance:none;padding-right:48px;cursor:pointer;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='13' height='9' fill='none' stroke='%236A6C71' stroke-width='2.4' stroke-linecap='round'><path d='M1.5 1.5 6.5 6.5 11.5 1.5'/></svg>");
+  background-repeat:no-repeat;background-position:calc(100% - 18px) center}
+.bad select,.bad input{border-color:var(--red);background:var(--red-soft)}
+.hint{font-size:14px;font-weight:700;color:var(--red);margin:9px 0 0;text-align:center}
+.note{font-size:13px;color:var(--ink-2);margin:8px 0 0;font-weight:500}
+.search{position:relative}
+.search svg{position:absolute;left:17px;top:50%;transform:translateY(-50%);color:var(--ink-3)}
+.search input{padding-left:48px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* ELECCIÓN */
+.choice{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.choice button{padding:16px 14px;border:2px solid var(--line);border-radius:15px;background:transparent;cursor:pointer;text-align:left}
+.choice .ic{width:36px;height:36px;border-radius:11px;background:var(--sunk);color:var(--ink-2);display:grid;place-items:center;margin-bottom:11px;transition:.18s}
+.choice b{display:block;font-size:17px;font-weight:800;font-family:"Bricolage Grotesque",sans-serif;letter-spacing:-.02em}
+.choice small{display:block;font-size:12.5px;color:var(--ink-2);margin-top:3px;line-height:1.3}
+.choice button[aria-pressed="true"][data-kind="out"]{border-color:var(--out);background:var(--out-soft)}
+.choice button[aria-pressed="true"][data-kind="out"] .ic{background:var(--out);color:#fff}
+.choice button[aria-pressed="true"][data-kind="in"]{border-color:var(--in);background:var(--in-soft)}
+.choice button[aria-pressed="true"][data-kind="in"] .ic{background:var(--in);color:#fff}
+
+/* BOTONES */
+.btn{min-height:56px;padding:0 22px;border:2px solid transparent;border-radius:15px;cursor:pointer;
+  background:var(--card);font-size:16px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:10px}
+.btn-block{display:flex;width:100%}
+.btn-signal{background:var(--signal);color:var(--signal-ink)}
+.btn-ink{background:var(--ink);color:var(--card)}
+[data-theme="dark"] .btn-ink{color:var(--canvas)}
+.btn-line{background:transparent;border-color:var(--line)}
+.btn-red{background:transparent;color:var(--red);border-color:var(--red)}
+.btn-sm{min-height:44px;font-size:14px;border-radius:12px;padding:0 16px}
+.btn-scan{min-height:68px;font-size:18px;font-family:"Bricolage Grotesque",sans-serif;font-weight:800;letter-spacing:-.02em}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.icon-btn{width:40px;height:40px;border-radius:12px;border:0;background:var(--sunk);color:var(--ink-2);display:grid;place-items:center;cursor:pointer;flex:none}
+.icon-btn:hover{background:var(--ink);color:var(--card)}
+
+/* FILAS */
+.row{display:flex;align-items:center;gap:12px;padding:14px 0;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row .t{flex:1;min-width:0}
+.row .t b{display:block;font-size:15.5px;font-weight:700;line-height:1.3}
+.row .t small{display:block;font-size:12.5px;color:var(--ink-2);margin-top:3px;font-weight:500}
+.thumb{width:46px;height:46px;border-radius:13px;background:var(--sunk);flex:none;object-fit:cover}
+.qty{display:flex;align-items:center;background:var(--sunk);border-radius:13px;flex:none}
+.qty button{width:42px;height:44px;border:0;background:transparent;font-size:20px;font-weight:700;cursor:pointer;border-radius:13px}
+.qty button:active{background:var(--signal);color:var(--signal-ink)}
+.qty input{width:46px;height:44px;min-height:0;padding:0;text-align:center;background:transparent;border:0;
+  font:800 17px Manrope,sans-serif;font-variant-numeric:tabular-nums;border-radius:0}
+
+/* ETIQUETAS */
+.tag{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:9px;font-size:12.5px;font-weight:800;background:var(--sunk);color:var(--ink-2);border:0;cursor:default;font-family:inherit}
+.tag.out{background:var(--out-soft);color:var(--out)}
+.tag.in{background:var(--in-soft);color:var(--in)}
+.tag.sig{background:var(--signal);color:var(--signal-ink)}
+.tag.off{background:transparent;border:2px solid var(--line);color:var(--ink-3)}
+.tag.click{cursor:pointer}
+.pill{display:inline-flex;align-items:center;gap:9px;padding:9px 11px 9px 15px;border-radius:999px;background:var(--ink);color:var(--card);font-size:14px;font-weight:700}
+[data-theme="dark"] .pill{color:var(--canvas)}
+.pill button{border:0;background:transparent;cursor:pointer;font-size:15px;padding:0;opacity:.65;color:inherit}
+
+/* BARRA FIJA */
+.actionbar{position:fixed;left:0;right:0;bottom:78px;z-index:25;padding:12px 16px 14px;background:linear-gradient(to top,var(--canvas) 66%,transparent)}
+.actionbar .in{max-width:680px;margin:0 auto}
+.save{width:100%;min-height:64px;border:0;border-radius:17px;background:var(--out);color:#fff;
+  font-family:"Bricolage Grotesque",sans-serif;font-size:19px;font-weight:800;letter-spacing:-.02em;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:12px}
+.save[data-kind="in"]{background:var(--in)}
+.save .n{font-family:Manrope,sans-serif;font-size:14px;font-weight:600;opacity:.82;letter-spacing:0}
+[data-theme="dark"] .save{color:#0F0F11}
+
+/* TARJETAS */
+.card{background:var(--card);border-radius:var(--r);padding:16px 18px;margin-bottom:10px}
+.card-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-bottom:8px}
+.card-head b{font-size:16.5px;font-weight:800;font-family:"Bricolage Grotesque",sans-serif;letter-spacing:-.02em;cursor:pointer}
+.card-head .sp{flex:1}
+details.more{border-top:1px solid var(--line);margin-top:8px;padding-top:12px}
+details.more summary{list-style:none;cursor:pointer;font-size:14px;font-weight:700;color:var(--ink-2)}
+details.more summary::-webkit-details-marker{display:none}
+details.more dl{display:grid;grid-template-columns:auto 1fr;gap:7px 16px;margin:13px 0 0;font-size:14.5px}
+details.more dt{color:var(--ink-2);font-size:12.5px;font-weight:700}
+details.more dd{margin:0}
+
+.pend{display:flex;align-items:center;gap:13px;width:100%;text-align:left;border:0;background:var(--card);
+  padding:17px 18px;border-radius:15px;margin-bottom:8px;cursor:pointer;font:inherit;color:inherit}
+.pend .t{flex:1}
+.pend .t b{font-size:16px;font-weight:800;display:block;font-family:"Bricolage Grotesque",sans-serif;letter-spacing:-.02em}
+.pend .t small{font-size:12.5px;color:var(--ink-2);font-weight:600}
+.check-row{display:flex;align-items:center;gap:13px;padding:14px 0;border-top:1px solid var(--line);cursor:pointer}
+.check-row:first-child{border-top:0}
+.check-row input{position:absolute;opacity:0;pointer-events:none}
+.box{width:27px;height:27px;border-radius:10px;border:2px solid var(--line);display:grid;place-items:center;flex:none;color:transparent}
+.check-row input:checked + .box{background:var(--in);border-color:var(--in);color:#fff}
+
+/* FIRMA */
+.sign{position:relative;background:var(--sunk);border-radius:15px;overflow:hidden}
+.sign canvas{display:block;width:100%;height:186px;touch-action:none}
+.sign .rule{position:absolute;left:22px;right:22px;bottom:44px;border-bottom:2px solid var(--line);pointer-events:none}
+.sign .cap{position:absolute;left:22px;bottom:17px;font-size:13px;font-weight:700;color:var(--ink-3);pointer-events:none}
+
+/* CONFIRMACIÓN */
+.done{background:var(--card);border-radius:22px;padding:46px 22px;text-align:center}
+.mark{width:88px;height:88px;margin:0 auto 22px;border-radius:28px;background:var(--signal);display:grid;place-items:center;animation:pop .42s cubic-bezier(.2,1.4,.4,1)}
+.mark svg{width:42px;height:42px;stroke:var(--signal-ink);stroke-width:3.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.mark svg path{stroke-dasharray:40;stroke-dashoffset:40;animation:draw .44s .16s cubic-bezier(.65,0,.35,1) forwards}
+@keyframes pop{from{transform:scale(.72) rotate(-7deg);opacity:0}}
+@keyframes draw{to{stroke-dashoffset:0}}
+@media (prefers-reduced-motion:reduce){.mark,.mark svg path{animation:none;stroke-dashoffset:0}}
+.done h2{font-size:28px;margin-bottom:11px}
+.done p{color:var(--ink-2);margin:0 0 28px;font-weight:500}
+
+/* NAV */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--card);border-top:1px solid var(--line);
+  display:grid;grid-template-columns:repeat(5,1fr);padding-bottom:env(safe-area-inset-bottom)}
+.nav button{border:0;background:transparent;color:var(--ink-3);cursor:pointer;padding:10px 2px 11px;display:grid;justify-items:center;gap:4px;font-size:10.5px;font-weight:700}
+.nav .ic{padding:4px 13px;border-radius:11px;display:grid;place-items:center;transition:.18s}
+.nav button svg{width:22px;height:22px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.nav button[aria-current="page"]{color:var(--ink)}
+.nav button[aria-current="page"] .ic{background:var(--signal);color:var(--signal-ink)}
+
+/* MODAL */
+.scrim{position:fixed;inset:0;z-index:50;background:rgba(10,10,12,.5);backdrop-filter:blur(3px);
+  display:none;align-items:flex-end;justify-content:center}
+.scrim.on{display:flex}
+.modal{background:var(--card);width:100%;max-width:560px;border-radius:26px 26px 0 0;max-height:92vh;overflow:auto;
+  animation:up .28s cubic-bezier(.3,1,.4,1)}
+@keyframes up{from{transform:translateY(24px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.modal{animation:none}}
+.modal-top{position:sticky;top:0;background:var(--card);display:flex;align-items:center;gap:12px;
+  padding:20px 20px 14px;border-bottom:1px solid var(--line);z-index:2}
+.modal-top h2{font-size:21px;flex:1}
+.grab{width:38px;height:4px;border-radius:99px;background:var(--line);margin:9px auto 0}
+.modal-body{padding:18px 20px 22px}
+.modal-foot{position:sticky;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:14px 20px;
+  display:flex;gap:10px}
+.modal-foot .btn{flex:1}
+@media (min-width:720px){
+  .scrim{align-items:center}
+  .modal{border-radius:24px;max-height:86vh}
+}
+
+/* FOTO */
+.photo{display:flex;gap:12px;align-items:center}
+.photo .prev{width:76px;height:76px;border-radius:16px;background:var(--sunk);flex:none;display:grid;place-items:center;color:var(--ink-3);overflow:hidden}
+.photo .prev img{width:100%;height:100%;object-fit:cover}
+
+/* ESCÁNER */
+.scanner{position:fixed;inset:0;z-index:55;background:#0B0B0C;display:none;flex-direction:column;color:#fff}
+.scanner.on{display:flex}
+.scan-top{display:flex;align-items:center;gap:12px;padding:20px 18px}
+.scan-top b{flex:1;font-family:"Bricolage Grotesque",sans-serif;font-size:19px;font-weight:800}
+.scan-top .x{width:42px;height:42px;border-radius:50%;border:0;background:rgba(255,255,255,.12);color:#fff;cursor:pointer;display:grid;place-items:center}
+.viewport{flex:1;position:relative;display:grid;place-items:center;overflow:hidden;
+  background:repeating-linear-gradient(0deg,#141416 0 2px,#111113 2px 4px)}
+.viewport video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.frame{width:min(74vw,290px);aspect-ratio:1;position:relative}
+.frame i{position:absolute;width:38px;height:38px;border:4px solid var(--signal)}
+.frame i:nth-child(1){top:0;left:0;border-right:0;border-bottom:0;border-radius:14px 0 0 0}
+.frame i:nth-child(2){top:0;right:0;border-left:0;border-bottom:0;border-radius:0 14px 0 0}
+.frame i:nth-child(3){bottom:0;left:0;border-right:0;border-top:0;border-radius:0 0 0 14px}
+.frame i:nth-child(4){bottom:0;right:0;border-left:0;border-top:0;border-radius:0 0 14px 0}
+.laser{position:absolute;left:6%;right:6%;height:3px;background:var(--signal);border-radius:99px;
+  box-shadow:0 0 18px var(--signal);animation:sweep 2.1s ease-in-out infinite}
+@keyframes sweep{0%,100%{top:8%}50%{top:88%}}
+@media (prefers-reduced-motion:reduce){.laser{animation:none;top:50%}}
+.scan-foot{padding:18px;text-align:center}
+.scan-foot p{color:rgba(255,255,255,.62);font-size:14.5px;font-weight:600;margin:0 0 14px}
+
+/* ETIQUETA QR */
+.label-sheet{background:#fff;color:#111;border-radius:16px;padding:20px;display:flex;gap:18px;align-items:center}
+.label-sheet .qr{width:118px;height:118px;flex:none}
+.label-sheet .meta b{display:block;font-family:"Bricolage Grotesque",sans-serif;font-size:19px;font-weight:800;letter-spacing:-.02em;line-height:1.15}
+.label-sheet .meta small{display:block;font-size:13px;color:#666;margin-top:5px;font-weight:600}
+.label-sheet .meta .code{margin-top:10px;font-size:24px;font-weight:800;letter-spacing:.04em}
+
+/* RESUMEN */
+.total-row{display:flex;align-items:baseline;gap:12px;padding:13px 0;border-top:1px solid var(--line)}
+.total-row:first-child{border-top:0}
+.total-row .t{flex:1}
+.total-row b{font-weight:800;font-size:17px;font-variant-numeric:tabular-nums}
+.bar{height:6px;border-radius:99px;background:var(--sunk);overflow:hidden;margin-top:7px}
+.bar i{display:block;height:100%;background:var(--signal)}
+
+.toast{position:fixed;left:16px;right:16px;bottom:158px;z-index:70;max-width:440px;margin:0 auto;
+  background:var(--ink);color:var(--card);padding:16px 18px;border-radius:15px;font-size:15px;font-weight:700;
+  display:flex;gap:10px;align-items:center;opacity:0;transform:translateY(8px);transition:.22s;pointer-events:none}
+.toast.on{opacity:1;transform:none}
+[data-theme="dark"] .toast{background:var(--signal);color:var(--signal-ink)}
+
+/* BLOQUEO */
+.lock{position:fixed;inset:0;z-index:60;background:var(--ink);color:#F5F4F2;display:grid;place-items:center;padding:24px}
+.lock-in{width:100%;max-width:312px;text-align:center}
+.lock h1{font-size:32px;margin-bottom:7px;color:#fff}
+.lock .sub{font-size:14px;color:rgba(255,255,255,.5);margin:0 0 32px;font-weight:500}
+.dots{display:flex;gap:16px;justify-content:center;margin-bottom:38px;transition:transform .12s}
+.dots.err{animation:shakeDots .4s}
+@keyframes shakeDots{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.dots i{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.3);transition:.15s}
+.dots i.on{background:var(--signal);border-color:var(--signal);transform:scale(1.1)}
+.dots.err i.on{background:var(--red);border-color:var(--red)}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.pad button{height:72px;border-radius:20px;border:0;background:rgba(255,255,255,.08);color:#fff;font:800 24px Manrope,sans-serif;cursor:pointer}
+.pad button:active{background:var(--signal);color:var(--signal-ink)}
+.pad .plain{background:transparent;font-size:14px;font-weight:700;color:rgba(255,255,255,.55)}
+
+.panel{display:none}.panel.on{display:block}
+.subtabs{display:flex;gap:8px;margin-bottom:14px}
+.empty{text-align:center;padding:28px 12px;color:var(--ink-2);font-size:14px;font-weight:500}
+
+@media (min-width:920px){
+  body{padding-bottom:44px}
+  .wrap{max-width:780px}
+  .actionbar{position:static;background:none;padding:16px 0 0}
+  .nav{position:static;max-width:780px;margin:22px auto 0;border-radius:18px;border:1px solid var(--line)}
+  .nav button{padding:14px 4px;font-size:12.5px}
+  h1{font-size:46px}
+}
+@media print{
+  body>*{display:none!important}
+  #printArea,#printArea *{display:revert!important}
+  #printArea{position:absolute;inset:0;padding:24px;background:#fff;color:#111}
+}
 </style>
 </head>
-<body>
-<div id="lockScreen">
-  <div class="lock-card">
-    <h1>Control de Almacén</h1>
-    <p>Introduce el código de acceso</p>
-    <input type="tel" inputmode="numeric" maxlength="4" id="lockInput" autocomplete="off" placeholder="••••">
-    <button class="btn" id="lockBtn">Entrar</button>
-    <div class="err" id="lockErr"></div>
+<body class="locked">
+
+<!-- ===== BLOQUEO ===== -->
+<div class="lock" id="lock">
+  <div class="lock-in">
+    <h1>Almacén</h1>
+    <p class="sub">Introduce tu código</p>
+    <div class="dots" id="dots"><i></i><i></i><i></i><i></i></div>
+    <div class="pad" id="pad">
+      <button data-d="1">1</button><button data-d="2">2</button><button data-d="3">3</button>
+      <button data-d="4">4</button><button data-d="5">5</button><button data-d="6">6</button>
+      <button data-d="7">7</button><button data-d="8">8</button><button data-d="9">9</button>
+      <span></span><button data-d="0">0</button><button class="plain" data-act="clr">Borrar</button>
+    </div>
   </div>
 </div>
-<div id="app"></div>
-<div id="toast" class="toast"></div>
-<div id="label-print-content"></div>
-<dialog id="formsheet" class="formsheet"><div class="sheet-inner" id="sheet-inner-content"></div></dialog>
+
+<!-- ===== MOVIMIENTO ===== -->
+<section class="panel" id="panel-mov">
+  <div class="wrap" id="content-mov"></div>
+  <div class="actionbar" id="movActionbar"><div class="in">
+    <button class="save" id="movSaveBtn" data-kind="out">Guardar salida <span class="n" id="movSaveN"></span></button>
+  </div></div>
+</section>
+
+<!-- ===== RECIBÍ ===== -->
+<section class="panel" id="panel-rec">
+  <div class="wrap" id="content-rec"></div>
+  <div class="actionbar" id="recActionbar"><div class="in">
+    <button class="save" data-kind="in" id="recSaveBtn">Confirmar recepción</button>
+  </div></div>
+</section>
+
+<!-- ===== HISTORIAL ===== -->
+<section class="panel" id="panel-his"><div class="wrap" id="content-his"></div></section>
+
+<!-- ===== CATÁLOGO ===== -->
+<section class="panel" id="panel-cat"><div class="wrap" id="content-cat"></div></section>
+
+<!-- ===== CONFIG ===== -->
+<section class="panel" id="panel-cfg"><div class="wrap" id="content-cfg"></div></section>
+
+<nav class="nav" aria-label="Secciones">
+  <button aria-current="page" data-go="mov"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 12h13M13 7l5 5-5 5"/></svg></span>Movimiento</button>
+  <button data-go="rec"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 16c3-5 5 1 8-3s4 2 10-5"/></svg></span>Recibí</button>
+  <button data-go="cat"><span class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="6.6" height="6.6" rx="2"/><rect x="13.4" y="4" width="6.6" height="6.6" rx="2"/><rect x="4" y="13.4" width="6.6" height="6.6" rx="2"/><rect x="13.4" y="13.4" width="6.6" height="6.6" rx="2"/></svg></span>Catálogo</button>
+  <button data-go="his"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.2"/><path d="M12 7.6v4.8l3 1.9"/></svg></span>Historial</button>
+  <button data-go="cfg"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 3.8v2.2M12 18v2.2M3.8 12H6M18 12h2.2M6.2 6.2l1.6 1.6M16.2 16.2l1.6 1.6M17.8 6.2l-1.6 1.6M7.8 16.2l-1.6 1.6"/></svg></span>Config.</button>
+</nav>
+
+<!-- ===== ESCÁNER ===== -->
+<div class="scanner" id="scanner">
+  <div class="scan-top"><b>Escanear código</b><button class="x" id="scanCloseBtn" aria-label="Cerrar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="viewport">
+    <video id="scanVideo" autoplay playsinline muted></video>
+    <div class="frame"><i></i><i></i><i></i><i></i><span class="laser"></span></div>
+  </div>
+  <div class="scan-foot"><p>Apunta al QR o al código de barras</p>
+    <button class="btn btn-signal btn-block" id="scanManualBtn">Añadir a mano</button></div>
+</div>
+
+<!-- ===== MODALES ===== -->
+<div class="scrim" id="mMaterial"><div class="modal"><div class="grab"></div>
+  <div class="modal-top"><h2 id="mMaterialTitle">Material</h2><button class="icon-btn" data-close aria-label="Cerrar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="modal-body" id="mMaterialBody"></div>
+  <div class="modal-foot"><button class="btn btn-line" data-close>Cancelar</button><button class="btn btn-ink" id="mMaterialSave">Guardar</button></div>
+</div></div>
+
+<div class="scrim" id="mObra"><div class="modal"><div class="grab"></div>
+  <div class="modal-top"><h2 id="mObraTitle">Obra</h2><button class="icon-btn" data-close aria-label="Cerrar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="modal-body" id="mObraBody"></div>
+  <div class="modal-foot"><button class="btn btn-line" data-close>Cancelar</button><button class="btn btn-ink" id="mObraSave">Guardar</button></div>
+</div></div>
+
+<div class="scrim" id="mResp"><div class="modal"><div class="grab"></div>
+  <div class="modal-top"><h2 id="mRespTitle">Responsable</h2><button class="icon-btn" data-close aria-label="Cerrar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="modal-body" id="mRespBody"></div>
+  <div class="modal-foot"><button class="btn btn-line" data-close>Cancelar</button><button class="btn btn-ink" id="mRespSave">Guardar</button></div>
+</div></div>
+
+<div class="scrim" id="mMov"><div class="modal"><div class="grab"></div>
+  <div class="modal-top"><h2>Editar movimiento</h2><button class="icon-btn" data-close aria-label="Cerrar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="modal-body" id="mMovBody"></div>
+  <div class="modal-foot"><button class="btn btn-line" data-close>Cancelar</button><button class="btn btn-ink" id="mMovSave">Guardar</button></div>
+</div></div>
+
+<div class="scrim" id="mEtiqueta"><div class="modal"><div class="grab"></div>
+  <div class="modal-top"><h2>Etiqueta</h2><button class="icon-btn" data-close aria-label="Cerrar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="modal-body" id="mEtiquetaBody"></div>
+  <div class="modal-foot"><button class="btn btn-line" data-close>Cerrar</button><button class="btn btn-ink" id="mEtiquetaPrint">Imprimir</button></div>
+</div></div>
+
+<div class="scrim" id="mResumen"><div class="modal"><div class="grab"></div>
+  <div class="modal-top"><h2 id="mResumenTitle">Resumen</h2><button class="icon-btn" data-close aria-label="Cerrar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="modal-body" id="mResumenBody"></div>
+  <div class="modal-foot"><button class="btn btn-line" data-close>Cerrar</button><button class="btn btn-ink" id="mResumenPrint">Imprimir / PDF</button></div>
+</div></div>
+
+<div id="printArea" style="display:none"></div>
+<div class="toast" id="toast"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span id="toastTxt">Guardado</span></div>
 
 <script>
-/* ---------------- STATE ---------------- */
-const state = { materiales: [], obras: [], responsables: [], movimientos: [], tab: 'escanear', catalogSub: 'materiales', loaded:false };
-const formState = { tipo:'Salida', obraCodigo:null, obraLibre:'', obraDetalle:'', lineas:[], responsableCodigo:null, nota:'' };
-let scanning = false, scanMode = null, stream = null, rafId = null, detector = null, audioCtx = null;
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 
-const seedMateriales = [{codigo:'MAT-001', descripcion:'Cemento gris 25kg', unidad:'sacos', codigoProveedor:'', codigoPropio:'', ejemplo:true}];
-const seedObras = [{codigo:'OBR-001', nombre:'Reforma Calle Mayor 12', responsable:'Encargado', estado:'Activa', ejemplo:true}];
-const seedResponsables = [{codigo:'RESP-001', nombre:'Encargado de almacén', ejemplo:true}];
+/* ================= ESTADO Y ALMACENAMIENTO (igual que antes) ================= */
+const state = { materiales: [], obras: [], responsables: [], movimientos: [], assets:{}, loaded:false };
+const formState = { tipo:'Salida', obraCodigo:null, obraLibre:'', obraDetalle:'', lineas:[], responsableCodigo:null, nota:'', materialSearchQuery:'' };
+const recibiState = { obraCodigo:null, obraLibre:'', seleccion:{}, nombre:'', firmaVacia:true };
+let ultimoMovimiento = null;
+let scanning=false, stream=null, rafId=null, detector=null, audioCtx=null, scanCanvas=null, currentSigCanvas=null;
+let currentTab='mov', catalogSub='materiales', movStep=2, recStep=1, currentTheme='auto';
+let hisQuickFecha=null, hisQuickObra=null, hisQuickTipo=null;
 
-/* ---------------- STORAGE (JSONBin.io) ---------------- */
-// 1) Crea una cuenta gratuita en https://jsonbin.io
-// 2) Copia tu API Key en https://jsonbin.io/api-keys y pégala abajo en JSONBIN_API_KEY
-// 3) Crea un Bin nuevo con este contenido inicial y pega su ID en JSONBIN_BIN_ID:
-//    {"materiales":[{"codigo":"MAT-001","descripcion":"Cemento gris 25kg","unidad":"sacos","codigoProveedor":"","codigoPropio":"","ejemplo":true}],"obras":[{"codigo":"OBR-001","nombre":"Reforma Calle Mayor 12","responsable":"Encargado","estado":"Activa","ejemplo":true}],"responsables":[{"codigo":"RESP-001","nombre":"Encargado de almacén","ejemplo":true}],"movimientos":[]}
+const seedMateriales = [{codigo:'MAT-001', descripcion:'Cemento gris 25kg', unidad:'sacos', proveedor:'', codigoProveedor:'', codigoPropio:'', ejemplo:true, actualizadoEn:1}];
+const seedObras = [{codigo:'OBR-001', nombre:'Reforma Calle Mayor 12', responsable:'Encargado', estado:'Activa', ejemplo:true, actualizadoEn:1}];
+const seedResponsables = [{codigo:'RESP-001', nombre:'Encargado de almacén', ejemplo:true, actualizadoEn:1}];
+
+/* 1) Cuenta gratuita en https://jsonbin.io
+   2) Tu API Key en https://jsonbin.io/api-keys -> pégala en JSONBIN_API_KEY
+      (esa clave da acceso a TODOS los bins de tu cuenta: usa una cuenta dedicada solo a esta app)
+   3) Bin principal, contenido inicial:
+      {"materiales":[{"codigo":"MAT-001","descripcion":"Cemento gris 25kg","unidad":"sacos","proveedor":"","codigoProveedor":"","codigoPropio":"","ejemplo":true,"actualizadoEn":1}],"obras":[{"codigo":"OBR-001","nombre":"Reforma Calle Mayor 12","responsable":"Encargado","estado":"Activa","ejemplo":true,"actualizadoEn":1}],"responsables":[{"codigo":"RESP-001","nombre":"Encargado de almacén","ejemplo":true,"actualizadoEn":1}],"movimientos":[]}
+      -> pega su ID en JSONBIN_BIN_ID
+   4) Bin de fotos/firmas, contenido inicial: {}  -> pega su ID en JSONBIN_ASSETS_BIN_ID (opcional) */
 const JSONBIN_API_KEY = '$2a$10$5DKABYP8CsU.TCkAeSesNOwMQaCRfbMhtwPa4Cd5R2nZBJbhSR8NC';
 const JSONBIN_BIN_ID  = '6a7afae3f5f4af5e2906a31b';
+const JSONBIN_ASSETS_BIN_ID = 'PASTE_TU_ASSETS_BIN_ID_AQUI';
 const JSONBIN_URL = 'https://api.jsonbin.io/v3/b/' + JSONBIN_BIN_ID;
+const JSONBIN_ASSETS_URL = 'https://api.jsonbin.io/v3/b/' + JSONBIN_ASSETS_BIN_ID;
 
-function jsonbinConfigured(){
-  return JSONBIN_API_KEY && !JSONBIN_API_KEY.includes('PASTE') && JSONBIN_BIN_ID && !JSONBIN_BIN_ID.includes('PASTE');
+function jsonbinConfigured(){ return JSONBIN_API_KEY && !JSONBIN_API_KEY.includes('PASTE') && JSONBIN_BIN_ID && !JSONBIN_BIN_ID.includes('PASTE'); }
+function assetsConfigured(){ return JSONBIN_ASSETS_BIN_ID && !JSONBIN_ASSETS_BIN_ID.includes('PASTE'); }
+function touch(obj){ obj.actualizadoEn = Date.now(); return obj; }
+function mergeCollections(remote, local, idKey){
+  const map = {};
+  (remote||[]).forEach(item=>{ map[item[idKey]] = item; });
+  (local||[]).forEach(item=>{
+    const existing = map[item[idKey]];
+    if(!existing || (item.actualizadoEn||0) >= (existing.actualizadoEn||0)) map[item[idKey]] = item;
+  });
+  return Object.values(map);
 }
 async function loadAll(){
   try{
@@ -403,913 +452,1066 @@ async function loadAll(){
     state.movimientos = record.movimientos || [];
   }catch(e){
     console.error('load error', e);
-    toast('No se pudo cargar el almacenamiento (revisa conexión o configuración)');
-    if(!state.loaded){ state.materiales = seedMateriales; state.obras = seedObras; state.responsables = seedResponsables; state.movimientos = []; }
+    toast('No se pudo cargar el almacenamiento');
+    if(!state.loaded){ state.materiales=seedMateriales; state.obras=seedObras; state.responsables=seedResponsables; state.movimientos=[]; }
+  }
+  if(assetsConfigured()){
+    try{
+      const res2 = await fetch(JSONBIN_ASSETS_URL + '/latest', { headers:{ 'X-Master-Key': JSONBIN_API_KEY } });
+      if(res2.ok){ const data2 = await res2.json(); state.assets = data2.record || {}; }
+    }catch(e){ console.error('assets load error', e); }
   }
   state.loaded = true;
 }
 async function saveAll(){
   try{
-    const res = await fetch(JSONBIN_URL, {
-      method:'PUT',
-      headers:{ 'Content-Type':'application/json', 'X-Master-Key': JSONBIN_API_KEY },
-      body: JSON.stringify({ materiales: state.materiales, obras: state.obras, responsables: state.responsables, movimientos: state.movimientos })
-    });
+    let remote = {materiales:[], obras:[], responsables:[], movimientos:[]};
+    try{
+      const getRes = await fetch(JSONBIN_URL + '/latest', { headers:{ 'X-Master-Key': JSONBIN_API_KEY } });
+      if(getRes.ok){ const data = await getRes.json(); remote = data.record || remote; }
+    }catch(e){ console.error('pre-save fetch error', e); }
+    const merged = {
+      materiales: mergeCollections(remote.materiales, state.materiales, 'codigo'),
+      obras: mergeCollections(remote.obras, state.obras, 'codigo'),
+      responsables: mergeCollections(remote.responsables, state.responsables, 'codigo'),
+      movimientos: mergeCollections(remote.movimientos, state.movimientos, 'id'),
+    };
+    const res = await fetch(JSONBIN_URL, { method:'PUT', headers:{ 'Content-Type':'application/json', 'X-Master-Key': JSONBIN_API_KEY }, body: JSON.stringify(merged) });
     if(!res.ok) throw new Error('HTTP '+res.status);
+    state.materiales = merged.materiales; state.obras = merged.obras; state.responsables = merged.responsables; state.movimientos = merged.movimientos;
+    return true;
   }catch(e){
     console.error('save error', e);
-    toast('No se pudo guardar (revisa conexión o configuración)');
+    alert('No se pudo guardar. Revisa tu conexión e inténtalo de nuevo.');
+    return false;
   }
 }
+async function saveAsset(id, dataUrl){
+  state.assets[id] = dataUrl;
+  if(!assetsConfigured()){ toast('Guardado solo en este dispositivo (falta configurar el bin de fotos)'); return; }
+  try{
+    const getRes = await fetch(JSONBIN_ASSETS_URL + '/latest', { headers:{ 'X-Master-Key': JSONBIN_API_KEY } });
+    let remoteAssets = {};
+    if(getRes.ok){ const data = await getRes.json(); remoteAssets = data.record || {}; }
+    remoteAssets[id] = dataUrl;
+    const res = await fetch(JSONBIN_ASSETS_URL, { method:'PUT', headers:{ 'Content-Type':'application/json', 'X-Master-Key': JSONBIN_API_KEY }, body: JSON.stringify(remoteAssets) });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    state.assets = remoteAssets;
+  }catch(e){ console.error('asset save error', e); toast('No se pudo guardar la imagen'); }
+}
 
-/* ---------------- HELPERS ---------------- */
+/* ================= AYUDANTES ================= */
 function toast(msg){
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(window.__toastTimer);
-  window.__toastTimer = setTimeout(()=>t.classList.remove('show'), 2200);
+  $('#toastTxt').textContent = msg;
+  $('#toast').classList.add('on');
+  clearTimeout(window.__tt);
+  window.__tt = setTimeout(()=>$('#toast').classList.remove('on'), 2600);
 }
 function nextCodigo(prefix, arr){
-  let max=0;
-  arr.forEach(x=>{
-    const m=/-(\d+)$/.exec(x.codigo);
-    if(m) max = Math.max(max, parseInt(m[1],10));
-  });
+  let max=0; arr.forEach(x=>{ const m=/-(\d+)$/.exec(x.codigo); if(m) max=Math.max(max, parseInt(m[1],10)); });
   return prefix+'-'+String(max+1).padStart(3,'0');
 }
-function findMaterial(codigo){ return state.materiales.find(m=>m.codigo===codigo); }
+function findMaterial(codigo){ return state.materiales.find(m=>m.codigo===codigo || (m.codigoPropio && m.codigoPropio===codigo)); }
 function findObra(codigo){ return state.obras.find(o=>o.codigo===codigo); }
 function findResponsable(codigo){ return state.responsables.find(r=>r.codigo===codigo); }
-function fmtDate(iso){
-  const d = new Date(iso);
-  return d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'2-digit'}) + ' ' + d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
-}
-function todayCount(){
-  const today = new Date().toDateString();
-  return state.movimientos.filter(m=> new Date(m.fecha).toDateString()===today).length;
-}
+function fmtDate(iso){ const d=new Date(iso); return d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'2-digit'})+' '+d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}); }
+function fmtDateOnly(iso){ const d=new Date(iso); return d.toLocaleDateString('es-ES',{day:'numeric',month:'long'}); }
+function movimientosActivos(){ return state.movimientos.filter(m=>!m.eliminado); }
 function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function resizeImageFile(file, maxW, maxH, quality){
+  maxW=maxW||480; maxH=maxH||480; quality=quality||0.7;
+  return new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      const img = new Image();
+      img.onload = ()=>{
+        let w=img.width, h=img.height;
+        const scale = Math.min(1, maxW/w, maxH/h);
+        w=Math.max(1,Math.round(w*scale)); h=Math.max(1,Math.round(h*scale));
+        const canvas = document.createElement('canvas'); canvas.width=w; canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror=reject; img.src=reader.result;
+    };
+    reader.onerror=reject; reader.readAsDataURL(file);
+  });
+}
 function unlockAudio(){
   try{
-    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if(audioCtx.state === 'suspended') audioCtx.resume();
-    // iOS Safari needs a real sound played synchronously within the tap to fully unlock audio
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.frequency.value = 440;
-    gain.gain.setValueAtTime(0.00001, audioCtx.currentTime);
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start(audioCtx.currentTime);
-    osc.stop(audioCtx.currentTime + 0.05);
-  }catch(e){ console.error('unlock audio error', e); }
+    if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==='suspended') audioCtx.resume();
+    const osc=audioCtx.createOscillator(), gain=audioCtx.createGain();
+    osc.frequency.value=440; gain.gain.setValueAtTime(0.00001, audioCtx.currentTime);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(audioCtx.currentTime); osc.stop(audioCtx.currentTime+0.05);
+  }catch(e){}
 }
 function playBeep(){
   try{
-    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if(audioCtx.state === 'suspended') audioCtx.resume();
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = 'sine';
-    osc.frequency.value = 1046.5;
+    if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==='suspended') audioCtx.resume();
+    const osc=audioCtx.createOscillator(), gain=audioCtx.createGain();
+    osc.type='sine'; osc.frequency.value=1046.5;
     gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.35, audioCtx.currentTime + 0.01);
-    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.16);
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start();
-    osc.stop(audioCtx.currentTime + 0.17);
-  }catch(e){ console.error('beep error', e); }
+    gain.gain.exponentialRampToValueAtTime(0.35, audioCtx.currentTime+0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime+0.16);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(); osc.stop(audioCtx.currentTime+0.17);
+  }catch(e){}
   if(navigator.vibrate){ try{ navigator.vibrate(60); }catch(e){} }
 }
 
-/* ---------------- ICONS ---------------- */
-const ICONS = {
-  scan:'<svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" stroke-linecap="round"/><rect x="7" y="7" width="10" height="10" rx="1"/></svg>',
-  settings:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>',
-  catalog:'<svg viewBox="0 0 24 24"><path d="M20.6 12.5 12.5 20.6a2 2 0 0 1-2.8 0l-7-7a2 2 0 0 1 0-2.9L10.8 2.6c.4-.4.9-.6 1.4-.6H19a2 2 0 0 1 2 2v6.7c0 .5-.2 1-.6 1.4Z"/><circle cx="15.5" cy="8.5" r="1.5"/></svg>',
-  history:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2" stroke-linecap="round"/></svg>',
-  plus:'<svg viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>',
-};
+/* iconos reutilizables */
+const ICON_OUT='<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h13M13 7l5 5-5 5"/></svg>';
+const ICON_IN='<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12H7M11 7l-5 5 5 5"/></svg>';
+const ICON_TICK='<svg class="tick" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const ICON_ARROW='<svg class="arrow" width="14" height="9" viewBox="0 0 14 9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M1.5 1.5 7 7 12.5 1.5"/></svg>';
+const ICON_EDIT='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L20 8l-4-4L4 16v4z"/></svg>';
+const ICON_TRASH='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M5 7h14M10 11v6M14 11v6M7 7l1 12h8l1-12M9 7V4h6v3"/></svg>';
+const ICON_SEARCH='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>';
+const ICON_X='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+const ICON_CHEVRON='<svg width="8" height="13" viewBox="0 0 8 13" fill="none" stroke="var(--ink-3)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5 6.5 6.5 1.5 11.5"/></svg>';
+const ICON_CHECK='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const ICON_SCAN='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M4 9V6.5A2.5 2.5 0 0 1 6.5 4H9M20 9V6.5A2.5 2.5 0 0 0 17.5 4H15M4 15v2.5A2.5 2.5 0 0 0 6.5 20H9M20 15v2.5a2.5 2.5 0 0 1-2.5 2.5H15M7 12h10"/></svg>';
 
-/* ---------------- RENDER ROOT ---------------- */
-function render(){
-  const app = document.getElementById('app');
-  app.innerHTML = `
-    <header class="topbar">
-      <div>
-        <h1>Control de Almacén</h1>
-        <div class="sub">${state.movimientos.length} movimientos registrados · ${todayCount()} hoy</div>
-      </div>
-    </header>
-    <div id="tab-content"></div>
-  `;
-  renderTab();
-  renderTabbar();
+/* ================= NAVEGACIÓN ================= */
+function goTab(name){
+  $$('.nav button').forEach(b=>{ if(b.dataset.go===name) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current'); });
+  $$('.panel').forEach(p=>p.classList.toggle('on', p.id==='panel-'+name));
+  currentTab = name;
+  renderCurrentPanel();
+  scrollTo(0,0);
 }
-function renderTabbar(){
-  const old = document.querySelector('.tabbar');
-  if(old) old.remove();
-  const bar = document.createElement('div');
-  bar.className='tabbar';
-  const tabs = [['escanear','Movimiento','scan'],['catalogo','Catálogo','catalog'],['historial','Historial','history'],['configuracion','Config.','settings']];
-  bar.innerHTML = tabs.map(([id,label,icon])=>`
-    <button data-tab="${id}" class="${state.tab===id?'active':''}">${ICONS[icon]}<span>${label}</span></button>
-  `).join('');
-  document.body.appendChild(bar);
-  bar.querySelectorAll('button').forEach(b=>b.addEventListener('click', async ()=>{
-    state.tab=b.dataset.tab;
-    if(state.tab==='historial' || state.tab==='catalogo'){ await refreshData(); }
-    else { render(); }
-  }));
+$$('.nav button').forEach(b=>b.addEventListener('click', ()=>{ ultimoMovimiento=null; goTab(b.dataset.go); }));
+function renderCurrentPanel(){
+  if(currentTab==='mov') renderMov();
+  else if(currentTab==='rec') renderRecibi();
+  else if(currentTab==='his') renderHistorial();
+  else if(currentTab==='cat') renderCatalogo();
+  else if(currentTab==='cfg') renderConfig();
 }
+async function refreshData(){ toast('Actualizando...'); await loadAll(); renderCurrentPanel(); }
 
-function renderTab(){
-  const c = document.getElementById('tab-content');
-  if(state.tab==='escanear') return renderEscanear(c);
-  if(state.tab==='catalogo') return renderCatalogo(c);
-  if(state.tab==='historial') return renderHistorial(c);
-  if(state.tab==='configuracion') return renderConfiguracion(c);
-}
+/* ================= MODALES ================= */
+function openModal(id){ $('#'+id).classList.add('on'); document.body.classList.add('locked'); }
+function closeModals(){ $$('.scrim.on').forEach(e=>e.classList.remove('on')); document.body.classList.remove('locked'); }
+$$('[data-close]').forEach(b=>b.addEventListener('click', closeModals));
+$$('.scrim').forEach(s=>s.addEventListener('click', e=>{ if(e.target===s) closeModals(); }));
+addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeModals(); if(scanning) closeScan(); } });
 
-/* ---------------- TAB: ESCANEAR (Movimiento) ---------------- */
-function renderEscanear(c){
-  const tieneObra = !!(formState.obraCodigo || (formState.obraLibre && formState.obraLibre.trim()));
-  const tieneLineas = formState.lineas.length>0 && formState.lineas.every(l=>Number(l.cantidad)>0);
-  const obrasActivas = state.obras.filter(o=>o.estado==='Activa');
-  c.innerHTML = `
-    <div class="card">
-      <h2 class="section-title">Nuevo movimiento</h2>
-      <div class="seg">
-        <button class="${formState.tipo==='Salida'?'active salida':''}" data-tipo="Salida">↑ Salida</button>
-        <button class="${formState.tipo==='Entrada'?'active entrada':''}" data-tipo="Entrada">↓ Entrada</button>
-      </div>
+/* ================= TEMA ================= */
+const mqDark = matchMedia('(prefers-color-scheme: dark)');
+function applyTheme(t){ currentTheme=t; document.documentElement.dataset.theme = t==='auto' ? (mqDark.matches?'dark':'light') : t; }
+mqDark.addEventListener('change', ()=>{ if(currentTheme==='auto') applyTheme('auto'); });
 
-      <div class="two-col">
-        <div class="col">
-          <label>Obra ${formState.tipo==='Entrada' ? '(destino / almacén)' : '(destino)'}</label>
-          <div class="field">
-            <select id="obraSelect">
-              <option value="">— Selecciona una obra —</option>
-              ${obrasActivas.map(o=>`<option value="${o.codigo}" ${o.codigo===formState.obraCodigo?'selected':''}>${escapeHtml(o.nombre)} (${o.codigo})</option>`).join('')}
-              <option value="__OPERARIO__" ${formState.obraLibre==='Operario'?'selected':''}>Operario</option>
-              <option value="__OTROS__" ${formState.obraLibre==='Otros'?'selected':''}>Otros</option>
-            </select>
-          </div>
-          ${(formState.obraLibre==='Operario' || formState.obraLibre==='Otros') ? `
-            <label>${formState.obraLibre==='Operario' ? 'Nombre del operario' : 'Especifica'}</label>
-            <div class="field"><input type="text" id="obraDetalleInput" placeholder="${formState.obraLibre==='Operario' ? 'Nombre del operario' : 'Detalle'}" value="${escapeHtml(formState.obraDetalle)}"></div>
-          ` : ''}
+/* ================= MOVIMIENTO ================= */
+function tieneObraMov(){ return !!(formState.obraCodigo || (formState.obraLibre && formState.obraLibre.trim())); }
+function renderMov(){
+  const el = $('#content-mov'), actionbar = $('#movActionbar');
+  if(ultimoMovimiento){
+    actionbar.style.display='none';
+    const m = ultimoMovimiento;
+    el.innerHTML = `
+      <div class="head"><div class="tx"><h1>Movimiento</h1></div></div>
+      <div class="done">
+        <div class="mark"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+        <h2>Movimiento realizado</h2>
+        <p>${escapeHtml(m.tipo)} · ${m.cantidadArticulos} artículo${m.cantidadArticulos===1?'':'s'}${m.obraTexto?' · '+escapeHtml(m.obraTexto):''}</p>
+        <div style="display:grid;gap:10px;max-width:320px;margin:0 auto">
+          <button class="btn btn-ink" id="otroMovBtn">Hacer otro movimiento</button>
+          <button class="btn btn-line" id="irHistorialBtn">Ver en el historial</button>
         </div>
-        <div class="col">
-          <label>Responsable</label>
-          <div class="field">
-            <select id="responsableSelect">
-              <option value="">— Selecciona un responsable —</option>
-              ${state.responsables.map(r=>`<option value="${r.codigo}" ${r.codigo===formState.responsableCodigo?'selected':''}>${escapeHtml(r.nombre)}</option>`).join('')}
-            </select>
-          </div>
-          ${state.responsables.length===0?`<div style="font-size:12px;color:var(--ink-soft);margin:-8px 0 14px;">No hay responsables creados. Añádelos en Config.</div>`:''}
-        </div>
-      </div>
+      </div>`;
+    $('#otroMovBtn').onclick = ()=>{ ultimoMovimiento=null; renderMov(); };
+    $('#irHistorialBtn').onclick = ()=>{ ultimoMovimiento=null; goTab('his'); };
+    return;
+  }
+  actionbar.style.display='';
+  const obrasActivas = state.obras.filter(o=>o.estado==='Activa' && !o.eliminado);
+  const step2Filled = tieneObraMov();
+  const lineasValidas = formState.lineas.filter(l=>Number(l.cantidad)>0);
+  const step3Filled = lineasValidas.length>0;
+  const s1 = movStep===1?'active':'done';
+  const s2 = movStep===2?'active':(step2Filled?'done':'pending');
+  const s3 = movStep===3?'active':(step3Filled?'done':'pending');
+  const sum1 = formState.tipo==='Salida' ? 'Salida de material' : 'Entrada de material';
+  const sum2 = step2Filled ? [
+    formState.obraCodigo ? (findObra(formState.obraCodigo)?.nombre||'') : (formState.obraLibre + (formState.obraDetalle?': '+formState.obraDetalle:'')),
+    formState.responsableCodigo ? (findResponsable(formState.responsableCodigo)?.nombre||'') : null
+  ].filter(Boolean).join(' · ') : '';
+  const sum3 = lineasValidas.length ? (lineasValidas.length+(lineasValidas.length===1?' artículo':' artículos')) : '';
+  const extraQuien = formState.obraLibre==='Operario' || formState.obraLibre==='Otros';
+  const responsablesActivos = state.responsables.filter(r=>!r.eliminado);
 
-      <label>Material</label>
-      <div class="btn-row" style="margin-bottom:14px;">
-        <button class="btn primary" id="scanMaterialBtn">Escanear código</button>
-        <button class="btn ghost small" id="pickMaterialBtn" style="flex:0 0 auto;">Elegir de lista</button>
-      </div>
+  el.innerHTML = `
+    <div class="head"><div class="tx"><h1>Movimiento</h1><p>Tres pasos. Se pliegan solos al completarse.</p></div></div>
 
-      <div id="lineasList">${renderLineasHtml()}</div>
-
-      <label>Nota / nº albarán (opcional)</label>
-      <div class="field"><input type="text" id="notaInput" placeholder="Ej. ALB-2201" value="${escapeHtml(formState.nota)}"></div>
-
-      <button class="btn ${formState.tipo==='Entrada'?'in':'out'}" id="guardarBtn" ${(!tieneLineas||!tieneObra)?'disabled':''}>
-        Guardar ${formState.tipo.toLowerCase()} ${formState.lineas.length ? '('+formState.lineas.length+')' : ''}
+    <div class="step" data-step="1" data-state="${s1}">
+      <button class="step-top" data-stepbtn="1">
+        <span class="num"><span class="digit">1</span>${ICON_TICK}</span>
+        <span class="tx"><h3>Qué haces</h3><span class="sum">${escapeHtml(sum1)}</span></span>
+        ${ICON_ARROW}
       </button>
+      <div class="step-body">
+        <div class="choice">
+          <button data-kind="out" aria-pressed="${formState.tipo==='Salida'}"><span class="ic">${ICON_OUT}</span><b>Salida</b><small>Del almacén a la obra</small></button>
+          <button data-kind="in" aria-pressed="${formState.tipo==='Entrada'}"><span class="ic">${ICON_IN}</span><b>Entrada</b><small>Vuelve al almacén</small></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="step" data-step="2" data-state="${s2}">
+      <button class="step-top" data-stepbtn="2">
+        <span class="num"><span class="digit">2</span>${ICON_TICK}</span>
+        <span class="tx"><h3>A dónde va</h3><span class="sum">${escapeHtml(sum2)}</span></span>
+        ${ICON_ARROW}
+      </button>
+      <div class="step-body">
+        <div class="field" id="fObra">
+          <label for="obraSel">Obra o destino</label>
+          <select id="obraSel">
+            <option value="">Sin elegir</option>
+            ${obrasActivas.map(o=>`<option value="obra:${o.codigo}" ${formState.obraCodigo===o.codigo?'selected':''}>${escapeHtml(o.nombre)}</option>`).join('')}
+            <option value="libre:Operario" ${formState.obraLibre==='Operario'?'selected':''}>Operario</option>
+            <option value="libre:Otros" ${formState.obraLibre==='Otros'?'selected':''}>Otros</option>
+          </select>
+        </div>
+        <div class="field" id="fQuien" ${extraQuien?'':'hidden'}>
+          <label for="quienDet">Nombre o detalle</label>
+          <input id="quienDet" type="text" placeholder="Ej. Julio Peña" value="${escapeHtml(formState.obraDetalle)}">
+        </div>
+        <div class="field">
+          <label for="respSel">Responsable</label>
+          <select id="respSel">
+            <option value="">Sin elegir</option>
+            ${responsablesActivos.map(r=>`<option value="${r.codigo}" ${formState.responsableCodigo===r.codigo?'selected':''}>${escapeHtml(r.nombre)}</option>`).join('')}
+          </select>
+          ${responsablesActivos.length===0?'<p class="note">No hay responsables creados. Añádelos en Config.</p>':''}
+        </div>
+      </div>
+    </div>
+
+    <div class="step" data-step="3" data-state="${s3}">
+      <button class="step-top" data-stepbtn="3">
+        <span class="num"><span class="digit">3</span>${ICON_TICK}</span>
+        <span class="tx"><h3>Qué material</h3><span class="sum">${escapeHtml(sum3)}</span></span>
+        ${ICON_ARROW}
+      </button>
+      <div class="step-body">
+        <button class="btn btn-signal btn-scan btn-block" style="margin-bottom:10px" id="scanBtnMov">${ICON_SCAN} Escanear código</button>
+        <div class="search" style="margin-bottom:4px">${ICON_SEARCH}<input type="search" id="matSearchInput" placeholder="O buscar por nombre o código" value="${escapeHtml(formState.materialSearchQuery)}"></div>
+        <div id="matSearchResults">${renderMatSearchHtml()}</div>
+        <div id="cart">${renderCartHtml()}</div>
+      </div>
+    </div>
+
+    <div class="step" data-state="active" style="box-shadow:none">
+      <div class="step-body" style="padding-top:18px">
+        <div class="field"><label for="notaInput">Nota o nº de albarán (opcional)</label>
+        <input id="notaInput" type="text" placeholder="Ej. Albarán 4471" value="${escapeHtml(formState.nota)}"></div>
+      </div>
     </div>
   `;
-
-  c.querySelectorAll('[data-tipo]').forEach(b=>b.addEventListener('click',()=>{ formState.tipo=b.dataset.tipo; render(); }));
-  c.querySelector('#obraSelect').addEventListener('change', e=>{
-    const v = e.target.value;
-    if(v === '__OPERARIO__'){ formState.obraCodigo = null; formState.obraLibre = 'Operario'; }
-    else if(v === '__OTROS__'){ formState.obraCodigo = null; formState.obraLibre = 'Otros'; }
-    else { formState.obraCodigo = v || null; formState.obraLibre = ''; formState.obraDetalle = ''; }
-    render();
-  });
-  const obraDetalleInput = c.querySelector('#obraDetalleInput');
-  if(obraDetalleInput) obraDetalleInput.addEventListener('input', e=> formState.obraDetalle = e.target.value);
-  c.querySelector('#responsableSelect').addEventListener('change', e=> formState.responsableCodigo = e.target.value || null);
-  c.querySelector('#scanMaterialBtn').addEventListener('click', ()=> openScan('material'));
-  c.querySelector('#pickMaterialBtn').addEventListener('click', ()=> openMaterialPicker());
-  c.querySelector('#notaInput').addEventListener('input', e=> formState.nota=e.target.value);
-  c.querySelector('#guardarBtn').addEventListener('click', guardarMovimiento);
-  wireLineasEvents(c);
+  wireMovEvents(el);
+  const saveBtn = $('#movSaveBtn');
+  saveBtn.dataset.kind = formState.tipo==='Salida' ? 'out' : 'in';
+  saveBtn.innerHTML = (formState.tipo==='Salida'?'Guardar salida':'Guardar entrada') + (lineasValidas.length?` <span class="n">${lineasValidas.length} ${lineasValidas.length===1?'artículo':'artículos'}</span>`:'');
 }
-function renderLineasHtml(){
-  if(!formState.lineas.length){
-    return `<div class="scan-target" style="margin-bottom:14px;"><div style="font-size:13px;color:var(--ink-soft);">Todavía no has añadido ningún material</div></div>`;
-  }
+function wireMovEvents(el){
+  el.querySelectorAll('[data-stepbtn]').forEach(b=>b.addEventListener('click', ()=>{
+    const n = Number(b.dataset.stepbtn);
+    movStep = (movStep===n) ? null : n;
+    renderMov();
+  }));
+  el.querySelectorAll('.choice button').forEach(b=>b.addEventListener('click', ()=>{
+    formState.tipo = b.dataset.kind==='out' ? 'Salida' : 'Entrada';
+    movStep = tieneObraMov() ? null : 2;
+    renderMov();
+  }));
+  const obraSel = el.querySelector('#obraSel');
+  if(obraSel) obraSel.addEventListener('change', e=>{
+    const v = e.target.value;
+    if(v.startsWith('obra:')){ formState.obraCodigo=v.slice(5); formState.obraLibre=''; formState.obraDetalle=''; }
+    else if(v.startsWith('libre:')){ formState.obraCodigo=null; formState.obraLibre=v.slice(6); }
+    else { formState.obraCodigo=null; formState.obraLibre=''; formState.obraDetalle=''; }
+    movStep = tieneObraMov() ? 3 : 2;
+    renderMov();
+  });
+  const quienDet = el.querySelector('#quienDet');
+  if(quienDet) quienDet.addEventListener('input', e=> formState.obraDetalle = e.target.value);
+  const respSel = el.querySelector('#respSel');
+  if(respSel) respSel.addEventListener('change', e=> formState.responsableCodigo = e.target.value || null);
+  const scanBtn = el.querySelector('#scanBtnMov');
+  if(scanBtn) scanBtn.addEventListener('click', openScan);
+  const searchInput = el.querySelector('#matSearchInput');
+  if(searchInput) searchInput.addEventListener('input', e=>{
+    formState.materialSearchQuery = e.target.value;
+    $('#matSearchResults').innerHTML = renderMatSearchHtml();
+    wireMatSearchResults();
+  });
+  wireMatSearchResults();
+  const notaInput = el.querySelector('#notaInput');
+  if(notaInput) notaInput.addEventListener('input', e=> formState.nota = e.target.value);
+  wireCartEvents(el);
+}
+function renderMatSearchHtml(){
+  const q = (formState.materialSearchQuery||'').trim().toLowerCase();
+  if(!q) return '';
+  const list = state.materiales.filter(m=> !m.eliminado && (
+    m.descripcion.toLowerCase().includes(q) || m.codigo.toLowerCase().includes(q) ||
+    (m.codigoPropio && m.codigoPropio.toLowerCase().includes(q)) || (m.codigoProveedor && m.codigoProveedor.toLowerCase().includes(q))
+  ));
+  if(!list.length) return `<p class="note" style="padding:10px 2px">Sin resultados.</p>`;
+  return `<div class="card" style="margin:8px 0 0;padding:6px 18px">` + list.map(m=>{
+    const foto = state.assets[m.fotoId];
+    return `<div class="row" data-searchpick="${m.codigo}" style="cursor:pointer">
+      ${foto?`<img class="thumb" src="${foto}">`:'<div class="thumb"></div>'}
+      <div class="t"><b>${escapeHtml(m.descripcion)}</b><small>${m.codigo} · ${escapeHtml(m.unidad)}</small></div>
+    </div>`;
+  }).join('') + `</div>`;
+}
+function wireMatSearchResults(){
+  $$('[data-searchpick]').forEach(r=>r.addEventListener('click', ()=>{
+    addMaterialALineas(r.dataset.searchpick);
+    formState.materialSearchQuery = '';
+    toast('Añadido a la lista');
+    renderMov();
+  }));
+}
+function renderCartHtml(){
+  if(!formState.lineas.length) return `<p class="note" style="text-align:center;padding:18px 0">Escanea o busca para añadir material.</p>`;
   return formState.lineas.map((l,i)=>{
     const mat = findMaterial(l.materialCodigo);
-    return `
-    <div class="list-row" data-linea="${i}">
-      <div class="main">
-        <div class="t1">${escapeHtml(mat?mat.descripcion:l.materialCodigo)}</div>
-        <div class="t2">${mat?mat.codigo:''}${mat&&mat.unidad?' · '+mat.unidad:''}</div>
+    return `<div class="row" data-linea="${i}">
+      <div class="t"><b>${escapeHtml(mat?mat.descripcion:l.materialCodigo)}</b><small>${mat?mat.codigo:''}${mat&&mat.unidad?' · '+escapeHtml(mat.unidad):''}</small></div>
+      <div class="qty">
+        <button type="button" data-lminus="${i}" aria-label="Menos">−</button>
+        <input data-lqty="${i}" value="${l.cantidad}" aria-label="Cantidad">
+        <button type="button" data-lplus="${i}" aria-label="Más">+</button>
       </div>
-      <div style="display:flex;align-items:center;gap:8px;">
-        <div class="stepper" style="gap:4px;">
-          <button type="button" data-lminus="${i}" style="width:32px;height:32px;font-size:16px;">−</button>
-          <input type="number" min="0" step="1" data-lqty="${i}" value="${l.cantidad}" style="width:52px;padding:6px 4px;text-align:center;">
-          <button type="button" data-lplus="${i}" style="width:32px;height:32px;font-size:16px;">+</button>
-        </div>
-        <button class="icon-btn" data-lremove="${i}" title="Quitar" style="font-size:18px;line-height:1;">✕</button>
-      </div>
+      <button class="icon-btn" data-lremove="${i}" aria-label="Quitar">${ICON_X}</button>
     </div>`;
   }).join('');
 }
-function wireLineasEvents(c){
-  const list = c.querySelector('#lineasList');
-  if(!list) return;
-  list.querySelectorAll('[data-lqty]').forEach(inp=>{
-    inp.addEventListener('focus', e=> e.target.select());
+function wireCartEvents(el){
+  const cart = el.querySelector('#cart');
+  if(!cart) return;
+  cart.querySelectorAll('[data-lqty]').forEach(inp=>{
+    inp.addEventListener('focus', e=>e.target.select());
     inp.addEventListener('input', e=>{
       const i = Number(e.target.dataset.lqty);
       formState.lineas[i].cantidad = e.target.value;
-      const btn = document.getElementById('guardarBtn');
-      if(btn){
-        const tieneObra = !!(formState.obraCodigo || (formState.obraLibre && formState.obraLibre.trim()));
-        const tieneLineas = formState.lineas.length>0 && formState.lineas.every(l=>Number(l.cantidad)>0);
-        btn.disabled = !tieneLineas || !tieneObra;
-      }
+      const lv = formState.lineas.filter(l=>Number(l.cantidad)>0);
+      const saveBtn = $('#movSaveBtn');
+      saveBtn.innerHTML = (formState.tipo==='Salida'?'Guardar salida':'Guardar entrada') + (lv.length?` <span class="n">${lv.length} ${lv.length===1?'artículo':'artículos'}</span>`:'');
     });
   });
-  list.querySelectorAll('[data-lminus]').forEach(b=>b.addEventListener('click', ()=>{
-    const i = Number(b.dataset.lminus);
-    formState.lineas[i].cantidad = Math.max(0,(Number(formState.lineas[i].cantidad)||0)-1);
-    render();
+  cart.querySelectorAll('[data-lminus]').forEach(b=>b.addEventListener('click', ()=>{
+    const i = Number(b.dataset.lminus); formState.lineas[i].cantidad = Math.max(0,(Number(formState.lineas[i].cantidad)||0)-1); renderMov();
   }));
-  list.querySelectorAll('[data-lplus]').forEach(b=>b.addEventListener('click', ()=>{
-    const i = Number(b.dataset.lplus);
-    formState.lineas[i].cantidad = (Number(formState.lineas[i].cantidad)||0)+1;
-    render();
+  cart.querySelectorAll('[data-lplus]').forEach(b=>b.addEventListener('click', ()=>{
+    const i = Number(b.dataset.lplus); formState.lineas[i].cantidad = (Number(formState.lineas[i].cantidad)||0)+1; renderMov();
   }));
-  list.querySelectorAll('[data-lremove]').forEach(b=>b.addEventListener('click', ()=>{
-    const i = Number(b.dataset.lremove);
-    formState.lineas.splice(i,1);
-    render();
+  cart.querySelectorAll('[data-lremove]').forEach(b=>b.addEventListener('click', ()=>{
+    const i = Number(b.dataset.lremove); formState.lineas.splice(i,1); renderMov();
   }));
 }
 function addMaterialALineas(codigoMaterial){
   const existente = formState.lineas.find(l=>l.materialCodigo===codigoMaterial);
   if(existente){ existente.cantidad = (Number(existente.cantidad)||0)+1; }
-  else { formState.lineas.push({materialCodigo: codigoMaterial, cantidad: 1}); }
+  else { formState.lineas.unshift({materialCodigo: codigoMaterial, cantidad: 1}); }
+}
+function badFlashStep(stepSelector){
+  const stepEl = document.querySelector(stepSelector);
+  if(!stepEl) return;
+  stepEl.classList.add('bad');
+  stepEl.scrollIntoView({behavior:'smooth', block:'center'});
+  setTimeout(()=>stepEl.classList.remove('bad'), 1400);
 }
 async function guardarMovimiento(){
-  const tieneObra = !!(formState.obraCodigo || (formState.obraLibre && formState.obraLibre.trim()));
   const lineasValidas = formState.lineas.filter(l=>Number(l.cantidad)>0);
-  if(!tieneObra || lineasValidas.length===0){
-    toast('Faltan datos por completar'); return;
+  if(!tieneObraMov()){
+    movStep=2; renderMov(); badFlashStep('.step[data-step="2"]'); toast('Falta elegir el destino'); return;
   }
-  const fecha = new Date().toISOString();
-  lineasValidas.forEach(l=>{
+  if(lineasValidas.length===0){
+    movStep=3; renderMov(); badFlashStep('.step[data-step="3"]'); toast('Añade al menos un material'); return;
+  }
+  const saveBtn = $('#movSaveBtn'); saveBtn.disabled = true;
+  const fecha = new Date().toISOString(), ahora = Date.now();
+  const grupoId = 'G'+ahora+'_'+Math.floor(Math.random()*10000);
+  lineasValidas.forEach((l,i)=>{
     state.movimientos.push({
-      id: 'M'+Date.now()+Math.floor(Math.random()*10000),
-      fecha,
-      tipo: formState.tipo,
-      codigoMaterial: l.materialCodigo,
-      cantidad: Number(l.cantidad),
+      id:'M'+ahora+'_'+i+'_'+Math.floor(Math.random()*10000), grupoId, fecha, actualizadoEn:ahora,
+      tipo: formState.tipo, codigoMaterial: l.materialCodigo, cantidad: Number(l.cantidad),
       codigoObra: formState.obraCodigo || null,
-      obraLibre: formState.obraCodigo ? '' : (formState.obraLibre || '').trim(),
-      obraDetalle: formState.obraCodigo ? '' : (formState.obraDetalle || '').trim(),
-      responsableCodigo: formState.responsableCodigo || null,
-      nota: formState.nota || ''
+      obraLibre: formState.obraCodigo ? '' : (formState.obraLibre||'').trim(),
+      obraDetalle: formState.obraCodigo ? '' : (formState.obraDetalle||'').trim(),
+      responsableCodigo: formState.responsableCodigo || null, nota: formState.nota || ''
     });
   });
-  await saveAll();
-  toast((formState.tipo==='Entrada'?'Entrada guardada ✓':'Salida guardada ✓')+' ('+lineasValidas.length+' material'+(lineasValidas.length===1?'':'es')+')');
-  formState.lineas = [];
-  formState.nota = '';
-  render();
-}
-function openMaterialPicker(){
-  const inner = document.getElementById('sheet-inner-content');
-  inner.innerHTML = `
-    <div class="sheet-head"><h3>Elegir material</h3><button class="icon-btn" id="closeSheet">✕</button></div>
-    <div class="field"><input type="text" id="pickerSearch" placeholder="Buscar material..."></div>
-    <div id="pickerList"></div>
-  `;
-  function renderList(q){
-    const list = state.materiales.filter(m=> !q || m.descripcion.toLowerCase().includes(q.toLowerCase()) || m.codigo.toLowerCase().includes(q.toLowerCase()));
-    document.getElementById('pickerList').innerHTML = list.length ? list.map(m=>`
-      <div class="list-row" data-pick="${m.codigo}" style="cursor:pointer;">
-        <div class="main"><div class="t1">${escapeHtml(m.descripcion)}</div><div class="t2">${m.codigo} · ${m.unidad}</div></div>
-      </div>
-    `).join('') : `<div class="empty">Sin resultados</div>`;
-    document.querySelectorAll('[data-pick]').forEach(r=>r.addEventListener('click', ()=>{
-      addMaterialALineas(r.dataset.pick);
-      document.getElementById('formsheet').close();
-      toast('Añadido a la lista ✓');
-      render();
-    }));
+  const ok = await saveAll();
+  saveBtn.disabled = false;
+  if(ok){
+    const obraTexto = formState.obraCodigo ? (findObra(formState.obraCodigo)?.nombre||'') : (formState.obraLibre + (formState.obraDetalle?': '+formState.obraDetalle:''));
+    ultimoMovimiento = { tipo: formState.tipo, cantidadArticulos: lineasValidas.length, obraTexto };
+    formState.lineas = []; formState.nota = ''; movStep = 2;
   }
-  renderList('');
-  inner.querySelector('#pickerSearch').addEventListener('input', e=>renderList(e.target.value));
-  inner.querySelector('#closeSheet').addEventListener('click', ()=>document.getElementById('formsheet').close());
-  document.getElementById('formsheet').showModal();
+  renderMov();
 }
+$('#movSaveBtn').addEventListener('click', guardarMovimiento);
 
-/* ---------------- SCANNING ---------------- */
-function openScan(mode){
-  scanMode = mode;
-  unlockAudio();
-  const overlay = document.createElement('div');
-  overlay.className = 'modal-overlay';
-  overlay.id = 'scanOverlay';
-  overlay.innerHTML = `
-    <div class="scan-frame">
-      <video id="scanVideo" autoplay playsinline muted></video>
-      <div class="scan-corner tl"></div><div class="scan-corner tr"></div>
-      <div class="scan-corner bl"></div><div class="scan-corner br"></div>
-    </div>
-    <div class="scan-hint">Enfoca el código QR o de barras del material</div>
-    <div class="modal-actions">
-      <button class="btn ghost" id="manualEntryBtn">Introducir código manualmente</button>
-      <button class="btn ghost" id="cancelScanBtn">Cancelar</button>
-    </div>
-  `;
-  document.body.appendChild(overlay);
-  overlay.querySelector('#cancelScanBtn').addEventListener('click', closeScan);
-  overlay.querySelector('#manualEntryBtn').addEventListener('click', ()=>{
-    const val = prompt('Introduce el código:');
-    closeScan();
-    if(val) onScanResult(val.trim());
-  });
-  startCamera();
-}
+/* ================= ESCÁNER ================= */
+function openScan(){ unlockAudio(); $('#scanner').classList.add('on'); startCamera(); }
 async function startCamera(){
-  const video = document.getElementById('scanVideo');
+  const video = $('#scanVideo');
   try{
     stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
-    video.srcObject = stream;
-    await video.play();
-    scanning = true;
-    detectLoop(video);
-  }catch(e){
-    toast('No se pudo acceder a la cámara');
-    closeScan();
-  }
+    video.srcObject = stream; await video.play();
+    scanning = true; detectLoop(video);
+  }catch(e){ toast('No se pudo acceder a la cámara'); closeScan(); }
 }
-let scanCanvas = null;
 function detectLoop(video){
   if(!scanning) return;
   if('BarcodeDetector' in window){
-    if(!detector){
-      try{ detector = new BarcodeDetector({formats:['qr_code','ean_13','ean_8','upc_a','upc_e','code_128','code_39']}); }
-      catch(e){ detector = new BarcodeDetector(); }
-    }
+    if(!detector){ try{ detector = new BarcodeDetector({formats:['qr_code','ean_13','ean_8','upc_a','upc_e','code_128','code_39']}); }catch(e){ detector = new BarcodeDetector(); } }
     detector.detect(video).then(codes=>{
       if(codes && codes.length>0){ const v=codes[0].rawValue; closeScan(); onScanResult(v); }
       else { rafId = requestAnimationFrame(()=>detectLoop(video)); }
     }).catch(()=>{ rafId = requestAnimationFrame(()=>detectLoop(video)); });
-  } else if(typeof jsQR === 'function'){
+  } else if(typeof jsQR==='function'){
     if(!scanCanvas) scanCanvas = document.createElement('canvas');
-    const w = video.videoWidth, h = video.videoHeight;
+    const w=video.videoWidth, h=video.videoHeight;
     if(w && h){
-      scanCanvas.width = w; scanCanvas.height = h;
-      const ctx = scanCanvas.getContext('2d');
-      ctx.drawImage(video,0,0,w,h);
+      scanCanvas.width=w; scanCanvas.height=h;
+      const ctx = scanCanvas.getContext('2d'); ctx.drawImage(video,0,0,w,h);
       const imgData = ctx.getImageData(0,0,w,h);
       const code = jsQR(imgData.data, w, h);
-      if(code && code.data){ const v=code.data; closeScan(); onScanResult(v); return; }
+      if(code && code.data){ closeScan(); onScanResult(code.data); return; }
     }
     rafId = requestAnimationFrame(()=>detectLoop(video));
-  } else {
-    rafId = requestAnimationFrame(()=>detectLoop(video));
-  }
+  } else { rafId = requestAnimationFrame(()=>detectLoop(video)); }
 }
 function closeScan(){
-  scanning = false;
-  if(rafId) cancelAnimationFrame(rafId);
+  scanning=false; if(rafId) cancelAnimationFrame(rafId);
   if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
-  const overlay = document.getElementById('scanOverlay');
-  if(overlay) overlay.remove();
+  $('#scanner').classList.remove('on');
 }
+$('#scanCloseBtn').addEventListener('click', closeScan);
+$('#scanManualBtn').addEventListener('click', ()=>{
+  closeScan();
+  const val = prompt('Introduce el código:');
+  if(val) onScanResult(val.trim());
+});
 function onScanResult(value){
   playBeep();
   const mat = findMaterial(value);
   if(mat){
     addMaterialALineas(mat.codigo);
     toast('Añadido: '+mat.descripcion);
-    render();
-  } else {
-    if(confirm('Código no reconocido: "'+value+'".\n¿Quieres darlo de alta como material nuevo?')){
-      state.tab = 'catalogo'; state.catalogSub = 'materiales'; render();
-      openMaterialForm(null, value);
-    }
+    if(currentTab==='mov') renderMov();
+  } else if(confirm('Código no reconocido: "'+value+'".\n¿Darlo de alta como material nuevo?')){
+    goTab('cat'); catalogSub='materiales'; renderCatalogo();
+    openMaterialModal(null, value);
   }
 }
 
-/* ---------------- TAB: CATALOGO ---------------- */
-function renderCatalogo(c){
-  c.innerHTML = `
-    <div class="card">
-      <div class="subtabs">
-        <button data-s="materiales" class="${state.catalogSub==='materiales'?'active':''}">Materiales</button>
-        <button data-s="obras" class="${state.catalogSub==='obras'?'active':''}">Obras</button>
-      </div>
-      <div id="catBody"></div>
-    </div>
-  `;
-  c.querySelectorAll('[data-s]').forEach(b=>b.addEventListener('click', ()=>{ state.catalogSub=b.dataset.s; render(); }));
-  if(state.catalogSub==='materiales') renderMaterialesCatalog(c.querySelector('#catBody'));
-  else renderObrasCatalog(c.querySelector('#catBody'));
-}
-function renderMaterialesCatalog(el){
+/* ================= RECIBÍ ================= */
+function renderRecibi(){
+  const el = $('#content-rec'); $('#recActionbar').style.display='';
+  const todosPendientes = movimientosActivos().filter(m=> m.tipo==='Salida' && !m.recibido);
+  function destinoKey(m){ return m.codigoObra ? 'obra:'+m.codigoObra : 'libre:'+m.obraLibre; }
+  function destinoLabelFor(m){ if(m.codigoObra){ const o=findObra(m.codigoObra); return o?o.nombre:m.codigoObra; } return m.obraLibre + (m.obraDetalle?': '+m.obraDetalle:''); }
+  const gm={}, orden=[];
+  todosPendientes.forEach(m=>{
+    const k=destinoKey(m);
+    if(!gm[k]){ gm[k]={key:k, label:destinoLabelFor(m), tipoLbl:m.codigoObra?'Obra':m.obraLibre, items:[]}; orden.push(k); }
+    gm[k].items.push(m);
+  });
+  const gruposPend = orden.map(k=>gm[k]).sort((a,b)=>b.items.length-a.items.length);
+
+  function pendientesDestino(){
+    return movimientosActivos().filter(m=>{
+      if(m.tipo!=='Salida' || m.recibido) return false;
+      if(recibiState.obraCodigo) return m.codigoObra===recibiState.obraCodigo;
+      if(recibiState.obraLibre) return !m.codigoObra && m.obraLibre===recibiState.obraLibre;
+      return false;
+    });
+  }
+  const tieneDestino = !!(recibiState.obraCodigo || recibiState.obraLibre);
+  const lista = tieneDestino ? pendientesDestino() : [];
+  const seleccionCount = lista.filter(m=> recibiState.seleccion[m.id]!==false).length;
+  const step1Filled = tieneDestino, step2Filled = tieneDestino && lista.length>0;
+  const s1 = recStep===1?'active':(step1Filled?'done':'pending');
+  const s2 = recStep===2?'active':(step2Filled?'done':'pending');
+  const s3 = recStep===3?'active':'pending';
+  const obrasActivas = state.obras.filter(o=>o.estado==='Activa' && !o.eliminado);
+  const destinoLabel = tieneDestino ? (recibiState.obraCodigo?(findObra(recibiState.obraCodigo)?.nombre||''):recibiState.obraLibre) : '';
+
   el.innerHTML = `
-    <button class="btn primary" id="addMatBtn" style="margin-bottom:14px;">${ICONS.plus} Añadir material</button>
-    <div id="matList"></div>
-  `;
-  el.querySelector('#addMatBtn').addEventListener('click', ()=>openMaterialForm(null,''));
-  const list = [...state.materiales].sort((a,b)=>a.descripcion.localeCompare(b.descripcion));
-  el.querySelector('#matList').innerHTML = list.length ? list.map(m=>`
-    <div class="list-row">
-      <div class="main">
-        <div class="t1">${escapeHtml(m.descripcion)} ${m.ejemplo?'<span class="badge example">Ejemplo</span>':''}</div>
-        <div class="t2">${m.codigo}${m.codigoProveedor?' · Prov. '+escapeHtml(m.codigoProveedor):''}${m.codigoPropio?' · Propio '+escapeHtml(m.codigoPropio):''} · ${m.unidad}</div>
-      </div>
-      <div class="btn-row" style="width:auto;">
-        <button class="btn ghost small" data-label="${m.codigo}">Etiqueta</button>
-        <button class="btn ghost small" data-edit="${m.codigo}">Editar</button>
-        <button class="btn ghost small" data-del="${m.codigo}">🗑</button>
-      </div>
-    </div>
-  `).join('') : `<div class="empty">Aún no hay materiales dados de alta.</div>`;
-  el.querySelectorAll('[data-label]').forEach(b=>b.addEventListener('click', ()=>imprimirEtiqueta('material', findMaterial(b.dataset.label))));
-  el.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click', ()=>openMaterialForm(findMaterial(b.dataset.edit))));
-  el.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click', async ()=>{
-    if(confirm('¿Eliminar este material del catálogo? El historial de movimientos no se borrará.')){
-      state.materiales = state.materiales.filter(m=>m.codigo!==b.dataset.del);
-      await saveAll();
-      render();
-    }
-  }));
-}
-function openMaterialForm(existing, prefillCodigo){
-  const isEdit = !!existing;
-  const inner = document.getElementById('sheet-inner-content');
-  inner.innerHTML = `
-    <div class="sheet-head"><h3>${isEdit?'Editar material':'Nuevo material'}</h3><button class="icon-btn" id="closeSheet">✕</button></div>
-    <label>Descripción</label>
-    <div class="field"><input type="text" id="f_desc" value="${escapeHtml(existing?.descripcion||'')}" placeholder="Ej. Cemento gris 25kg"></div>
-    <label>Unidad</label>
-    <div class="field"><input type="text" id="f_unidad" value="${escapeHtml(existing?.unidad||'')}" placeholder="sacos, unidades, metros..."></div>
-    <label>Código proveedor</label>
-    <div class="field"><input type="text" id="f_codprov" value="${escapeHtml(existing?.codigoProveedor||'')}" placeholder="Código que usa el proveedor"></div>
-    <label>Código propio</label>
-    <div class="field"><input type="text" id="f_codpropio" value="${escapeHtml(existing?.codigoPropio || prefillCodigo || '')}" placeholder="Nuestro código interno"></div>
-    ${isEdit ? `<div class="field"><label>Código interno (sistema)</label><input type="text" value="${existing.codigo}" disabled></div>` : ''}
-    <button class="btn primary" id="saveMatBtn">Guardar material</button>
-  `;
-  inner.querySelector('#closeSheet').addEventListener('click', ()=>document.getElementById('formsheet').close());
-  inner.querySelector('#saveMatBtn').addEventListener('click', async ()=>{
-    const desc = inner.querySelector('#f_desc').value.trim();
-    const unidad = inner.querySelector('#f_unidad').value.trim();
-    const codigoProveedor = inner.querySelector('#f_codprov').value.trim();
-    const codigoPropio = inner.querySelector('#f_codpropio').value.trim();
-    if(!desc || !unidad){ toast('Descripción y unidad son obligatorias'); return; }
-    if(isEdit){
-      Object.assign(existing, {descripcion:desc, unidad, codigoProveedor, codigoPropio});
-    } else {
-      const codigo = nextCodigo('MAT', state.materiales);
-      state.materiales.push({codigo, descripcion:desc, unidad, codigoProveedor, codigoPropio, ejemplo:false});
-    }
-    await saveAll();
-    document.getElementById('formsheet').close();
-    toast('Material guardado ✓');
-    render();
-  });
-  document.getElementById('formsheet').showModal();
-}
-function renderObrasCatalog(el){
-  el.innerHTML = `
-    <button class="btn primary" id="addObraBtn" style="margin-bottom:14px;">${ICONS.plus} Añadir obra</button>
-    <div id="obraList"></div>
-  `;
-  el.querySelector('#addObraBtn').addEventListener('click', ()=>openObraForm(null));
-  const list = [...state.obras].sort((a,b)=>a.nombre.localeCompare(b.nombre));
-  el.querySelector('#obraList').innerHTML = list.length ? list.map(o=>`
-    <div class="list-row">
-      <div class="main">
-        <div class="t1">${escapeHtml(o.nombre)} ${o.ejemplo?'<span class="badge example">Ejemplo</span>':''}</div>
-        <div class="t2">${o.codigo} · ${escapeHtml(o.responsable||'—')} · ${o.estado}</div>
-      </div>
-      <div class="btn-row" style="width:auto;">
-        <button class="btn ghost small" data-resumen="${o.codigo}">Resumen</button>
-        <button class="btn ghost small" data-edit="${o.codigo}">Editar</button>
-        <button class="btn ghost small" data-del="${o.codigo}">🗑</button>
-      </div>
-    </div>
-  `).join('') : `<div class="empty">Aún no hay obras dadas de alta.</div>`;
-  el.querySelectorAll('[data-resumen]').forEach(b=>b.addEventListener('click', ()=>openObraResumen(findObra(b.dataset.resumen))));
-  el.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click', ()=>openObraForm(findObra(b.dataset.edit))));
-  el.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click', async ()=>{
-    if(confirm('¿Eliminar esta obra? El historial de movimientos no se borrará.')){
-      state.obras = state.obras.filter(o=>o.codigo!==b.dataset.del);
-      await saveAll();
-      render();
-    }
-  }));
-}
-function openObraResumen(obra){
-  if(!obra) return;
-  const inner = document.getElementById('sheet-inner-content');
-  const mapa = {};
-  state.movimientos.forEach(m=>{
-    if(m.codigoObra !== obra.codigo) return;
-    if(!mapa[m.codigoMaterial]) mapa[m.codigoMaterial] = {salida:0, entrada:0};
-    if(m.tipo==='Salida') mapa[m.codigoMaterial].salida += Number(m.cantidad)||0;
-    else mapa[m.codigoMaterial].entrada += Number(m.cantidad)||0;
-  });
-  const filas = Object.keys(mapa).map(codigo=>{
-    const mat = findMaterial(codigo);
-    const {salida, entrada} = mapa[codigo];
-    return {
-      codigo,
-      nombre: mat ? mat.descripcion : codigo,
-      unidad: mat ? mat.unidad : '',
-      salida, entrada,
-      neto: salida - entrada
-    };
-  }).sort((a,b)=>a.nombre.localeCompare(b.nombre));
-  const totalMovs = state.movimientos.filter(m=>m.codigoObra===obra.codigo).length;
+    <div class="head"><div class="tx"><h1>Recibí</h1><p>Confirma con firma lo que ya está entregado.</p></div></div>
+    <p class="sec">Pendientes de recibir</p>
+    ${gruposPend.length ? gruposPend.map(g=>`
+      <button class="pend" data-pendgroup="${g.key}"><div class="t"><b>${escapeHtml(g.label)}</b><small>${escapeHtml(g.tipoLbl)}</small></div>
+        <span class="tag sig">${g.items.length} art.</span>${ICON_CHEVRON}</button>
+    `).join('') : `<p class="empty">No hay entregas pendientes de confirmar.</p>`}
 
-  inner.innerHTML = `
-    <div class="sheet-head"><h3>Resumen — ${escapeHtml(obra.nombre)}</h3><button class="icon-btn" id="closeSheet">✕</button></div>
-    <p style="font-size:12.5px;color:var(--ink-soft);margin-top:-6px;">Material llevado a esta obra (salidas menos entradas/devoluciones). ${totalMovs} movimiento${totalMovs===1?'':'s'} registrado${totalMovs===1?'':'s'}.</p>
-    ${filas.length ? filas.map(f=>`
-      <div class="list-row">
-        <div class="main">
-          <div class="t1">${escapeHtml(f.nombre)}</div>
-          <div class="t2">${f.codigo} · salidas ${f.salida} · entradas ${f.entrada}</div>
-        </div>
-        <div class="num">${f.neto}<span style="font-size:11px;color:var(--ink-soft);font-family:var(--font-body);"> ${f.unidad}</span></div>
-      </div>
-    `).join('') : `<div class="empty">Todavía no hay movimientos registrados para esta obra.</div>`}
-  `;
-  inner.querySelector('#closeSheet').addEventListener('click', ()=>document.getElementById('formsheet').close());
-  document.getElementById('formsheet').showModal();
-}
-function openObraForm(existing){
-  const isEdit = !!existing;
-  const inner = document.getElementById('sheet-inner-content');
-  inner.innerHTML = `
-    <div class="sheet-head"><h3>${isEdit?'Editar obra':'Nueva obra'}</h3><button class="icon-btn" id="closeSheet">✕</button></div>
-    <label>Nombre de la obra</label>
-    <div class="field"><input type="text" id="f_nombre" value="${escapeHtml(existing?.nombre||'')}" placeholder="Ej. Reforma Calle Mayor 12"></div>
-    <label>Responsable</label>
-    <div class="field"><input type="text" id="f_resp" value="${escapeHtml(existing?.responsable||'')}" placeholder="Nombre del encargado"></div>
-    <label>Estado</label>
-    <div class="field">
-      <select id="f_estado">
-        <option value="Activa" ${existing?.estado==='Activa'?'selected':''}>Activa</option>
-        <option value="Cerrada" ${existing?.estado==='Cerrada'?'selected':''}>Cerrada</option>
-      </select>
-    </div>
-    ${isEdit ? `<div class="field"><label>Código interno</label><input type="text" value="${existing.codigo}" disabled></div>` : ''}
-    <button class="btn primary" id="saveObraBtn">Guardar obra</button>
-  `;
-  inner.querySelector('#closeSheet').addEventListener('click', ()=>document.getElementById('formsheet').close());
-  inner.querySelector('#saveObraBtn').addEventListener('click', async ()=>{
-    const nombre = inner.querySelector('#f_nombre').value.trim();
-    const responsable = inner.querySelector('#f_resp').value.trim();
-    const estado = inner.querySelector('#f_estado').value;
-    if(!nombre){ toast('El nombre de la obra es obligatorio'); return; }
-    if(isEdit){ Object.assign(existing, {nombre, responsable, estado}); }
-    else {
-      const codigo = nextCodigo('OBR', state.obras);
-      state.obras.push({codigo, nombre, responsable, estado, ejemplo:false});
-    }
-    await saveAll();
-    document.getElementById('formsheet').close();
-    toast('Obra guardada ✓');
-    render();
-  });
-  document.getElementById('formsheet').showModal();
-}
-
-/* ---------------- LABEL PRINTING ---------------- */
-function imprimirEtiqueta(tipo, item){
-  if(!item) return;
-  const cont = document.getElementById('label-print-content');
-  cont.innerHTML = '';
-  const qrDiv = document.createElement('div');
-  cont.appendChild(qrDiv);
-  const text = document.createElement('div');
-  text.className = 'label-text';
-  text.innerHTML = `<strong>${item.codigo}</strong><br>${escapeHtml(tipo==='material'?item.descripcion:item.nombre)}`;
-  cont.appendChild(text);
-  try{
-    if(typeof QRCode === 'function'){ new QRCode(qrDiv, {text:item.codigo, width:160, height:160}); }
-    else { qrDiv.textContent = '(QR no disponible, usa el código: '+item.codigo+')'; }
-  }catch(e){ qrDiv.textContent = 'Código: '+item.codigo; }
-  setTimeout(()=>window.print(), 250);
-}
-
-/* ---------------- TAB: HISTORIAL ---------------- */
-function renderHistorial(c){
-  c.innerHTML = `
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <h2 class="section-title">Historial de movimientos</h2>
-        <button class="btn ghost small" id="refreshHistBtn">↻ Actualizar</button>
-      </div>
-      <div class="two-col">
-        <div class="col">
-          <label>Estado de la obra</label>
-          <div class="field">
-            <select id="filtEstado">
-              <option value="activas">Solo obras activas</option>
-              <option value="todas">Todas</option>
-              <option value="cerradas">Solo cerradas</option>
-            </select>
-          </div>
-        </div>
-        <div class="col">
-          <label>Obra</label>
-          <div class="field">
-            <select id="filtObra">
-              <option value="">Todas las obras</option>
-              ${state.obras.map(o=>`<option value="${o.codigo}">${escapeHtml(o.nombre)}${o.estado==='Cerrada'?' (cerrada)':''}</option>`).join('')}
-            </select>
-          </div>
-        </div>
-      </div>
-      <div class="field">
-        <select id="filtTipo">
-          <option value="">Entradas y salidas</option>
-          <option value="Entrada">Solo entradas</option>
-          <option value="Salida">Solo salidas</option>
+    <div class="step" data-step="1" data-state="${s1}" style="margin-top:16px">
+      <button class="step-top" data-recstepbtn="1">
+        <span class="num"><span class="digit">1</span>${ICON_TICK}</span>
+        <span class="tx"><h3>Destino</h3><span class="sum">${escapeHtml(destinoLabel)}</span></span>${ICON_ARROW}
+      </button>
+      <div class="step-body">
+        <select aria-label="Destino" id="recDestSel">
+          <option value="">Sin elegir</option>
+          ${obrasActivas.map(o=>`<option value="obra:${o.codigo}" ${recibiState.obraCodigo===o.codigo?'selected':''}>${escapeHtml(o.nombre)}</option>`).join('')}
+          <option value="libre:Operario" ${recibiState.obraLibre==='Operario'?'selected':''}>Operario</option>
+          <option value="libre:Otros" ${recibiState.obraLibre==='Otros'?'selected':''}>Otros</option>
         </select>
       </div>
-      <div id="histList"></div>
+    </div>
+
+    <div class="step" data-step="2" data-state="${s2}">
+      <button class="step-top" data-recstepbtn="2">
+        <span class="num"><span class="digit">2</span>${ICON_TICK}</span>
+        <span class="tx"><h3>Qué se recibe</h3><span class="sum">${tieneDestino?seleccionCount+' de '+lista.length:''}</span></span>${ICON_ARROW}
+      </button>
+      <div class="step-body">
+        ${!tieneDestino ? '<p class="note">Elige antes un destino.</p>' : (lista.length===0 ? '<p class="note">No hay nada pendiente para este destino.</p>' : lista.map(m=>{
+          const mat=findMaterial(m.codigoMaterial); const checked = recibiState.seleccion[m.id]!==false;
+          return `<label class="check-row"><input type="checkbox" data-recsel="${m.id}" ${checked?'checked':''}><span class="box">${ICON_CHECK}</span><span class="t" style="flex:1"><b>${escapeHtml(mat?mat.descripcion:m.codigoMaterial)}</b></span><span class="muted" style="font-weight:700">${m.cantidad}${mat?' '+escapeHtml(mat.unidad):''}</span></label>`;
+        }).join(''))}
+      </div>
+    </div>
+
+    <div class="step" data-step="3" data-state="${s3}">
+      <button class="step-top" data-recstepbtn="3">
+        <span class="num"><span class="digit">3</span>${ICON_TICK}</span>
+        <span class="tx"><h3>Quién lo recibe</h3><span class="sum"></span></span>${ICON_ARROW}
+      </button>
+      <div class="step-body">
+        <div class="field"><input type="text" id="recNombre" placeholder="Nombre y apellidos" aria-label="Nombre de quien recibe" value="${escapeHtml(recibiState.nombre)}"></div>
+        <div class="sign"><canvas id="sigCanvas"></canvas><div class="rule"></div><div class="cap">Firma con el dedo</div></div>
+        <button class="btn btn-line btn-sm" style="margin-top:10px" id="clearSigBtn">Borrar y repetir</button>
+      </div>
     </div>
   `;
-  function obraLabel(m){
-    if(m.codigoObra){ const o = findObra(m.codigoObra); return o ? o.nombre : m.codigoObra; }
-    if(m.obraLibre) return m.obraLibre + (m.obraDetalle ? ': '+m.obraDetalle : '');
-    return '—';
+  wireRecEvents(el);
+}
+function wireRecEvents(el){
+  el.querySelectorAll('[data-pendgroup]').forEach(b=>b.addEventListener('click', ()=>{
+    const key = b.dataset.pendgroup;
+    recibiState.seleccion = {};
+    if(key.startsWith('obra:')){ recibiState.obraCodigo=key.slice(5); recibiState.obraLibre=''; }
+    else { recibiState.obraCodigo=null; recibiState.obraLibre=key.slice(6); }
+    recStep = 2; renderRecibi();
+  }));
+  el.querySelectorAll('[data-recstepbtn]').forEach(b=>b.addEventListener('click', ()=>{
+    const n = Number(b.dataset.recstepbtn); recStep = (recStep===n)?null:n; renderRecibi();
+  }));
+  const destSel = el.querySelector('#recDestSel');
+  if(destSel) destSel.addEventListener('change', e=>{
+    const v = e.target.value; recibiState.seleccion = {};
+    if(v.startsWith('obra:')){ recibiState.obraCodigo=v.slice(5); recibiState.obraLibre=''; }
+    else if(v.startsWith('libre:')){ recibiState.obraCodigo=null; recibiState.obraLibre=v.slice(6); }
+    else { recibiState.obraCodigo=null; recibiState.obraLibre=''; }
+    recStep = 2; renderRecibi();
+  });
+  el.querySelectorAll('[data-recsel]').forEach(cb=>cb.addEventListener('change', e=>{
+    recibiState.seleccion[e.target.dataset.recsel] = e.target.checked;
+  }));
+  const nombreInput = el.querySelector('#recNombre');
+  if(nombreInput) nombreInput.addEventListener('input', e=> recibiState.nombre = e.target.value);
+  const sigCanvas = el.querySelector('#sigCanvas');
+  if(sigCanvas) setupSignaturePad(sigCanvas);
+  const clearSigBtn = el.querySelector('#clearSigBtn');
+  if(clearSigBtn) clearSigBtn.addEventListener('click', ()=>{
+    const ctx = currentSigCanvas.getContext('2d');
+    ctx.clearRect(0,0,currentSigCanvas.width,currentSigCanvas.height);
+    recibiState.firmaVacia = true;
+  });
+}
+function setupSignaturePad(canvas){
+  currentSigCanvas = canvas;
+  const ctx = canvas.getContext('2d');
+  function fit(){
+    const r = canvas.getBoundingClientRect(); if(!r.width) return;
+    const dpr = window.devicePixelRatio||1;
+    canvas.width = r.width*dpr; canvas.height = r.height*dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.lineWidth=2.5; ctx.lineCap='round'; ctx.lineJoin='round';
+    ctx.strokeStyle = getComputedStyle(document.body).color;
   }
-  function obraEstado(m){
-    if(!m.codigoObra) return null;
-    const o = findObra(m.codigoObra);
-    return o ? o.estado : null;
+  fit();
+  let drawing=false;
+  function pos(e){ const r=canvas.getBoundingClientRect(); return [e.clientX-r.left, e.clientY-r.top]; }
+  canvas.addEventListener('pointerdown', e=>{ drawing=true; ctx.beginPath(); ctx.moveTo(...pos(e)); e.preventDefault(); });
+  canvas.addEventListener('pointermove', e=>{ if(!drawing) return; ctx.lineTo(...pos(e)); ctx.stroke(); recibiState.firmaVacia=false; e.preventDefault(); });
+  window.addEventListener('pointerup', ()=> drawing=false);
+}
+async function confirmarRecepcion(){
+  const tieneDestino = !!(recibiState.obraCodigo || recibiState.obraLibre);
+  if(!tieneDestino){ recStep=1; renderRecibi(); badFlashStep('#panel-rec .step[data-step="1"]'); toast('Elige un destino'); return; }
+  const pendientes = movimientosActivos().filter(m=>{
+    if(m.tipo!=='Salida' || m.recibido) return false;
+    if(recibiState.obraCodigo) return m.codigoObra===recibiState.obraCodigo;
+    if(recibiState.obraLibre) return !m.codigoObra && m.obraLibre===recibiState.obraLibre;
+    return false;
+  });
+  const seleccionados = pendientes.filter(m=> recibiState.seleccion[m.id]!==false);
+  const nombre = (recibiState.nombre||'').trim();
+  if(seleccionados.length===0){ recStep=2; renderRecibi(); badFlashStep('#panel-rec .step[data-step="2"]'); toast('Selecciona al menos un material'); return; }
+  if(!nombre){ recStep=3; renderRecibi(); badFlashStep('#panel-rec .step[data-step="3"]'); toast('Indica el nombre de quien recibe'); return; }
+  if(recibiState.firmaVacia){ recStep=3; renderRecibi(); badFlashStep('#panel-rec .step[data-step="3"]'); toast('Falta la firma'); return; }
+  const firmaDataUrl = currentSigCanvas.toDataURL('image/png');
+  const fecha = new Date().toISOString();
+  seleccionados.forEach(m=>{ m.recibido=true; m.recibidoPor=nombre; m.recibidoFirma=firmaDataUrl; m.recibidoFecha=fecha; touch(m); });
+  $('#recSaveBtn').disabled = true;
+  const ok = await saveAll();
+  $('#recSaveBtn').disabled = false;
+  if(ok){
+    toast('Recepción confirmada');
+    recibiState.obraCodigo=null; recibiState.obraLibre=''; recibiState.seleccion={}; recibiState.nombre=''; recibiState.firmaVacia=true;
+    recStep=1;
   }
-  function draw(){
-    const fo = c.querySelector('#filtObra').value;
-    const ft = c.querySelector('#filtTipo').value;
-    const fe = c.querySelector('#filtEstado').value;
-    let list = [...state.movimientos].filter(m=> (!fo||m.codigoObra===fo) && (!ft||m.tipo===ft) );
-    if(fe==='activas') list = list.filter(m=> obraEstado(m) !== 'Cerrada');
-    else if(fe==='cerradas') list = list.filter(m=> obraEstado(m) === 'Cerrada');
-    list.sort((a,b)=> new Date(b.fecha) - new Date(a.fecha));
-    document.getElementById('histList').innerHTML = list.length ? list.map(m=>{
-      const mat = findMaterial(m.codigoMaterial);
-      const resp = m.responsableCodigo ? findResponsable(m.responsableCodigo) : null;
-      const detalles = [obraLabel(m)];
-      if(resp) detalles.push('Resp: '+escapeHtml(resp.nombre));
-      const codigos = [];
-      if(mat && mat.codigoProveedor) codigos.push(`Prov: <span class="code-copy" data-copy="${escapeHtml(mat.codigoProveedor)}" title="Tocar para copiar" style="text-decoration:underline dotted;cursor:pointer;">${escapeHtml(mat.codigoProveedor)}</span>`);
-      if(mat && mat.codigoPropio) codigos.push('Propio: '+escapeHtml(mat.codigoPropio));
-      return `
-      <div class="list-row">
-        <div class="main">
-          <div class="t1"><span class="badge ${m.tipo==='Entrada'?'in':'out'}">${m.tipo}</span> ${escapeHtml(mat?mat.descripcion:m.codigoMaterial)}</div>
-          <div class="t2">${fmtDate(m.fecha)} · ${detalles.join(' · ')}</div>
-          ${codigos.length ? `<div class="t2" style="margin-top:2px;">${codigos.join(' · ')}</div>` : ''}
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div class="num">${m.cantidad}</div>
-          <button class="icon-btn" data-editmov="${m.id}" title="Editar">✎</button>
-        </div>
-      </div>`;
-    }).join('') : `<div class="empty">No hay movimientos con estos filtros.</div>`;
-    document.querySelectorAll('[data-editmov]').forEach(b=>b.addEventListener('click', ()=>{
-      const mov = state.movimientos.find(x=>x.id===b.dataset.editmov);
-      if(mov) openEditMovimientoForm(mov);
+  renderRecibi();
+}
+$('#recSaveBtn').addEventListener('click', confirmarRecepcion);
+
+/* ================= HISTORIAL ================= */
+function obraLabelHis(m){
+  if(m.codigoObra){ const o=findObra(m.codigoObra); return o?o.nombre:m.codigoObra; }
+  if(m.obraLibre) return m.obraLibre + (m.obraDetalle?': '+m.obraDetalle:'');
+  return '—';
+}
+function obraEstadoHis(m){ if(!m.codigoObra) return null; const o=findObra(m.codigoObra); return o?o.estado:null; }
+function renderHistorial(){
+  const el = $('#content-his');
+  el.innerHTML = `
+    <div class="head"><div class="tx"><h1>Historial</h1></div></div>
+    <div class="search" style="margin-bottom:10px">${ICON_SEARCH}<input type="search" id="hisSearch" placeholder="Buscar material, obra, proveedor, nota"></div>
+    <div class="two">
+      <select aria-label="Estado de la obra" id="hisEstado"><option value="activas">Obras activas</option><option value="todas">Todas</option><option value="cerradas">Cerradas</option></select>
+      <select aria-label="Obra" id="hisObraSel"><option value="">Todas las obras</option>${state.obras.filter(o=>o.estado==='Activa'&&!o.eliminado).map(o=>`<option value="${o.codigo}">${escapeHtml(o.nombre)}</option>`).join('')}</select>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px" id="hisPills"></div>
+    <div id="hisList"></div>
+  `;
+  const searchInput=$('#hisSearch'), estadoSel=$('#hisEstado'), obraSel=$('#hisObraSel');
+  searchInput.addEventListener('input', drawHistorial);
+  estadoSel.addEventListener('change', drawHistorial);
+  obraSel.addEventListener('change', ()=>{ hisQuickObra=null; drawHistorial(); });
+  drawHistorial();
+
+  function drawHistorial(){
+    const fq=(searchInput.value||'').trim().toLowerCase(), fe=estadoSel.value, foSel=obraSel.value;
+    const obraActiva = hisQuickObra || foSel || '';
+    const tipoActivo = hisQuickTipo || '';
+    let list = movimientosActivos().filter(m=> (!obraActiva||m.codigoObra===obraActiva) && (!tipoActivo||m.tipo===tipoActivo));
+    if(fe==='activas') list = list.filter(m=> obraEstadoHis(m)!=='Cerrada');
+    else if(fe==='cerradas') list = list.filter(m=> obraEstadoHis(m)==='Cerrada');
+    if(hisQuickFecha) list = list.filter(m=> new Date(m.fecha).toDateString()===hisQuickFecha);
+    if(fq){
+      list = list.filter(m=>{
+        const mat=findMaterial(m.codigoMaterial), resp=m.responsableCodigo?findResponsable(m.responsableCodigo):null;
+        const campos=[mat?mat.descripcion:'', mat?mat.proveedor:'', mat?mat.codigoProveedor:'', mat?mat.codigoPropio:'', obraLabelHis(m), resp?resp.nombre:'', m.nota||''];
+        return campos.some(v=>(v||'').toLowerCase().includes(fq));
+      });
+    }
+    list.sort((a,b)=> new Date(b.fecha)-new Date(a.fecha));
+    window.__hisUltimaLista = list;
+
+    const pills=[];
+    if(hisQuickFecha) pills.push(`<span class="pill">${new Date(hisQuickFecha).toLocaleDateString('es-ES')} <button data-clrfecha>✕</button></span>`);
+    if(obraActiva){ const o=findObra(obraActiva); pills.push(`<span class="pill">${escapeHtml(o?o.nombre:obraActiva)} <button data-clrobra>✕</button></span>`); }
+    if(tipoActivo) pills.push(`<span class="pill">${tipoActivo} <button data-clrtipo>✕</button></span>`);
+    let pillsHtml = pills.join('');
+    if(obraActiva && findObra(obraActiva)) pillsHtml += `<button class="btn btn-line btn-sm" id="hisVerResumen" data-obra="${obraActiva}">Ver resumen</button>`;
+    pillsHtml += `<span style="flex:1"></span><button class="btn btn-line btn-sm" id="hisExportCsv">Exportar CSV</button>`;
+    $('#hisPills').innerHTML = pillsHtml;
+    const clrf=$('[data-clrfecha]'); if(clrf) clrf.onclick=()=>{ hisQuickFecha=null; drawHistorial(); };
+    const clro=$('[data-clrobra]'); if(clro) clro.onclick=()=>{ hisQuickObra=null; obraSel.value=''; drawHistorial(); };
+    const clrt=$('[data-clrtipo]'); if(clrt) clrt.onclick=()=>{ hisQuickTipo=null; drawHistorial(); };
+    const verR=$('#hisVerResumen'); if(verR) verR.onclick=()=>openResumenModal(findObra(verR.dataset.obra));
+    $('#hisExportCsv').onclick = exportHistorialCsv;
+
+    if(!list.length){ $('#hisList').innerHTML = '<p class="empty">No hay movimientos con estos filtros.</p>'; return; }
+
+    const porFecha={}, ordenFechas=[];
+    list.forEach(m=>{ const dia=fmtDateOnly(m.fecha); if(!porFecha[dia]){porFecha[dia]=[];ordenFechas.push(dia);} porFecha[dia].push(m); });
+    let html='';
+    ordenFechas.forEach(dia=>{
+      html += `<p class="sec">${escapeHtml(dia)}</p>`;
+      const gm={}, orden=[];
+      porFecha[dia].forEach(m=>{ const key=m.grupoId||m.id; if(!gm[key]){gm[key]=[];orden.push(key);} gm[key].push(m); });
+      orden.forEach(key=>{
+        const grupo=gm[key], m0=grupo[0];
+        const resp = m0.responsableCodigo?findResponsable(m0.responsableCodigo):null;
+        const hora = new Date(m0.fecha).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+        const todosRecibidos = grupo.every(m=>m.recibido);
+        html += `<div class="card">
+          <div class="card-head">
+            <button class="tag click ${m0.tipo==='Entrada'?'in':'out'}" data-filtertipo="${m0.tipo}">${m0.tipo}</button>
+            <b ${m0.codigoObra?`data-filterobra="${m0.codigoObra}"`:''}>${escapeHtml(obraLabelHis(m0))}</b>
+            <span class="sp"></span><span class="muted" style="font-size:13.5px;font-weight:600">${hora}</span>
+            <span class="tag">${grupo.length} art.</span>${todosRecibidos?'<span class="tag in">Recibido</span>':''}
+          </div>
+          ${grupo.map(m=>{
+            const mat=findMaterial(m.codigoMaterial);
+            return `<div class="row"><div class="t"><b>${escapeHtml(mat?mat.descripcion:m.codigoMaterial)}</b><small>${mat&&mat.codigoProveedor?escapeHtml(mat.codigoProveedor):''}</small></div>
+              <span style="font-weight:800">${m.cantidad}${mat?' '+escapeHtml(mat.unidad):''}</span>
+              <button class="icon-btn" data-editmov="${m.id}" aria-label="Editar">${ICON_EDIT}</button></div>`;
+          }).join('')}
+          <details class="more"><summary>Más info</summary>
+            <dl><dt>Responsable</dt><dd>${resp?escapeHtml(resp.nombre):'—'}</dd>
+            ${m0.nota?`<dt>Nota</dt><dd>${escapeHtml(m0.nota)}</dd>`:''}
+            ${todosRecibidos?`<dt>Recibido</dt><dd>${escapeHtml(m0.recibidoPor||'')} · ${fmtDate(m0.recibidoFecha)}</dd>`:''}</dl>
+          </details>
+        </div>`;
+      });
+    });
+    $('#hisList').innerHTML = html;
+    $$('[data-editmov]').forEach(b=>b.addEventListener('click', ()=>{ const mov=state.movimientos.find(x=>x.id===b.dataset.editmov); if(mov) openEditMovModal(mov); }));
+    $$('[data-filtertipo]').forEach(b=>b.addEventListener('click', ()=>{ hisQuickTipo=b.dataset.filtertipo; drawHistorial(); }));
+    $$('[data-filterobra]').forEach(b=>b.addEventListener('click', ()=>{ hisQuickObra=b.dataset.filterobra; drawHistorial(); }));
+  }
+}
+function exportHistorialCsv(){
+  const list = window.__hisUltimaLista || [];
+  if(!list.length){ toast('No hay movimientos que exportar'); return; }
+  const cab=['Tipo','Fecha','Obra','Material','Cantidad','Codigo proveedor','Codigo propio','Proveedor','Responsable','Recibido por','Nota'];
+  const filas = list.map(m=>{
+    const mat=findMaterial(m.codigoMaterial), resp=m.responsableCodigo?findResponsable(m.responsableCodigo):null;
+    return [m.tipo, fmtDate(m.fecha), obraLabelHis(m), mat?mat.descripcion:m.codigoMaterial, m.cantidad,
+      mat&&mat.codigoProveedor?mat.codigoProveedor:'', mat&&mat.codigoPropio?mat.codigoPropio:'', mat&&mat.proveedor?mat.proveedor:'',
+      resp?resp.nombre:'', m.recibidoPor||'', m.nota||''];
+  });
+  function csvCell(v){ v=String(v==null?'':v); return /[",;\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
+  const csv = [cab, ...filas].map(f=>f.map(csvCell).join(';')).join('\r\n');
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='historial_'+new Date().toISOString().slice(0,10)+'.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  toast('CSV descargado');
+}
+function openEditMovModal(mov){
+  const body = $('#mMovBody');
+  body.innerHTML = `
+    <div class="two">
+      <div class="field"><label for="eTipo">Tipo</label><select id="eTipo"><option value="Salida" ${mov.tipo==='Salida'?'selected':''}>Salida</option><option value="Entrada" ${mov.tipo==='Entrada'?'selected':''}>Entrada</option></select></div>
+      <div class="field"><label for="eObra">Obra</label><select id="eObra">
+        <option value="">Sin elegir de la lista</option>
+        ${state.obras.filter(o=>!o.eliminado).map(o=>`<option value="obra:${o.codigo}" ${mov.codigoObra===o.codigo?'selected':''}>${escapeHtml(o.nombre)}</option>`).join('')}
+        <option value="libre:Operario" ${mov.obraLibre==='Operario'?'selected':''}>Operario</option>
+        <option value="libre:Otros" ${mov.obraLibre==='Otros'?'selected':''}>Otros</option>
+      </select></div>
+    </div>
+    <div class="field" id="eQuienWrap" ${(mov.obraLibre==='Operario'||mov.obraLibre==='Otros')?'':'hidden'}>
+      <label for="eQuien">Nombre o detalle</label><input id="eQuien" type="text" value="${escapeHtml(mov.obraDetalle||'')}">
+    </div>
+    <div class="field"><label for="eMat">Material</label><select id="eMat">
+      ${state.materiales.filter(m=>!m.eliminado || m.codigo===mov.codigoMaterial).map(m=>`<option value="${m.codigo}" ${m.codigo===mov.codigoMaterial?'selected':''}>${escapeHtml(m.descripcion)}</option>`).join('')}
+    </select></div>
+    <div class="two">
+      <div class="field"><label for="eCant">Cantidad</label><input id="eCant" type="text" value="${mov.cantidad}"></div>
+      <div class="field"><label for="eResp">Responsable</label><select id="eResp">
+        <option value="">Sin elegir</option>
+        ${state.responsables.filter(r=>!r.eliminado || r.codigo===mov.responsableCodigo).map(r=>`<option value="${r.codigo}" ${r.codigo===mov.responsableCodigo?'selected':''}>${escapeHtml(r.nombre)}</option>`).join('')}
+      </select></div>
+    </div>
+    <div class="field"><label for="eNota">Nota</label><input id="eNota" type="text" value="${escapeHtml(mov.nota||'')}"></div>
+    <button class="btn btn-red btn-block" style="margin-top:16px" id="eDeleteBtn">Eliminar movimiento</button>
+  `;
+  body.querySelector('#eObra').addEventListener('change', e=>{
+    const v = e.target.value;
+    $('#eQuienWrap').hidden = !(v==='libre:Operario'||v==='libre:Otros');
+  });
+  $('#mMovSave').onclick = async ()=>{
+    const eObraVal = body.querySelector('#eObra').value;
+    let codigoObra=null, obraLibre='';
+    if(eObraVal.startsWith('obra:')) codigoObra = eObraVal.slice(5);
+    else if(eObraVal==='libre:Operario') obraLibre='Operario';
+    else if(eObraVal==='libre:Otros') obraLibre='Otros';
+    const cantidad = Number(body.querySelector('#eCant').value)||0;
+    if(!codigoObra && !obraLibre){ toast('Indica una obra'); return; }
+    if(cantidad<=0){ toast('La cantidad debe ser mayor que 0'); return; }
+    touch(Object.assign(mov, {
+      tipo: body.querySelector('#eTipo').value, codigoObra, obraLibre,
+      obraDetalle: obraLibre ? body.querySelector('#eQuien').value.trim() : '',
+      codigoMaterial: body.querySelector('#eMat').value, cantidad,
+      responsableCodigo: body.querySelector('#eResp').value || null,
+      nota: body.querySelector('#eNota').value.trim()
     }));
-    document.querySelectorAll('[data-copy]').forEach(el=>el.addEventListener('click', ()=>{
-      const val = el.dataset.copy;
-      if(navigator.clipboard && navigator.clipboard.writeText){
-        navigator.clipboard.writeText(val).then(()=>toast('Copiado ✓')).catch(()=>toast('No se pudo copiar'));
-      } else {
-        toast('Copiar no está disponible en este navegador');
+    const ok = await saveAll(); closeModals();
+    if(ok){ toast('Movimiento actualizado'); renderHistorial(); }
+  };
+  $('#eDeleteBtn').onclick = async ()=>{
+    if(confirm('¿Eliminar este movimiento? No se puede deshacer.')){
+      mov.eliminado=true; touch(mov);
+      const ok = await saveAll(); closeModals();
+      if(ok){ toast('Movimiento eliminado'); renderHistorial(); }
+    }
+  };
+  openModal('mMov');
+}
+
+/* ================= CATÁLOGO ================= */
+function renderCatalogo(){
+  const el = $('#content-cat');
+  el.innerHTML = `
+    <div class="head"><div class="tx"><h1>Catálogo</h1></div></div>
+    <div class="subtabs">
+      <button class="btn ${catalogSub==='materiales'?'btn-signal':'btn-line'} btn-sm" data-tab="materiales">Materiales</button>
+      <button class="btn ${catalogSub==='obras'?'btn-signal':'btn-line'} btn-sm" data-tab="obras">Obras</button>
+    </div>
+    <div id="catBody"></div>
+  `;
+  el.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click', ()=>{ catalogSub=b.dataset.tab; renderCatalogo(); }));
+  if(catalogSub==='materiales') renderMaterialesTab($('#catBody')); else renderObrasTab($('#catBody'));
+}
+function renderMaterialesTab(el){
+  el.innerHTML = `
+    <div class="search" style="margin-bottom:10px">${ICON_SEARCH}<input type="search" id="matCatSearch" placeholder="Buscar material"></div>
+    <button class="btn btn-ink btn-block" style="margin-bottom:12px" id="addMatBtn">Añadir material</button>
+    <div id="matCatList"></div>
+  `;
+  el.querySelector('#addMatBtn').addEventListener('click', ()=> openMaterialModal(null,''));
+  const searchInput = el.querySelector('#matCatSearch');
+  searchInput.addEventListener('input', draw); draw();
+  function draw(){
+    const q=(searchInput.value||'').trim().toLowerCase();
+    let list = state.materiales.filter(m=>!m.eliminado);
+    if(q) list = list.filter(m=> m.descripcion.toLowerCase().includes(q) || m.codigo.toLowerCase().includes(q) || (m.codigoPropio&&m.codigoPropio.toLowerCase().includes(q)) || (m.codigoProveedor&&m.codigoProveedor.toLowerCase().includes(q)) || (m.proveedor&&m.proveedor.toLowerCase().includes(q)));
+    list.sort((a,b)=>a.descripcion.localeCompare(b.descripcion));
+    $('#matCatList').innerHTML = list.length ? `<div class="card">` + list.map(m=>{
+      const foto = state.assets[m.fotoId];
+      return `<div class="row">${foto?`<img class="thumb" src="${foto}">`:'<div class="thumb"></div>'}
+        <div class="t"><b>${escapeHtml(m.descripcion)}</b><small>${[m.proveedor,m.codigoProveedor,m.codigoPropio,m.unidad].filter(Boolean).map(escapeHtml).join(' · ')}</small></div>
+        <button class="btn btn-line btn-sm" data-label="${m.codigo}">Etiqueta</button>
+        <button class="icon-btn" data-edit="${m.codigo}" aria-label="Editar">${ICON_EDIT}</button>
+        <button class="icon-btn" data-del="${m.codigo}" aria-label="Borrar">${ICON_TRASH}</button></div>`;
+    }).join('') + `</div>` : `<p class="empty">Aún no hay materiales dados de alta.</p>`;
+    $$('[data-label]').forEach(b=>b.addEventListener('click', ()=>openEtiquetaModal(findMaterial(b.dataset.label))));
+    $$('[data-edit]').forEach(b=>b.addEventListener('click', ()=>openMaterialModal(findMaterial(b.dataset.edit))));
+    $$('[data-del]').forEach(b=>b.addEventListener('click', async ()=>{
+      const usos = movimientosActivos().filter(m=>m.codigoMaterial===b.dataset.del).length;
+      const aviso = usos>0 ? `Este material aparece en ${usos} movimiento${usos===1?'':'s'} del historial. ¿Seguro que quieres eliminarlo?` : '¿Eliminar este material?';
+      if(confirm(aviso)){
+        const mat=findMaterial(b.dataset.del); if(mat){ mat.eliminado=true; touch(mat); }
+        const ok = await saveAll(); if(ok) toast('Material eliminado'); renderCatalogo();
       }
     }));
   }
-  draw();
-  c.querySelector('#filtEstado').addEventListener('change', draw);
-  c.querySelector('#filtObra').addEventListener('change', draw);
-  c.querySelector('#filtTipo').addEventListener('change', draw);
-  c.querySelector('#refreshHistBtn').addEventListener('click', refreshData);
 }
-function openEditMovimientoForm(mov){
-  const inner = document.getElementById('sheet-inner-content');
-  inner.innerHTML = `
-    <div class="sheet-head"><h3>Editar movimiento</h3><button class="icon-btn" id="closeSheet">✕</button></div>
-    <label>Tipo</label>
-    <div class="field">
-      <select id="e_tipo">
-        <option value="Salida" ${mov.tipo==='Salida'?'selected':''}>Salida</option>
-        <option value="Entrada" ${mov.tipo==='Entrada'?'selected':''}>Entrada</option>
-      </select>
-    </div>
-    <label>Obra</label>
-    <div class="field">
-      <select id="e_obra">
-        <option value="">— Selecciona una obra —</option>
-        ${state.obras.map(o=>`<option value="${o.codigo}" ${o.codigo===mov.codigoObra?'selected':''}>${escapeHtml(o.nombre)}</option>`).join('')}
-        <option value="__OPERARIO__" ${mov.obraLibre==='Operario'?'selected':''}>Operario</option>
-        <option value="__OTROS__" ${mov.obraLibre==='Otros'?'selected':''}>Otros</option>
-      </select>
-    </div>
-    <label>Nombre del operario / detalle (si aplica)</label>
-    <div class="field"><input type="text" id="e_obraDetalle" value="${escapeHtml(mov.obraDetalle||'')}"></div>
-    <label>Material</label>
-    <div class="field">
-      <select id="e_material">
-        ${state.materiales.map(m=>`<option value="${m.codigo}" ${m.codigo===mov.codigoMaterial?'selected':''}>${escapeHtml(m.descripcion)} (${m.codigo})</option>`).join('')}
-      </select>
-    </div>
-    <label>Cantidad</label>
-    <div class="field"><input type="number" id="e_cantidad" min="0" value="${mov.cantidad}"></div>
-    <label>Responsable</label>
-    <div class="field">
-      <select id="e_responsable">
-        <option value="">— Sin responsable —</option>
-        ${state.responsables.map(r=>`<option value="${r.codigo}" ${r.codigo===mov.responsableCodigo?'selected':''}>${escapeHtml(r.nombre)}</option>`).join('')}
-      </select>
-    </div>
-    <label>Nota / nº albarán</label>
-    <div class="field"><input type="text" id="e_nota" value="${escapeHtml(mov.nota||'')}"></div>
-    <div class="btn-row">
-      <button class="btn ghost" id="deleteMovBtn" style="border-color:var(--warn);color:var(--warn);">Eliminar movimiento</button>
-      <button class="btn primary" id="saveMovBtn">Guardar cambios</button>
-    </div>
-  `;
-  inner.querySelector('#closeSheet').addEventListener('click', ()=>document.getElementById('formsheet').close());
-  inner.querySelector('#saveMovBtn').addEventListener('click', async ()=>{
-    const eObraVal = inner.querySelector('#e_obra').value;
-    let obraCodigo = null, obraLibre = '';
-    if(eObraVal === '__OPERARIO__') obraLibre = 'Operario';
-    else if(eObraVal === '__OTROS__') obraLibre = 'Otros';
-    else obraCodigo = eObraVal || null;
-    const cantidad = Number(inner.querySelector('#e_cantidad').value)||0;
-    if(!obraCodigo && !obraLibre){ toast('Indica una obra'); return; }
-    if(cantidad<=0){ toast('La cantidad debe ser mayor que 0'); return; }
-    Object.assign(mov, {
-      tipo: inner.querySelector('#e_tipo').value,
-      codigoObra: obraCodigo,
-      obraLibre: obraCodigo ? '' : obraLibre,
-      codigoMaterial: inner.querySelector('#e_material').value,
-      cantidad,
-      obraDetalle: obraLibre ? inner.querySelector('#e_obraDetalle').value.trim() : '',
-      responsableCodigo: inner.querySelector('#e_responsable').value || null,
-      nota: inner.querySelector('#e_nota').value.trim()
-    });
-    await saveAll();
-    document.getElementById('formsheet').close();
-    toast('Movimiento actualizado ✓');
-    render();
-  });
-  inner.querySelector('#deleteMovBtn').addEventListener('click', async ()=>{
-    if(confirm('¿Eliminar este movimiento del historial? No se puede deshacer.')){
-      state.movimientos = state.movimientos.filter(m=>m.id!==mov.id);
-      await saveAll();
-      document.getElementById('formsheet').close();
-      toast('Movimiento eliminado');
-      render();
-    }
-  });
-  document.getElementById('formsheet').showModal();
-}
-
-/* ---------------- TAB: CONFIGURACION ---------------- */
-function renderConfiguracion(c){
-  c.innerHTML = `
-    <div class="card">
-      <h2 class="section-title">Responsables</h2>
-      <p style="font-size:12.5px;color:var(--ink-soft);margin-top:-6px;">Personas que pueden aparecer como responsables de un movimiento.</p>
-      <button class="btn primary" id="addRespBtn" style="margin:10px 0 14px;">${ICONS.plus} Añadir responsable</button>
-      <div id="respList"></div>
-    </div>
-  `;
-  c.querySelector('#addRespBtn').addEventListener('click', ()=>openResponsableForm(null));
-  const list = [...state.responsables].sort((a,b)=>a.nombre.localeCompare(b.nombre));
-  c.querySelector('#respList').innerHTML = list.length ? list.map(r=>`
-    <div class="list-row">
-      <div class="main">
-        <div class="t1">${escapeHtml(r.nombre)} ${r.ejemplo?'<span class="badge example">Ejemplo</span>':''}</div>
-        <div class="t2">${r.codigo}</div>
-      </div>
-      <div class="btn-row" style="width:auto;">
-        <button class="btn ghost small" data-edit="${r.codigo}">Editar</button>
-        <button class="btn ghost small" data-del="${r.codigo}">🗑</button>
-      </div>
-    </div>
-  `).join('') : `<div class="empty">Aún no hay responsables dados de alta.</div>`;
-  c.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click', ()=>openResponsableForm(findResponsable(b.dataset.edit))));
-  c.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click', async ()=>{
-    if(confirm('¿Eliminar este responsable? Los movimientos ya guardados mantendrán su nombre en el historial hasta que se editen.')){
-      state.responsables = state.responsables.filter(r=>r.codigo!==b.dataset.del);
-      await saveAll();
-      render();
+function renderObrasTab(el){
+  el.innerHTML = `<button class="btn btn-ink btn-block" style="margin-bottom:12px" id="addObraBtn">Añadir obra</button><div id="obraCatList"></div>`;
+  el.querySelector('#addObraBtn').addEventListener('click', ()=> openObraModal(null));
+  const list = state.obras.filter(o=>!o.eliminado).sort((a,b)=>a.nombre.localeCompare(b.nombre));
+  $('#obraCatList').innerHTML = list.length ? `<div class="card">` + list.map(o=>`
+    <div class="row"><div class="t"><b>${escapeHtml(o.nombre)}</b><small>${escapeHtml(o.responsable||'—')}</small></div>
+      <span class="tag ${o.estado==='Activa'?'in':'off'}">${o.estado}</span>
+      <button class="btn btn-line btn-sm" data-resumen="${o.codigo}">Resumen</button>
+      <button class="icon-btn" data-edit="${o.codigo}" aria-label="Editar">${ICON_EDIT}</button>
+      <button class="icon-btn" data-del="${o.codigo}" aria-label="Borrar">${ICON_TRASH}</button></div>`).join('') + `</div>` : `<p class="empty">Aún no hay obras dadas de alta.</p>`;
+  $$('[data-resumen]').forEach(b=>b.addEventListener('click', ()=>openResumenModal(findObra(b.dataset.resumen))));
+  $$('[data-edit]').forEach(b=>b.addEventListener('click', ()=>openObraModal(findObra(b.dataset.edit))));
+  $$('[data-del]').forEach(b=>b.addEventListener('click', async ()=>{
+    const usos = movimientosActivos().filter(m=>m.codigoObra===b.dataset.del).length;
+    const aviso = usos>0 ? `Esta obra tiene ${usos} movimiento${usos===1?'':'s'} en el historial. ¿Eliminarla?` : '¿Eliminar esta obra?';
+    if(confirm(aviso)){
+      const obra=findObra(b.dataset.del); if(obra){ obra.eliminado=true; touch(obra); }
+      const ok = await saveAll(); if(ok) toast('Obra eliminada'); renderCatalogo();
     }
   }));
 }
-function openResponsableForm(existing){
+function openMaterialModal(existing, prefillCodigo){
   const isEdit = !!existing;
-  const inner = document.getElementById('sheet-inner-content');
-  inner.innerHTML = `
-    <div class="sheet-head"><h3>${isEdit?'Editar responsable':'Nuevo responsable'}</h3><button class="icon-btn" id="closeSheet">✕</button></div>
-    <label>Nombre</label>
-    <div class="field"><input type="text" id="f_nombre" value="${escapeHtml(existing?.nombre||'')}" placeholder="Nombre y apellidos"></div>
-    ${isEdit ? `<div class="field"><label>Código interno</label><input type="text" value="${existing.codigo}" disabled></div>` : ''}
-    <button class="btn primary" id="saveRespBtn">Guardar</button>
+  let fotoDataUrl = existing?.fotoId ? state.assets[existing.fotoId] : null;
+  let fotoCambiada = false;
+  const fotoId = existing?.fotoId || ('foto_'+(existing?.codigo || 'nuevo_'+Date.now()));
+  $('#mMaterialTitle').textContent = isEdit?'Editar material':'Nuevo material';
+  const body = $('#mMaterialBody');
+  body.innerHTML = `
+    <div class="field"><label for="mDesc">Descripción</label><input id="mDesc" type="text" value="${escapeHtml(existing?.descripcion||'')}" placeholder="Ej. Cemento gris 25kg"></div>
+    <div class="two">
+      <div class="field"><label for="mUni">Unidad</label><input id="mUni" type="text" value="${escapeHtml(existing?.unidad||'')}"></div>
+      <div class="field"><label for="mProv">Proveedor</label><input id="mProv" type="text" value="${escapeHtml(existing?.proveedor||'')}"></div>
+    </div>
+    <div class="two">
+      <div class="field"><label for="mCodP">Código proveedor</label><input id="mCodP" type="text" value="${escapeHtml(existing?.codigoProveedor||'')}"></div>
+      <div class="field"><label for="mCod">Código propio</label><input id="mCod" type="text" value="${escapeHtml(existing?.codigoPropio||prefillCodigo||'')}"></div>
+    </div>
+    <p class="note">El código propio es el que se codifica en el QR. Si está vacío, la etiqueta no se puede generar.</p>
+    <div class="field" style="margin-top:14px"><label>Foto</label>
+      <div class="photo">
+        <div class="prev" id="mFotoPrev">${fotoDataUrl?`<img src="${fotoDataUrl}">`:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="10.5" r="1.6"/><path d="m4 17 5-4 4 3 3-2 4 3"/></svg>'}</div>
+        <input type="file" accept="image/*" id="mFotoInput" style="display:none">
+        <button class="btn btn-line btn-sm" id="mFotoBtn" type="button">Elegir foto</button>
+      </div>
+    </div>
+    ${isEdit?`<div class="field"><label for="mInt">Código interno del sistema</label><input id="mInt" type="text" value="${existing.codigo}" readonly></div>`:''}
   `;
-  inner.querySelector('#closeSheet').addEventListener('click', ()=>document.getElementById('formsheet').close());
-  inner.querySelector('#saveRespBtn').addEventListener('click', async ()=>{
-    const nombre = inner.querySelector('#f_nombre').value.trim();
-    if(!nombre){ toast('El nombre es obligatorio'); return; }
-    if(isEdit){ Object.assign(existing, {nombre}); }
-    else {
-      const codigo = nextCodigo('RESP', state.responsables);
-      state.responsables.push({codigo, nombre, ejemplo:false});
-    }
-    await saveAll();
-    document.getElementById('formsheet').close();
-    toast('Responsable guardado ✓');
-    render();
+  body.querySelector('#mFotoBtn').addEventListener('click', ()=> body.querySelector('#mFotoInput').click());
+  body.querySelector('#mFotoInput').addEventListener('change', async e=>{
+    const file = e.target.files[0]; if(!file) return;
+    try{ fotoDataUrl = await resizeImageFile(file); fotoCambiada=true; $('#mFotoPrev').innerHTML = `<img src="${fotoDataUrl}">`; }
+    catch(err){ toast('No se pudo procesar la foto'); }
   });
-  document.getElementById('formsheet').showModal();
+  $('#mMaterialSave').onclick = async ()=>{
+    const desc=body.querySelector('#mDesc').value.trim(), unidad=body.querySelector('#mUni').value.trim(), proveedor=body.querySelector('#mProv').value.trim();
+    const codigoProveedor=body.querySelector('#mCodP').value.trim(), codigoPropio=body.querySelector('#mCod').value.trim();
+    if(!desc || !unidad || !proveedor){ toast('Descripción, unidad y proveedor son obligatorios'); return; }
+    const btn = $('#mMaterialSave'); btn.disabled=true;
+    if(isEdit){ touch(Object.assign(existing, {descripcion:desc, unidad, proveedor, codigoProveedor, codigoPropio, fotoId: fotoDataUrl?fotoId:null})); }
+    else{ const codigo=nextCodigo('MAT', state.materiales); state.materiales.push(touch({codigo, descripcion:desc, unidad, proveedor, codigoProveedor, codigoPropio, fotoId: fotoDataUrl?fotoId:null, ejemplo:false})); }
+    if(fotoCambiada && fotoDataUrl) await saveAsset(fotoId, fotoDataUrl);
+    const ok = await saveAll(); btn.disabled=false; closeModals();
+    if(ok){ toast('Material guardado'); renderCatalogo(); }
+  };
+  openModal('mMaterial');
 }
-
-/* ---------------- INIT ---------------- */
-const ACCESS_CODE = '1234';
-
-function setupLock(){
-  const lockScreen = document.getElementById('lockScreen');
-  const input = document.getElementById('lockInput');
-  const btn = document.getElementById('lockBtn');
-  const err = document.getElementById('lockErr');
-  function tryUnlock(){
-    if(input.value.trim() === ACCESS_CODE){
-      lockScreen.style.display = 'none';
-      startApp();
-    } else {
-      err.textContent = 'Código incorrecto, inténtalo de nuevo';
-      input.value = '';
-      input.focus();
-    }
-  }
-  btn.addEventListener('click', tryUnlock);
-  input.addEventListener('keydown', e=>{ if(e.key==='Enter') tryUnlock(); });
-  setTimeout(()=>input.focus(), 200);
+function openObraModal(existing){
+  const isEdit = !!existing;
+  $('#mObraTitle').textContent = isEdit?'Editar obra':'Nueva obra';
+  const body = $('#mObraBody');
+  body.innerHTML = `
+    <div class="field"><label for="oNom">Nombre</label><input id="oNom" type="text" value="${escapeHtml(existing?.nombre||'')}"></div>
+    <div class="field"><label for="oResp">Responsable (contacto de la obra)</label><input id="oResp" type="text" value="${escapeHtml(existing?.responsable||'')}"></div>
+    <div class="field"><label for="oEst">Estado</label><select id="oEst"><option value="Activa" ${existing?.estado==='Activa'?'selected':''}>Activa</option><option value="Cerrada" ${existing?.estado==='Cerrada'?'selected':''}>Cerrada</option></select></div>
+  `;
+  $('#mObraSave').onclick = async ()=>{
+    const nombre=body.querySelector('#oNom').value.trim(), responsable=body.querySelector('#oResp').value.trim(), estado=body.querySelector('#oEst').value;
+    if(!nombre){ toast('El nombre de la obra es obligatorio'); return; }
+    const btn = $('#mObraSave'); btn.disabled=true;
+    if(isEdit){ touch(Object.assign(existing, {nombre, responsable, estado})); }
+    else{ const codigo=nextCodigo('OBR', state.obras); state.obras.push(touch({codigo, nombre, responsable, estado, ejemplo:false})); }
+    const ok = await saveAll(); btn.disabled=false; closeModals();
+    if(ok){ toast('Obra guardada'); renderCatalogo(); }
+  };
+  openModal('mObra');
 }
-
-async function startApp(){
-  if(!jsonbinConfigured()){
-    renderSetupNeeded();
+function openEtiquetaModal(material){
+  if(!material) return;
+  if(!material.codigoPropio){
+    toast('Completa el código propio antes de generar la etiqueta');
+    openMaterialModal(material);
     return;
   }
-  toast('Cargando datos...');
-  await loadAll();
-  render();
+  const body = $('#mEtiquetaBody');
+  body.innerHTML = `
+    <div class="label-sheet">
+      <div class="qr" id="realQr"></div>
+      <div class="meta"><b>${escapeHtml(material.descripcion)}</b><small>${[material.proveedor,material.codigoProveedor].filter(Boolean).map(escapeHtml).join(' · ')}</small><div class="code">${escapeHtml(material.codigoPropio)}</div></div>
+    </div>
+    <p class="note">La etiqueta codifica el código propio: ${escapeHtml(material.codigoPropio)}.</p>
+  `;
+  const qrDiv = $('#realQr');
+  try{ if(typeof QRCode==='function'){ new QRCode(qrDiv, {text: material.codigoPropio, width:118, height:118}); } else { qrDiv.textContent = material.codigoPropio; } }
+  catch(e){ qrDiv.textContent = material.codigoPropio; }
+  $('#mEtiquetaPrint').onclick = ()=>{ $('#printArea').innerHTML = body.innerHTML; setTimeout(()=>window.print(), 150); };
+  openModal('mEtiqueta');
 }
-function renderSetupNeeded(){
-  document.getElementById('app').innerHTML = `
-    <div style="padding:60px 24px;text-align:center;max-width:380px;margin:0 auto;">
-      <h2 style="font-family:var(--font-display);text-transform:uppercase;font-size:18px;letter-spacing:0.03em;margin-bottom:12px;">
-        Falta configurar el almacenamiento
-      </h2>
-      <p style="color:var(--ink-soft);font-size:14px;line-height:1.6;">
-        Abre el archivo HTML con un editor de texto, busca <code>JSONBIN_API_KEY</code> y <code>JSONBIN_BIN_ID</code>
-        cerca del principio del script, y rellénalos con tus datos de
-        <a href="https://jsonbin.io" target="_blank" style="color:var(--accent-out);">jsonbin.io</a>.
-        Luego vuelve a subir el archivo.
-      </p>
-    </div>`;
-}
-async function refreshData(){
-  toast('Actualizando...');
-  await loadAll();
-  render();
+function openResumenModal(obra){
+  if(!obra) return;
+  $('#mResumenTitle').textContent = obra.nombre;
+  const mapa = {};
+  movimientosActivos().forEach(m=>{
+    if(m.codigoObra !== obra.codigo) return;
+    if(!mapa[m.codigoMaterial]) mapa[m.codigoMaterial] = {salida:0, entrada:0};
+    if(m.tipo==='Salida') mapa[m.codigoMaterial].salida += Number(m.cantidad)||0; else mapa[m.codigoMaterial].entrada += Number(m.cantidad)||0;
+  });
+  const filas = Object.keys(mapa).map(codigo=>{
+    const mat=findMaterial(codigo), {salida,entrada}=mapa[codigo];
+    return { nombre: mat?mat.descripcion:codigo, unidad: mat?mat.unidad:'', neto: salida-entrada };
+  }).sort((a,b)=>b.neto-a.neto);
+  const maxNeto = Math.max(1, ...filas.map(f=>Math.abs(f.neto)));
+  const body = $('#mResumenBody');
+  body.innerHTML = `
+    <p class="note" style="margin:0 0 14px">Total llevado a esta obra, descontando lo que ha vuelto.</p>
+    ${filas.length ? filas.map(f=>`<div class="total-row"><div class="t"><b style="font-size:15.5px">${escapeHtml(f.nombre)}</b><div class="bar"><i style="width:${Math.max(4,Math.round(Math.abs(f.neto)/maxNeto*100))}%"></i></div></div><b>${f.neto} ${escapeHtml(f.unidad)}</b></div>`).join('') : `<p class="empty">Todavía no hay movimientos para esta obra.</p>`}
+  `;
+  $('#mResumenPrint').onclick = ()=>{ $('#printArea').innerHTML = `<h2>${escapeHtml(obra.nombre)}</h2>` + body.innerHTML; setTimeout(()=>window.print(), 150); };
+  openModal('mResumen');
 }
 
+/* ================= CONFIG ================= */
+function renderConfig(){
+  const el = $('#content-cfg');
+  el.innerHTML = `
+    <div class="head"><div class="tx"><h1>Config.</h1></div></div>
+    <button class="btn btn-ink btn-block" style="margin-bottom:12px" id="addRespBtn">Añadir responsable</button>
+    <div id="respCfgList"></div>
+    <p class="sec">Apariencia</p>
+    <div class="field"><label for="themeSel">Tema</label><select id="themeSel"><option value="auto">Automático</option><option value="light">Claro</option><option value="dark">Oscuro</option></select></div>
+  `;
+  el.querySelector('#addRespBtn').addEventListener('click', ()=> openResponsableModal(null));
+  const list = state.responsables.filter(r=>!r.eliminado).sort((a,b)=>a.nombre.localeCompare(b.nombre));
+  $('#respCfgList').innerHTML = list.length ? `<div class="card">` + list.map(r=>`
+    <div class="row"><div class="t"><b>${escapeHtml(r.nombre)}</b></div>
+      <button class="icon-btn" data-edit="${r.codigo}" aria-label="Editar">${ICON_EDIT}</button>
+      <button class="icon-btn" data-del="${r.codigo}" aria-label="Borrar">${ICON_TRASH}</button></div>`).join('') + `</div>` : `<p class="empty">Aún no hay responsables dados de alta.</p>`;
+  $$('[data-edit]').forEach(b=>b.addEventListener('click', ()=>openResponsableModal(findResponsable(b.dataset.edit))));
+  $$('[data-del]').forEach(b=>b.addEventListener('click', async ()=>{
+    if(confirm('¿Eliminar este responsable?')){
+      const resp=findResponsable(b.dataset.del); if(resp){ resp.eliminado=true; touch(resp); }
+      const ok = await saveAll(); if(ok) toast('Responsable eliminado'); renderConfig();
+    }
+  }));
+  const themeSel = $('#themeSel'); themeSel.value = currentTheme;
+  themeSel.addEventListener('change', e=> applyTheme(e.target.value));
+}
+function openResponsableModal(existing){
+  const isEdit = !!existing;
+  $('#mRespTitle').textContent = isEdit?'Editar responsable':'Nuevo responsable';
+  const body = $('#mRespBody');
+  body.innerHTML = `<div class="field"><label for="rNom">Nombre</label><input id="rNom" type="text" value="${escapeHtml(existing?.nombre||'')}" placeholder="Nombre y apellidos"></div>`;
+  $('#mRespSave').onclick = async ()=>{
+    const nombre = body.querySelector('#rNom').value.trim();
+    if(!nombre){ toast('El nombre es obligatorio'); return; }
+    const btn=$('#mRespSave'); btn.disabled=true;
+    if(isEdit){ touch(Object.assign(existing, {nombre})); }
+    else{ const codigo=nextCodigo('RESP', state.responsables); state.responsables.push(touch({codigo, nombre, ejemplo:false})); }
+    const ok = await saveAll(); btn.disabled=false; closeModals();
+    if(ok){ toast('Responsable guardado'); renderConfig(); }
+  };
+  openModal('mResp');
+}
+
+/* ================= BLOQUEO ================= */
+const ACCESS_CODE = '1234';
+let lockCode = '';
+function setupLock(){
+  const dots = $$('#dots i');
+  $$('#pad button').forEach(b=>b.addEventListener('click', ()=>{
+    if(b.dataset.act==='clr'){ lockCode = lockCode.slice(0,-1); }
+    else if(b.dataset.d!==undefined && lockCode.length<4){ lockCode += b.dataset.d; }
+    dots.forEach((d,i)=>d.classList.toggle('on', i<lockCode.length));
+    if(lockCode.length===4){
+      if(lockCode===ACCESS_CODE){
+        setTimeout(()=>{ $('#lock').style.display='none'; document.body.classList.remove('locked'); startApp(); }, 220);
+      } else {
+        $('#dots').classList.add('err');
+        setTimeout(()=>{ $('#dots').classList.remove('err'); lockCode=''; dots.forEach(d=>d.classList.remove('on')); }, 420);
+      }
+    }
+  }));
+}
+
+/* ================= ARRANQUE ================= */
+async function startApp(){
+  if(!jsonbinConfigured()){
+    $('#content-mov').innerHTML = `<div class="head"><div class="tx"><h1>Movimiento</h1></div></div>
+      <div class="card"><h3 style="margin-bottom:10px">Falta configurar el almacenamiento</h3>
+      <p class="note">Abre el archivo HTML, busca JSONBIN_API_KEY y JSONBIN_BIN_ID cerca del principio del script y rellénalos con tus datos de jsonbin.io. Luego vuelve a subir el archivo.</p></div>`;
+    $('#movActionbar').style.display='none';
+    return;
+  }
+  await loadAll();
+  applyTheme('auto');
+  renderMov();
+}
 setupLock();
 </script>
+
 </body>
 </html>
