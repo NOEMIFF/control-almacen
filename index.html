@@ -8,7 +8,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 :root{
   --canvas:#F0EFEC; --card:#FFFFFF; --sunk:#F4F3F0;
@@ -425,7 +424,7 @@ details.more dd{margin:0}
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 
 /* ================= ESTADO Y ALMACENAMIENTO (igual que antes) ================= */
-const state = { materiales: [], obras: [], responsables: [], movimientos: [], assets:{}, loaded:false };
+const state = { materiales: [], obras: [], responsables: [], movimientos: [], sugerencias: [], assets:{}, loaded:false };
 const formState = { tipo:'Salida', obraCodigo:null, obraLibre:'', obraDetalle:'', lineas:[], responsableCodigo:null, nota:'', materialSearchQuery:'' };
 const recibiState = { obraCodigo:null, obraLibre:'', seleccion:{}, nombre:'', firmaVacia:true };
 let ultimoMovimiento = null;
@@ -462,20 +461,27 @@ function mergeCollections(remote, local, idKey){
   });
   return Object.values(map);
 }
+let lastLoadError = null;
 async function loadAll(){
   try{
     const res = await fetch(JSONBIN_URL + '/latest', { headers:{ 'X-Master-Key': JSONBIN_API_KEY } });
-    if(!res.ok) throw new Error('HTTP '+res.status);
+    if(!res.ok){
+      let detail = '';
+      try{ const j = await res.json(); detail = j.message || JSON.stringify(j); }catch(e){ try{ detail = await res.text(); }catch(e2){} }
+      throw new Error('HTTP '+res.status+(detail?' — '+detail.slice(0,200):''));
+    }
     const data = await res.json();
     const record = data.record || {};
     state.materiales = record.materiales || seedMateriales;
     state.obras = record.obras || seedObras;
     state.responsables = record.responsables || seedResponsables;
     state.movimientos = record.movimientos || [];
+    state.sugerencias = record.sugerencias || [];
+    lastLoadError = null;
   }catch(e){
     console.error('load error', e);
-    toast('No se pudo cargar el almacenamiento');
-    if(!state.loaded){ state.materiales=seedMateriales; state.obras=seedObras; state.responsables=seedResponsables; state.movimientos=[]; }
+    lastLoadError = (e && e.message) ? e.message : String(e);
+    if(!state.loaded){ state.materiales=seedMateriales; state.obras=seedObras; state.responsables=seedResponsables; state.movimientos=[]; state.sugerencias=[]; }
   }
   if(assetsConfigured()){
     try{
@@ -487,7 +493,7 @@ async function loadAll(){
 }
 async function saveAll(){
   try{
-    let remote = {materiales:[], obras:[], responsables:[], movimientos:[]};
+    let remote = {materiales:[], obras:[], responsables:[], movimientos:[], sugerencias:[]};
     try{
       const getRes = await fetch(JSONBIN_URL + '/latest', { headers:{ 'X-Master-Key': JSONBIN_API_KEY } });
       if(getRes.ok){ const data = await getRes.json(); remote = data.record || remote; }
@@ -497,10 +503,11 @@ async function saveAll(){
       obras: mergeCollections(remote.obras, state.obras, 'codigo'),
       responsables: mergeCollections(remote.responsables, state.responsables, 'codigo'),
       movimientos: mergeCollections(remote.movimientos, state.movimientos, 'id'),
+      sugerencias: mergeCollections(remote.sugerencias, state.sugerencias, 'id'),
     };
     const res = await fetch(JSONBIN_URL, { method:'PUT', headers:{ 'Content-Type':'application/json', 'X-Master-Key': JSONBIN_API_KEY }, body: JSON.stringify(merged) });
     if(!res.ok) throw new Error('HTTP '+res.status);
-    state.materiales = merged.materiales; state.obras = merged.obras; state.responsables = merged.responsables; state.movimientos = merged.movimientos;
+    state.materiales = merged.materiales; state.obras = merged.obras; state.responsables = merged.responsables; state.movimientos = merged.movimientos; state.sugerencias = merged.sugerencias;
     return true;
   }catch(e){
     console.error('save error', e);
@@ -687,6 +694,15 @@ function renderInicio(){
   el.innerHTML = `
     <div class="head"><div class="tx"><h1>Inicio</h1><p>Resumen de la actividad del almacén.</p></div></div>
 
+    ${lastLoadError ? `
+      <div class="card" style="background:var(--red-soft);border:2px solid var(--red);margin-bottom:16px;">
+        <p style="margin:0;font-weight:800;color:var(--red)">No se pudo conectar con el almacenamiento</p>
+        <p class="note" style="margin-top:6px">${escapeHtml(lastLoadError)}</p>
+        <p class="note" style="margin-top:6px">Lo que ves ahora puede ser solo el material de ejemplo, no tus datos reales. Suele deberse a que se ha agotado la cuota gratuita de JSONBin, o a un problema de conexión.</p>
+        <button class="btn btn-line btn-sm" id="reintentarCargaBtn" style="margin-top:10px">Reintentar</button>
+      </div>
+    ` : ''}
+
     <div class="stat-grid">
       <div class="stat-tile"><b>${movsHoy}</b><span>Movimientos hoy</span></div>
       <div class="stat-tile"><b>${totalMateriales}</b><span>Materiales</span></div>
@@ -745,6 +761,7 @@ function renderInicio(){
   $$('[data-resumen]').forEach(b=>b.addEventListener('click', ()=> openResumenModal(findObra(b.dataset.resumen))));
   const vh=$('#verHistorialIniBtn'); if(vh) vh.addEventListener('click', ()=>goTab('his'));
   const vc=$('#verCatalogoIniBtn'); if(vc) vc.addEventListener('click', ()=>{ goTab('cat'); catalogSub='materiales'; renderCatalogo(); });
+  const rc=$('#reintentarCargaBtn'); if(rc) rc.addEventListener('click', async ()=>{ toast('Reintentando...'); await loadAll(); renderInicio(); });
 }
 function renderMov(){
   const el = $('#content-mov'), actionbar = $('#movActionbar');
@@ -1617,6 +1634,10 @@ function openObraModal(existing){
   };
   openModal('mObra');
 }
+function qrImageUrl(text, size){
+  size = size || 240;
+  return 'https://api.qrserver.com/v1/create-qr-code/?size='+size+'x'+size+'&data='+encodeURIComponent(text);
+}
 function openEtiquetaModal(material){
   if(!material) return;
   if(!material.codigoPropio){
@@ -1624,33 +1645,22 @@ function openEtiquetaModal(material){
     openMaterialModal(material);
     return;
   }
-  const body = $('#mEtiquetaBody');
   const qrTexto = [
     material.codigoPropio,
     material.proveedor ? 'Proveedor: '+material.proveedor : null,
     material.codigoProveedor ? 'Cód. proveedor: '+material.codigoProveedor : null,
     'Concepto: '+material.descripcion
   ].filter(Boolean).join('\n');
-  body.innerHTML = `
+  const labelHtml = `
     <div class="label-sheet">
-      <div class="qr" id="realQr"></div>
+      <img class="qr" src="${qrImageUrl(qrTexto)}" width="118" height="118" alt="Código QR del material" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'qr',textContent:'${escapeHtml(material.codigoPropio)}'}))">
       <div class="meta"><b>${escapeHtml(material.descripcion)}</b><small>${[material.proveedor,material.codigoProveedor].filter(Boolean).map(escapeHtml).join(' · ')}</small><div class="code">${escapeHtml(material.codigoPropio)}</div></div>
     </div>
     <p class="note">El QR incluye proveedor, código de proveedor, código propio y concepto.</p>
   `;
-  const qrDiv = $('#realQr');
-  try{ if(typeof QRCode==='function'){ new QRCode(qrDiv, {text: qrTexto, width:118, height:118}); } else { qrDiv.textContent = material.codigoPropio; } }
-  catch(e){ qrDiv.textContent = material.codigoPropio; }
+  $('#mEtiquetaBody').innerHTML = labelHtml;
   $('#mEtiquetaPrint').onclick = ()=>{
-    $('#printArea').innerHTML = `
-      <div class="label-sheet">
-        <div class="qr" id="printQr"></div>
-        <div class="meta"><b>${escapeHtml(material.descripcion)}</b><small>${[material.proveedor,material.codigoProveedor].filter(Boolean).map(escapeHtml).join(' · ')}</small><div class="code">${escapeHtml(material.codigoPropio)}</div></div>
-      </div>
-      <p class="note">El QR incluye proveedor, código de proveedor, código propio y concepto.</p>
-    `;
-    try{ if(typeof QRCode==='function'){ new QRCode($('#printQr'), {text: qrTexto, width:118, height:118}); } else { $('#printQr').textContent = material.codigoPropio; } }
-    catch(e){ $('#printQr').textContent = material.codigoPropio; }
+    $('#printArea').innerHTML = labelHtml;
     setTimeout(()=>window.print(), 150);
   };
   openModal('mEtiqueta');
@@ -1695,6 +1705,13 @@ function renderConfig(){
     <p class="note">Además del aviso dentro de la app, esto te avisa aunque tengas otra pestaña abierta.</p>
     <p class="sec">Sesión</p>
     <button class="btn btn-line btn-block" id="cerrarSesionBtn">Cerrar sesión</button>
+    <p class="sec">Sugerencias</p>
+    <div class="card">
+      <p class="note" style="margin:0 0 10px">¿Se te ocurre algo que mejorar en la app? Escríbelo aquí.</p>
+      <div class="field"><textarea id="sugText" rows="3" placeholder="Escribe tu sugerencia..." style="min-height:80px;resize:vertical;"></textarea></div>
+      <button class="btn btn-ink btn-block" id="sugSendBtn">Enviar sugerencia</button>
+    </div>
+    <div id="sugList"></div>
   `;
   el.querySelector('#addRespBtn').addEventListener('click', ()=> openResponsableModal(null));
   const list = state.responsables.filter(r=>!r.eliminado).sort((a,b)=>a.nombre.localeCompare(b.nombre));
@@ -1725,6 +1742,40 @@ function renderConfig(){
       location.reload();
     }
   });
+  $('#sugSendBtn').addEventListener('click', async ()=>{
+    const texto = $('#sugText').value.trim();
+    if(!texto){ toast('Escribe algo antes de enviar'); return; }
+    const btn = $('#sugSendBtn'); btn.disabled = true;
+    const ahora = Date.now();
+    state.sugerencias.push({
+      id: 'S'+ahora+'_'+Math.floor(Math.random()*10000),
+      texto,
+      autor: currentUsuario ? currentUsuario.nombre : 'Anónimo',
+      fecha: new Date().toISOString(),
+      actualizadoEn: ahora
+    });
+    const ok = await saveAll(); btn.disabled = false;
+    if(ok){ toast('Sugerencia enviada, ¡gracias!'); }
+    renderConfig();
+  });
+  drawSugerencias();
+}
+function drawSugerencias(){
+  const list = state.sugerencias.filter(s=>!s.eliminado).sort((a,b)=> new Date(b.fecha)-new Date(a.fecha));
+  $('#sugList').innerHTML = list.length ? `<div class="card">` + list.map(s=>`
+    <div class="cat-row" style="align-items:flex-start;">
+      <div class="t"><b style="font-weight:600;font-size:14.5px;">${escapeHtml(s.texto)}</b><small>${escapeHtml(s.autor||'Anónimo')} · ${fmtDate(s.fecha)}</small></div>
+      <div class="acts"><button class="icon-btn" data-delsug="${s.id}" aria-label="Borrar">${ICON_TRASH}</button></div>
+    </div>`).join('') + `</div>` : '';
+  $$('[data-delsug]').forEach(b=>b.addEventListener('click', async ()=>{
+    if(confirm('¿Eliminar esta sugerencia?')){
+      const sug = state.sugerencias.find(s=>s.id===b.dataset.delsug);
+      if(sug){ sug.eliminado = true; touch(sug); }
+      const ok = await saveAll();
+      if(ok) toast('Sugerencia eliminada');
+      drawSugerencias();
+    }
+  }));
 }
 function openResponsableModal(existing){
   const isEdit = !!existing;
