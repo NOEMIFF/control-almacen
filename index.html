@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Control de Almacén</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20rx%3D%2222%22%20fill%3D%22%2316171A%22%2F%3E%3Cpath%20d%3D%22M50%2016%20L83%2034%20V70%20L50%2088%20L17%2070%20V34%20Z%22%20fill%3D%22none%22%20stroke%3D%22%23FFC800%22%20stroke-width%3D%226%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M17%2034%20L50%2052%20L83%2034%20M50%2052%20V88%22%20fill%3D%22none%22%20stroke%3D%22%23FFC800%22%20stroke-width%3D%226%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20rx%3D%2222%22%20fill%3D%22%2316171A%22%2F%3E%3Cpath%20d%3D%22M50%2016%20L83%2034%20V70%20L50%2088%20L17%2070%20V34%20Z%22%20fill%3D%22none%22%20stroke%3D%22%23FFC800%22%20stroke-width%3D%226%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M17%2034%20L50%2052%20L83%2034%20M50%2052%20V88%22%20fill%3D%22none%22%20stroke%3D%22%23FFC800%22%20stroke-width%3D%226%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E">
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Control%20de%20Almac%C3%A9n%22%2C%22short_name%22%3A%22Almac%C3%A9n%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23F0EFEC%22%2C%22theme_color%22%3A%22%23FFC800%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%253D%2522http%253A%252F%252Fwww.w3.org%252F2000%252Fsvg%2522%2520viewBox%253D%25220%25200%2520100%2520100%2522%253E%253Crect%2520width%253D%2522100%2522%2520height%253D%2522100%2522%2520rx%253D%252222%2522%2520fill%253D%2522%252316171A%2522%252F%253E%253Cpath%2520d%253D%2522M50%252016%2520L83%252034%2520V70%2520L50%252088%2520L17%252070%2520V34%2520Z%2522%2520fill%253D%2522none%2522%2520stroke%253D%2522%2523FFC800%2522%2520stroke-width%253D%25226%2522%2520stroke-linejoin%253D%2522round%2522%252F%253E%253Cpath%2520d%253D%2522M17%252034%2520L50%252052%2520L83%252034%2520M50%252052%2520V88%2522%2520fill%253D%2522none%2522%2520stroke%253D%2522%2523FFC800%2522%2520stroke-width%253D%25226%2522%2520stroke-linejoin%253D%2522round%2522%2520stroke-linecap%253D%2522round%2522%252F%253E%253C%252Fsvg%253E%22%2C%22sizes%22%3A%22any%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%2C%22purpose%22%3A%22any%22%7D%5D%7D">
+<meta name="theme-color" content="#FFC800">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -126,6 +130,13 @@ select{appearance:none;padding-right:48px;cursor:pointer;
 .row .t small{display:block;font-size:12.5px;color:var(--ink-2);margin-top:3px;font-weight:500}
 .thumb{width:46px;height:46px;border-radius:13px;background:var(--sunk);flex:none;object-fit:cover}
 .qty{display:flex;align-items:center;background:var(--sunk);border-radius:13px;flex:none}
+.cart-table{margin-top:6px;}
+.cart-head{display:grid;grid-template-columns:1fr 50px 34px 32px;gap:8px;align-items:center;padding:0 4px 6px;font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-3);}
+.cart-row{display:grid;grid-template-columns:1fr 50px 34px 32px;gap:8px;align-items:center;padding:9px 4px;border-top:1px solid var(--line);}
+.cart-row:first-of-type{border-top:0;}
+.cart-name{font-size:14.5px;font-weight:700;cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cart-ud{font-size:12px;font-weight:700;color:var(--ink-2);text-align:center;}
+.cart-qty-input{width:50px;height:38px;min-height:0;padding:0;text-align:center;background:var(--sunk);border:0;border-radius:10px;font:800 15px Manrope,sans-serif;font-variant-numeric:tabular-nums;}
 .qty button{width:42px;height:44px;border:0;background:transparent;font-size:20px;font-weight:700;cursor:pointer;border-radius:13px}
 .qty button:active{background:var(--signal);color:var(--signal-ink)}
 .qty input{width:46px;height:44px;min-height:0;padding:0;text-align:center;background:transparent;border:0;
@@ -195,7 +206,7 @@ details.more dd{margin:0}
 
 /* NAV */
 .nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--card);border-top:1px solid var(--line);
-  display:grid;grid-template-columns:repeat(6,1fr);padding-bottom:env(safe-area-inset-bottom)}
+  display:grid;grid-template-columns:repeat(7,1fr);padding-bottom:env(safe-area-inset-bottom)}
 .nav button{border:0;background:transparent;color:var(--ink-3);cursor:pointer;padding:10px 2px 11px;display:grid;justify-items:center;gap:4px;font-size:10.5px;font-weight:700}
 .nav .ic{padding:4px 13px;border-radius:11px;display:grid;place-items:center;transition:.18s}
 .nav button svg{width:22px;height:22px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
@@ -206,6 +217,8 @@ details.more dd{margin:0}
 .scrim{position:fixed;inset:0;z-index:50;background:rgba(10,10,12,.5);backdrop-filter:blur(3px);
   display:none;align-items:flex-end;justify-content:center}
 .scrim.on{display:flex}
+.scrim.center-modal{align-items:center;padding:20px}
+.scrim.center-modal .modal{border-radius:26px;max-height:88vh}
 .modal{background:var(--card);width:100%;max-width:560px;border-radius:26px 26px 0 0;max-height:92vh;overflow:auto;
   animation:up .28s cubic-bezier(.3,1,.4,1)}
 @keyframes up{from{transform:translateY(24px);opacity:0}}
@@ -357,6 +370,9 @@ details.more dd{margin:0}
 <!-- ===== CATÁLOGO ===== -->
 <section class="panel" id="panel-cat"><div class="wrap" id="content-cat"></div></section>
 
+<!-- ===== GASTOS / TICKETS ===== -->
+<section class="panel" id="panel-gas"><div class="wrap" id="content-gas"></div></section>
+
 <!-- ===== CONFIG ===== -->
 <section class="panel" id="panel-cfg"><div class="wrap" id="content-cfg"></div></section>
 
@@ -365,18 +381,19 @@ details.more dd{margin:0}
   <button data-go="mov"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 12h13M13 7l5 5-5 5"/></svg></span>Movimiento</button>
   <button data-go="rec"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 16c3-5 5 1 8-3s4 2 10-5"/></svg></span>Recibí</button>
   <button data-go="cat"><span class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="6.6" height="6.6" rx="2"/><rect x="13.4" y="4" width="6.6" height="6.6" rx="2"/><rect x="4" y="13.4" width="6.6" height="6.6" rx="2"/><rect x="13.4" y="13.4" width="6.6" height="6.6" rx="2"/></svg></span>Catálogo</button>
+  <button data-go="gas"><span class="ic"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3z"/><path d="M8.5 8h7M8.5 11.5h7M8.5 15h4"/></svg></span>Gastos</button>
   <button data-go="his"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.2"/><path d="M12 7.6v4.8l3 1.9"/></svg></span>Historial</button>
   <button data-go="cfg"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 3.8v2.2M12 18v2.2M3.8 12H6M18 12h2.2M6.2 6.2l1.6 1.6M16.2 16.2l1.6 1.6M17.8 6.2l-1.6 1.6M7.8 16.2l-1.6 1.6"/></svg></span>Config.</button>
 </nav>
 
 <!-- ===== ESCÁNER ===== -->
 <div class="scanner" id="scanner">
-  <div class="scan-top"><b>Escanear código</b><button class="x" id="scanCloseBtn" aria-label="Cerrar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="scan-top"><b id="scanTitleTxt">Escanear código</b><button class="x" id="scanCloseBtn" aria-label="Cerrar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="viewport">
     <video id="scanVideo" autoplay playsinline muted></video>
     <div class="frame"><i></i><i></i><i></i><i></i><span class="laser"></span></div>
   </div>
-  <div class="scan-foot"><p>Apunta al QR o al código de barras</p>
+  <div class="scan-foot"><p id="scanFootMsg">Apunta al QR o al código de barras</p>
     <button class="btn btn-signal btn-block" id="scanManualBtn">Añadir a mano</button></div>
 </div>
 
@@ -417,16 +434,49 @@ details.more dd{margin:0}
   <div class="modal-foot"><button class="btn btn-line" data-close>Cerrar</button><button class="btn btn-ink" id="mResumenPrint">Imprimir / PDF</button></div>
 </div></div>
 
+<div class="scrim" id="mFicha"><div class="modal"><div class="grab"></div>
+  <div class="modal-top"><h2>Ficha del material</h2><button class="icon-btn" data-close aria-label="Cerrar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="modal-body" id="mFichaBody"></div>
+  <div class="modal-foot"><button class="btn btn-line" data-close>Cerrar</button><button class="btn btn-ink" id="mFichaEditBtn">Editar</button></div>
+</div></div>
+
+<div class="scrim center-modal" id="mFirma"><div class="modal">
+  <div class="modal-top"><h2>Quién lo recibe</h2><button class="icon-btn" data-close aria-label="Cerrar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="modal-body">
+    <div class="field"><label for="recNombre">Nombre y apellidos</label><input type="text" id="recNombre" placeholder="Nombre y apellidos" aria-label="Nombre de quien recibe"></div>
+    <label>Firma</label>
+    <div class="sign"><canvas id="sigCanvas"></canvas><div class="rule"></div><div class="cap">Firma con el dedo</div></div>
+    <button class="btn btn-line btn-sm" style="margin-top:10px" id="clearSigBtn">Borrar y repetir</button>
+  </div>
+  <div class="modal-foot"><button class="btn btn-line" data-close>Cancelar</button><button class="btn btn-ink" id="firmaConfirmBtn">Confirmar recepción</button></div>
+</div></div>
+
+<div class="scrim" id="mGasto"><div class="modal"><div class="grab"></div>
+  <div class="modal-top"><h2 id="mGastoTitle">Ticket / gasto</h2><button class="icon-btn" data-close aria-label="Cerrar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="modal-body" id="mGastoBody"></div>
+  <div class="modal-foot"><button class="btn btn-line" data-close>Cancelar</button><button class="btn btn-ink" id="mGastoSave">Guardar</button></div>
+</div></div>
+
 <div id="printArea" style="display:none"></div>
 <div class="toast" id="toast"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span id="toastTxt">Guardado</span></div>
+<div id="syncBadge" style="display:none;position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:65;
+  background:var(--red);color:#fff;padding:8px 16px;border-radius:99px;font-size:12.5px;font-weight:800;
+  align-items:center;gap:8px;box-shadow:0 4px 14px rgba(0,0,0,.25);">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5c5-4.5 13-4.5 18 0M6.5 12c3.3-3 8.7-3 12 0M10 15.5c1.5-1.3 3.5-1.3 5 0"/><circle cx="12" cy="19" r="1.2" fill="currentColor" stroke="none"/><path d="M4 4l16 16" stroke-width="2.6"/></svg>
+  Sin conexión · pendiente de enviar
+</div>
 
 <script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 
 /* ================= ESTADO Y ALMACENAMIENTO (igual que antes) ================= */
-const state = { materiales: [], obras: [], responsables: [], movimientos: [], sugerencias: [], assets:{}, loaded:false };
+const state = { materiales: [], obras: [], responsables: [], movimientos: [], sugerencias: [], gastos: [], assets:{}, loaded:false };
 const formState = { tipo:'Salida', obraCodigo:null, obraLibre:'', obraDetalle:'', lineas:[], responsableCodigo:null, nota:'', materialSearchQuery:'' };
-const recibiState = { obraCodigo:null, obraLibre:'', seleccion:{}, nombre:'', firmaVacia:true };
+const recibiState = { obraCodigo:null, obraLibre:'', seleccion:{}, cantidadRecibida:{}, nombre:'', firmaVacia:true };
+function cantidadRecibidaFor(m){
+  const v = recibiState.cantidadRecibida[m.id];
+  return (v==null || v==='') ? m.cantidad : v;
+}
 let ultimoMovimiento = null;
 let scanning=false, stream=null, rafId=null, detector=null, audioCtx=null, scanCanvas=null, currentSigCanvas=null;
 let currentTab='ini', catalogSub='materiales', movStep=2, recStep=1, currentTheme='auto';
@@ -461,7 +511,47 @@ function mergeCollections(remote, local, idKey){
   });
   return Object.values(map);
 }
+const OFFLINE_KEY = 'almacen_offline_pending';
 let lastLoadError = null;
+let syncPending = false;
+function persistOfflineSnapshot(){
+  try{
+    localStorage.setItem(OFFLINE_KEY, JSON.stringify({
+      materiales: state.materiales, obras: state.obras, responsables: state.responsables,
+      movimientos: state.movimientos, sugerencias: state.sugerencias, gastos: state.gastos, ts: Date.now()
+    }));
+  }catch(e){}
+}
+function clearOfflineSnapshot(){ try{ localStorage.removeItem(OFFLINE_KEY); }catch(e){} }
+function loadOfflineSnapshotIfAny(){
+  try{
+    const raw = localStorage.getItem(OFFLINE_KEY);
+    if(!raw) return false;
+    const snap = JSON.parse(raw);
+    state.materiales = mergeCollections(state.materiales, snap.materiales||[], 'codigo');
+    state.obras = mergeCollections(state.obras, snap.obras||[], 'codigo');
+    state.responsables = mergeCollections(state.responsables, snap.responsables||[], 'codigo');
+    state.movimientos = mergeCollections(state.movimientos, snap.movimientos||[], 'id');
+    state.sugerencias = mergeCollections(state.sugerencias, snap.sugerencias||[], 'id');
+    state.gastos = mergeCollections(state.gastos, snap.gastos||[], 'id');
+    return true;
+  }catch(e){ return false; }
+}
+function updateSyncBadge(){
+  const b = $('#syncBadge');
+  if(!b) return;
+  b.style.display = syncPending ? 'flex' : 'none';
+}
+function scheduleRetrySync(){
+  if(window.__retryTimer) return;
+  window.__retryTimer = setInterval(async ()=>{
+    if(!syncPending){ clearInterval(window.__retryTimer); window.__retryTimer=null; return; }
+    if(!navigator.onLine) return;
+    await saveAll();
+  }, 15000);
+}
+addEventListener('online', ()=>{ if(syncPending) saveAll().then(()=>renderCurrentPanel()); });
+
 async function loadAll(){
   try{
     const res = await fetch(JSONBIN_URL + '/latest', { headers:{ 'X-Master-Key': JSONBIN_API_KEY } });
@@ -477,11 +567,14 @@ async function loadAll(){
     state.responsables = record.responsables || seedResponsables;
     state.movimientos = record.movimientos || [];
     state.sugerencias = record.sugerencias || [];
+    state.gastos = record.gastos || [];
     lastLoadError = null;
+    if(loadOfflineSnapshotIfAny()){ await saveAll(); }
   }catch(e){
     console.error('load error', e);
     lastLoadError = (e && e.message) ? e.message : String(e);
-    if(!state.loaded){ state.materiales=seedMateriales; state.obras=seedObras; state.responsables=seedResponsables; state.movimientos=[]; state.sugerencias=[]; }
+    if(!state.loaded){ state.materiales=seedMateriales; state.obras=seedObras; state.responsables=seedResponsables; state.movimientos=[]; state.sugerencias=[]; state.gastos=[]; }
+    loadOfflineSnapshotIfAny();
   }
   if(assetsConfigured()){
     try{
@@ -493,7 +586,7 @@ async function loadAll(){
 }
 async function saveAll(){
   try{
-    let remote = {materiales:[], obras:[], responsables:[], movimientos:[], sugerencias:[]};
+    let remote = {materiales:[], obras:[], responsables:[], movimientos:[], sugerencias:[], gastos:[]};
     try{
       const getRes = await fetch(JSONBIN_URL + '/latest', { headers:{ 'X-Master-Key': JSONBIN_API_KEY } });
       if(getRes.ok){ const data = await getRes.json(); remote = data.record || remote; }
@@ -504,15 +597,22 @@ async function saveAll(){
       responsables: mergeCollections(remote.responsables, state.responsables, 'codigo'),
       movimientos: mergeCollections(remote.movimientos, state.movimientos, 'id'),
       sugerencias: mergeCollections(remote.sugerencias, state.sugerencias, 'id'),
+      gastos: mergeCollections(remote.gastos, state.gastos, 'id'),
     };
     const res = await fetch(JSONBIN_URL, { method:'PUT', headers:{ 'Content-Type':'application/json', 'X-Master-Key': JSONBIN_API_KEY }, body: JSON.stringify(merged) });
     if(!res.ok) throw new Error('HTTP '+res.status);
-    state.materiales = merged.materiales; state.obras = merged.obras; state.responsables = merged.responsables; state.movimientos = merged.movimientos; state.sugerencias = merged.sugerencias;
+    state.materiales = merged.materiales; state.obras = merged.obras; state.responsables = merged.responsables; state.movimientos = merged.movimientos; state.sugerencias = merged.sugerencias; state.gastos = merged.gastos;
+    clearOfflineSnapshot();
+    if(syncPending){ syncPending=false; updateSyncBadge(); toast('Sincronizado ✓'); }
     return true;
   }catch(e){
     console.error('save error', e);
-    alert('No se pudo guardar. Revisa tu conexión e inténtalo de nuevo.');
-    return false;
+    persistOfflineSnapshot();
+    syncPending = true;
+    updateSyncBadge();
+    toast('Sin conexión: guardado en el móvil, se enviará solo');
+    scheduleRetrySync();
+    return true;
   }
 }
 async function saveAsset(id, dataUrl){
@@ -641,6 +741,7 @@ function renderCurrentPanel(){
   else if(currentTab==='rec') renderRecibi();
   else if(currentTab==='his') renderHistorial();
   else if(currentTab==='cat') renderCatalogo();
+  else if(currentTab==='gas') renderGastos();
   else if(currentTab==='cfg') renderConfig();
 }
 async function refreshData(){ toast('Actualizando...'); await loadAll(); renderCurrentPanel(); }
@@ -667,6 +768,10 @@ function stockGlobal(codigo){
   });
   return ent-sal;
 }
+function saludoUsuario(){
+  if(currentUsuario && currentUsuario.nombre) return 'Hola, '+currentUsuario.nombre.trim().split(' ')[0];
+  return 'Hola';
+}
 function renderInicio(){
   const el = $('#content-ini');
   const movsHoy = movimientosActivos().filter(m=> new Date(m.fecha).toDateString()===new Date().toDateString()).length;
@@ -692,7 +797,7 @@ function renderInicio(){
   const ultimosMateriales = [...state.materiales.filter(m=>!m.eliminado && !m.ejemplo)].sort((a,b)=>(b.actualizadoEn||0)-(a.actualizadoEn||0)).slice(0,5);
 
   el.innerHTML = `
-    <div class="head"><div class="tx"><h1>Inicio</h1><p>Resumen de la actividad del almacén.</p></div></div>
+    <div class="head"><div class="tx"><h1>${saludoUsuario()}</h1><p>Resumen de la actividad del almacén.</p></div></div>
 
     ${lastLoadError ? `
       <div class="card" style="background:var(--red-soft);border:2px solid var(--red);margin-bottom:16px;">
@@ -714,7 +819,7 @@ function renderInicio(){
       <p class="sec">Avisos de pedido</p>
       <div class="card">
         ${avisos.map(a=>`
-          <div class="alert-row" data-editmat="${a.m.codigo}">
+          <div class="alert-row" data-verficha="${a.m.codigo}">
             <span class="tag" style="background:var(--red-soft);color:var(--red)">Pedir</span>
             <div class="t" style="flex:1"><b>${escapeHtml(a.m.descripcion)}</b><small>Disponible aprox. ${a.disponible} · mínimo ${a.m.stockMinimo} ${escapeHtml(a.m.unidad)}</small></div>
           </div>
@@ -735,7 +840,7 @@ function renderInicio(){
     <p class="sec">Últimos materiales dados de alta</p>
     ${ultimosMateriales.length ? `<div class="card">${ultimosMateriales.map(m=>{
       const foto = materialFoto(m);
-      return `<div class="row" data-editmat="${m.codigo}" style="cursor:pointer">
+      return `<div class="row" data-verficha="${m.codigo}" style="cursor:pointer">
         ${foto?`<img class="thumb" src="${foto}">`:'<div class="thumb"></div>'}
         <div class="t"><b>${escapeHtml(m.descripcion)}</b><small>${[m.proveedor,m.grupo].filter(Boolean).map(escapeHtml).join(' · ')}</small></div>
       </div>`;
@@ -750,10 +855,7 @@ function renderInicio(){
       </div>`).join('')}</div>` : `<p class="empty">No hay obras activas.</p>`}
   `;
 
-  $$('[data-editmat]').forEach(b=>b.addEventListener('click', ()=>{
-    goTab('cat'); catalogSub='materiales'; renderCatalogo();
-    openMaterialModal(findMaterial(b.dataset.editmat));
-  }));
+  $$('[data-verficha]').forEach(b=>b.addEventListener('click', ()=> openMaterialFicha(findMaterial(b.dataset.verficha))));
   $$('[data-vermov]').forEach(b=>b.addEventListener('click', ()=>{
     const mov = state.movimientos.find(x=>x.id===b.dataset.vermov);
     if(mov) openEditMovModal(mov);
@@ -776,10 +878,12 @@ function renderMov(){
         <p>${escapeHtml(m.tipo)} · ${m.cantidadArticulos} artículo${m.cantidadArticulos===1?'':'s'}${m.obraTexto?' · '+escapeHtml(m.obraTexto):''}</p>
         <div style="display:grid;gap:10px;max-width:320px;margin:0 auto">
           <button class="btn btn-ink" id="otroMovBtn">Hacer otro movimiento</button>
+          <button class="btn btn-line" id="albaranMovBtn">Descargar albarán</button>
           <button class="btn btn-line" id="irHistorialBtn">Ver en el historial</button>
         </div>
       </div>`;
     $('#otroMovBtn').onclick = ()=>{ ultimoMovimiento=null; renderMov(); };
+    $('#albaranMovBtn').onclick = ()=> imprimirAlbaranByGrupoId(m.grupoId);
     $('#irHistorialBtn').onclick = ()=>{ ultimoMovimiento=null; goTab('his'); };
     return;
   }
@@ -829,6 +933,7 @@ function renderMov(){
           <select id="obraSel">
             <option value="">Sin elegir</option>
             ${obrasActivas.map(o=>`<option value="obra:${o.codigo}" ${formState.obraCodigo===o.codigo?'selected':''}>${escapeHtml(o.nombre)}</option>`).join('')}
+            <option value="libre:Nave" ${formState.obraLibre==='Nave'?'selected':''}>Nave (nuestro almacén)</option>
             <option value="libre:Operario" ${formState.obraLibre==='Operario'?'selected':''}>Operario</option>
             <option value="libre:Otros" ${formState.obraLibre==='Otros'?'selected':''}>Otros</option>
           </select>
@@ -882,6 +987,9 @@ function wireMovEvents(el){
   }));
   el.querySelectorAll('.choice button').forEach(b=>b.addEventListener('click', ()=>{
     formState.tipo = b.dataset.kind==='out' ? 'Salida' : 'Entrada';
+    if(formState.tipo==='Entrada' && !formState.obraCodigo && !formState.obraLibre){
+      formState.obraLibre = 'Nave';
+    }
     movStep = tieneObraMov() ? null : 2;
     renderMov();
   }));
@@ -911,19 +1019,39 @@ function wireMovEvents(el){
   if(notaInput) notaInput.addEventListener('input', e=> formState.nota = e.target.value);
   wireCartEvents(el);
 }
+function materialMatchesQuery(m, q){
+  const texto = [m.descripcion, m.codigo, m.codigoPropio, m.codigoProveedor, m.proveedor, m.grupo].filter(Boolean).join(' ').toLowerCase();
+  const palabras = q.toLowerCase().trim().split(/\s+/).filter(Boolean);
+  return palabras.every(p => texto.includes(p));
+}
+function unidadAbrev(u){
+  if(!u) return '';
+  const key = u.trim().toLowerCase();
+  const map = {
+    metros:'ml', metro:'ml', ml:'ml', 'metro lineal':'ml', 'metros lineales':'ml',
+    unidades:'Ud', unidad:'Ud', ud:'Ud', uds:'Ud', udades:'Ud',
+    m2:'m2', 'm²':'m2', 'metros cuadrados':'m2', 'metro cuadrado':'m2',
+    m3:'m3', 'm³':'m3', 'metros cubicos':'m3', 'metros cúbicos':'m3', 'metro cubico':'m3',
+    kg:'kg', kilos:'kg', kilo:'kg', kilogramos:'kg', kilogramo:'kg',
+    litros:'L', litro:'L', l:'L',
+    sacos:'sac', saco:'sac',
+    cajas:'caj', caja:'caj',
+    rollos:'rll', rollo:'rll',
+    palets:'pal', palet:'pal', pallets:'pal', pallet:'pal',
+    bidones:'bid', bidon:'bid', 'bidón':'bid'
+  };
+  return map[key] || u;
+}
 function renderMatSearchHtml(){
-  const q = (formState.materialSearchQuery||'').trim().toLowerCase();
+  const q = (formState.materialSearchQuery||'').trim();
   if(!q) return '';
-  const list = state.materiales.filter(m=> !m.eliminado && (
-    m.descripcion.toLowerCase().includes(q) || m.codigo.toLowerCase().includes(q) ||
-    (m.codigoPropio && m.codigoPropio.toLowerCase().includes(q)) || (m.codigoProveedor && m.codigoProveedor.toLowerCase().includes(q))
-  ));
+  const list = state.materiales.filter(m=> !m.eliminado && materialMatchesQuery(m, q));
   if(!list.length) return `<p class="note" style="padding:10px 2px">Sin resultados.</p>`;
-  return `<div class="card" style="margin:8px 0 0;padding:6px 18px">` + list.map(m=>{
+  return `<div class="card" style="margin:8px 0 0;padding:6px 18px;max-height:280px;overflow-y:auto;">` + list.map(m=>{
     const foto = materialFoto(m);
     return `<div class="row" data-searchpick="${m.codigo}" style="cursor:pointer">
       ${foto?`<img class="thumb" src="${foto}">`:'<div class="thumb"></div>'}
-      <div class="t"><b>${escapeHtml(m.descripcion)}</b><small>${[m.unidad, m.proveedor, m.codigoProveedor].filter(Boolean).map(escapeHtml).join(' · ')}</small></div>
+      <div class="t"><b>${escapeHtml(m.descripcion)}</b><small>${[unidadAbrev(m.unidad), m.proveedor, m.codigoProveedor].filter(Boolean).map(escapeHtml).join(' · ')}</small></div>
     </div>`;
   }).join('') + `</div>`;
 }
@@ -937,18 +1065,19 @@ function wireMatSearchResults(){
 }
 function renderCartHtml(){
   if(!formState.lineas.length) return `<p class="note" style="text-align:center;padding:18px 0">Escanea o busca para añadir material.</p>`;
-  return formState.lineas.map((l,i)=>{
+  const filas = formState.lineas.map((l,i)=>{
     const mat = findMaterial(l.materialCodigo);
-    return `<div class="row" data-linea="${i}">
-      <div class="t"><b>${escapeHtml(mat?mat.descripcion:l.materialCodigo)}</b><small>${mat?mat.codigo:''}${mat&&mat.unidad?' · '+escapeHtml(mat.unidad):''}</small></div>
-      <div class="qty">
-        <button type="button" data-lminus="${i}" aria-label="Menos">−</button>
-        <input data-lqty="${i}" value="${l.cantidad}" aria-label="Cantidad">
-        <button type="button" data-lplus="${i}" aria-label="Más">+</button>
-      </div>
+    return `<div class="cart-row">
+      <b class="cart-name" data-verficha="${l.materialCodigo}">${escapeHtml(mat?mat.descripcion:l.materialCodigo)}</b>
+      <input class="cart-qty-input" data-lqty="${i}" value="${l.cantidad}" inputmode="numeric" aria-label="Cantidad">
+      <span class="cart-ud">${mat?escapeHtml(unidadAbrev(mat.unidad)):''}</span>
       <button class="icon-btn" data-lremove="${i}" aria-label="Quitar">${ICON_X}</button>
     </div>`;
   }).join('');
+  return `<div class="cart-table">
+    <div class="cart-head"><span>Artículo</span><span>Cant.</span><span>Ud</span><span></span></div>
+    ${filas}
+  </div>`;
 }
 function wireCartEvents(el){
   const cart = el.querySelector('#cart');
@@ -963,15 +1092,10 @@ function wireCartEvents(el){
       saveBtn.innerHTML = (formState.tipo==='Salida'?'Guardar salida':'Guardar entrada') + (lv.length?` <span class="n">${lv.length} ${lv.length===1?'artículo':'artículos'}</span>`:'');
     });
   });
-  cart.querySelectorAll('[data-lminus]').forEach(b=>b.addEventListener('click', ()=>{
-    const i = Number(b.dataset.lminus); formState.lineas[i].cantidad = Math.max(0,(Number(formState.lineas[i].cantidad)||0)-1); renderMov();
-  }));
-  cart.querySelectorAll('[data-lplus]').forEach(b=>b.addEventListener('click', ()=>{
-    const i = Number(b.dataset.lplus); formState.lineas[i].cantidad = (Number(formState.lineas[i].cantidad)||0)+1; renderMov();
-  }));
   cart.querySelectorAll('[data-lremove]').forEach(b=>b.addEventListener('click', ()=>{
     const i = Number(b.dataset.lremove); formState.lineas.splice(i,1); renderMov();
   }));
+  cart.querySelectorAll('[data-verficha]').forEach(b=>b.addEventListener('click', ()=> openMaterialFicha(findMaterial(b.dataset.verficha))));
 }
 function addMaterialALineas(codigoMaterial){
   const existente = formState.lineas.find(l=>l.materialCodigo===codigoMaterial);
@@ -1010,7 +1134,7 @@ async function guardarMovimiento(){
   saveBtn.disabled = false;
   if(ok){
     const obraTexto = formState.obraCodigo ? (findObra(formState.obraCodigo)?.nombre||'') : (formState.obraLibre + (formState.obraDetalle?': '+formState.obraDetalle:''));
-    ultimoMovimiento = { tipo: formState.tipo, cantidadArticulos: lineasValidas.length, obraTexto };
+    ultimoMovimiento = { tipo: formState.tipo, cantidadArticulos: lineasValidas.length, obraTexto, grupoId };
     formState.lineas = []; formState.nota = ''; movStep = 2;
   }
   renderMov();
@@ -1018,7 +1142,19 @@ async function guardarMovimiento(){
 $('#movSaveBtn').addEventListener('click', guardarMovimiento);
 
 /* ================= ESCÁNER ================= */
-function openScan(){ unlockAudio(); $('#scanner').classList.add('on'); startCamera(); }
+let scanCooldown = false;
+let scanAddedCount = 0;
+function openScan(){
+  unlockAudio();
+  scanAddedCount = 0;
+  updateScanTitle();
+  $('#scanner').classList.add('on');
+  startCamera();
+}
+function updateScanTitle(){
+  const t = $('#scanTitleTxt');
+  if(t) t.textContent = scanAddedCount>0 ? 'Escaneando · '+scanAddedCount+' añadido'+(scanAddedCount===1?'':'s') : 'Escanear código';
+}
 async function startCamera(){
   const video = $('#scanVideo');
   try{
@@ -1029,10 +1165,11 @@ async function startCamera(){
 }
 function detectLoop(video){
   if(!scanning) return;
+  if(scanCooldown){ rafId = requestAnimationFrame(()=>detectLoop(video)); return; }
   if('BarcodeDetector' in window){
     if(!detector){ try{ detector = new BarcodeDetector({formats:['qr_code','ean_13','ean_8','upc_a','upc_e','code_128','code_39']}); }catch(e){ detector = new BarcodeDetector(); } }
     detector.detect(video).then(codes=>{
-      if(codes && codes.length>0){ const v=codes[0].rawValue; closeScan(); onScanResult(v); }
+      if(codes && codes.length>0){ onScanResult(codes[0].rawValue, video); }
       else { rafId = requestAnimationFrame(()=>detectLoop(video)); }
     }).catch(()=>{ rafId = requestAnimationFrame(()=>detectLoop(video)); });
   } else if(typeof jsQR==='function'){
@@ -1043,39 +1180,56 @@ function detectLoop(video){
       const ctx = scanCanvas.getContext('2d'); ctx.drawImage(video,0,0,w,h);
       const imgData = ctx.getImageData(0,0,w,h);
       const code = jsQR(imgData.data, w, h);
-      if(code && code.data){ closeScan(); onScanResult(code.data); return; }
+      if(code && code.data){ onScanResult(code.data, video); return; }
     }
     rafId = requestAnimationFrame(()=>detectLoop(video));
   } else { rafId = requestAnimationFrame(()=>detectLoop(video)); }
 }
 function closeScan(){
-  scanning=false; if(rafId) cancelAnimationFrame(rafId);
+  scanning=false; scanCooldown=false; if(rafId) cancelAnimationFrame(rafId);
   if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
   $('#scanner').classList.remove('on');
 }
 $('#scanCloseBtn').addEventListener('click', closeScan);
 $('#scanManualBtn').addEventListener('click', ()=>{
-  closeScan();
   const val = prompt('Introduce el código:');
-  if(val) onScanResult(val.trim());
+  if(val) onScanResult(val.trim(), null);
 });
-function onScanResult(rawValue){
+function scanFeedback(msg, ok){
+  const p = $('#scanFootMsg');
+  if(!p) return;
+  p.textContent = msg;
+  p.style.color = ok ? '#8CE0A8' : '#FFB4B4';
+  clearTimeout(window.__scanFbTimer);
+  window.__scanFbTimer = setTimeout(()=>{ p.textContent = 'Apunta al QR o al código de barras'; p.style.color=''; }, 1300);
+}
+function onScanResult(rawValue, video){
   playBeep();
   const value = (rawValue.split('\n')[0] || rawValue).trim();
   const mat = findMaterial(value) || findMaterial(rawValue.trim());
   if(mat){
     addMaterialALineas(mat.codigo);
-    toast('Añadido: '+mat.descripcion);
+    scanAddedCount++;
+    updateScanTitle();
+    scanFeedback('✓ Añadido: '+mat.descripcion, true);
     if(currentTab==='mov') renderMov();
-  } else if(confirm('Código no reconocido: "'+value+'".\n¿Darlo de alta como material nuevo?')){
-    goTab('cat'); catalogSub='materiales'; renderCatalogo();
-    openMaterialModal(null, value);
+    if(video){
+      scanCooldown = true;
+      setTimeout(()=>{ scanCooldown=false; }, 1100);
+      rafId = requestAnimationFrame(()=>detectLoop(video));
+    }
+  } else {
+    closeScan();
+    if(confirm('Código no reconocido: "'+value+'".\n¿Darlo de alta como material nuevo?')){
+      goTab('cat'); catalogSub='materiales'; renderCatalogo();
+      openMaterialModal(null, value);
+    }
   }
 }
 
 /* ================= RECIBÍ ================= */
 function renderRecibi(){
-  const el = $('#content-rec'); $('#recActionbar').style.display='';
+  const el = $('#content-rec'); $('#recActionbar').style.display='none';
   const todosPendientes = movimientosActivos().filter(m=> m.tipo==='Salida' && !m.recibido);
   function destinoKey(m){ return m.codigoObra ? 'obra:'+m.codigoObra : 'libre:'+m.obraLibre; }
   function destinoLabelFor(m){ if(m.codigoObra){ const o=findObra(m.codigoObra); return o?o.nombre:m.codigoObra; } return m.obraLibre + (m.obraDetalle?': '+m.obraDetalle:''); }
@@ -1101,7 +1255,6 @@ function renderRecibi(){
   const step1Filled = tieneDestino, step2Filled = tieneDestino && lista.length>0;
   const s1 = recStep===1?'active':(step1Filled?'done':'pending');
   const s2 = recStep===2?'active':(step2Filled?'done':'pending');
-  const s3 = recStep===3?'active':'pending';
   const obrasActivas = state.obras.filter(o=>o.estado==='Activa' && !o.eliminado);
   const destinoLabel = tieneDestino ? (recibiState.obraCodigo?(findObra(recibiState.obraCodigo)?.nombre||''):recibiState.obraLibre) : '';
 
@@ -1136,29 +1289,32 @@ function renderRecibi(){
       <div class="step-body">
         ${!tieneDestino ? '<p class="note">Elige antes un destino.</p>' : (lista.length===0 ? '<p class="note">No hay nada pendiente para este destino.</p>' : lista.map(m=>{
           const mat=findMaterial(m.codigoMaterial); const checked = recibiState.seleccion[m.id]!==false;
-          return `<label class="check-row"><input type="checkbox" data-recsel="${m.id}" ${checked?'checked':''}><span class="box">${ICON_CHECK}</span><span class="t" style="flex:1"><b>${escapeHtml(mat?mat.descripcion:m.codigoMaterial)}</b></span><span class="muted" style="font-weight:700">${m.cantidad}${mat?' '+escapeHtml(mat.unidad):''}</span></label>`;
+          const cantRec = cantidadRecibidaFor(m);
+          return `<div class="check-row">
+            <label style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;cursor:pointer;">
+              <input type="checkbox" data-recsel="${m.id}" ${checked?'checked':''}><span class="box">${ICON_CHECK}</span>
+              <span class="t" style="min-width:0;"><b>${escapeHtml(mat?mat.descripcion:m.codigoMaterial)}</b><small>Pedido: ${m.cantidad}${mat?' '+escapeHtml(mat.unidad):''}</small></span>
+            </label>
+            <div class="qty" style="flex:none;">
+              <button type="button" data-recqminus="${m.id}" data-max="${m.cantidad}" aria-label="Menos">−</button>
+              <input data-recqty="${m.id}" data-max="${m.cantidad}" value="${cantRec}" aria-label="Cantidad recibida">
+              <button type="button" data-recqplus="${m.id}" data-max="${m.cantidad}" aria-label="Más">+</button>
+            </div>
+          </div>`;
         }).join(''))}
       </div>
     </div>
 
-    <div class="step" data-step="3" data-state="${s3}">
-      <button class="step-top" data-recstepbtn="3">
-        <span class="num"><span class="digit">3</span>${ICON_TICK}</span>
-        <span class="tx"><h3>Quién lo recibe</h3><span class="sum"></span></span>${ICON_ARROW}
-      </button>
-      <div class="step-body">
-        <div class="field"><input type="text" id="recNombre" placeholder="Nombre y apellidos" aria-label="Nombre de quien recibe" value="${escapeHtml(recibiState.nombre)}"></div>
-        <div class="sign"><canvas id="sigCanvas"></canvas><div class="rule"></div><div class="cap">Firma con el dedo</div></div>
-        <button class="btn btn-line btn-sm" style="margin-top:10px" id="clearSigBtn">Borrar y repetir</button>
-      </div>
-    </div>
+    <button class="btn btn-signal btn-block" id="abrirFirmaBtn" style="margin-top:16px;min-height:64px;font-family:'Bricolage Grotesque',sans-serif;font-size:17px;font-weight:800;">
+      Firmar y confirmar recepción
+    </button>
   `;
   wireRecEvents(el);
 }
 function wireRecEvents(el){
   el.querySelectorAll('[data-pendgroup]').forEach(b=>b.addEventListener('click', ()=>{
     const key = b.dataset.pendgroup;
-    recibiState.seleccion = {};
+    recibiState.seleccion = {}; recibiState.cantidadRecibida = {};
     if(key.startsWith('obra:')){ recibiState.obraCodigo=key.slice(5); recibiState.obraLibre=''; }
     else { recibiState.obraCodigo=null; recibiState.obraLibre=key.slice(6); }
     recStep = 2; renderRecibi();
@@ -1168,7 +1324,7 @@ function wireRecEvents(el){
   }));
   const destSel = el.querySelector('#recDestSel');
   if(destSel) destSel.addEventListener('change', e=>{
-    const v = e.target.value; recibiState.seleccion = {};
+    const v = e.target.value; recibiState.seleccion = {}; recibiState.cantidadRecibida = {};
     if(v.startsWith('obra:')){ recibiState.obraCodigo=v.slice(5); recibiState.obraLibre=''; }
     else if(v.startsWith('libre:')){ recibiState.obraCodigo=null; recibiState.obraLibre=v.slice(6); }
     else { recibiState.obraCodigo=null; recibiState.obraLibre=''; }
@@ -1177,16 +1333,29 @@ function wireRecEvents(el){
   el.querySelectorAll('[data-recsel]').forEach(cb=>cb.addEventListener('change', e=>{
     recibiState.seleccion[e.target.dataset.recsel] = e.target.checked;
   }));
-  const nombreInput = el.querySelector('#recNombre');
-  if(nombreInput) nombreInput.addEventListener('input', e=> recibiState.nombre = e.target.value);
-  const sigCanvas = el.querySelector('#sigCanvas');
-  if(sigCanvas) setupSignaturePad(sigCanvas);
-  const clearSigBtn = el.querySelector('#clearSigBtn');
-  if(clearSigBtn) clearSigBtn.addEventListener('click', ()=>{
-    const ctx = currentSigCanvas.getContext('2d');
-    ctx.clearRect(0,0,currentSigCanvas.width,currentSigCanvas.height);
-    recibiState.firmaVacia = true;
+  el.querySelectorAll('[data-recqty]').forEach(inp=>{
+    inp.addEventListener('focus', e=> e.target.select());
+    inp.addEventListener('input', e=>{
+      const id = e.target.dataset.recqty, max = Number(e.target.dataset.max)||0;
+      let v = e.target.value.replace(/[^\d]/g,'');
+      if(v!=='' && Number(v)>max) v = String(max);
+      recibiState.cantidadRecibida[id] = v;
+    });
   });
+  el.querySelectorAll('[data-recqminus]').forEach(b=>b.addEventListener('click', ()=>{
+    const id = b.dataset.recqminus;
+    const cur = Number(cantidadRecibidaFor({id, cantidad:Number(b.dataset.max)}))||0;
+    recibiState.cantidadRecibida[id] = Math.max(0, cur-1);
+    renderRecibi();
+  }));
+  el.querySelectorAll('[data-recqplus]').forEach(b=>b.addEventListener('click', ()=>{
+    const id = b.dataset.recqplus, max = Number(b.dataset.max)||0;
+    const cur = Number(cantidadRecibidaFor({id, cantidad:max}))||0;
+    recibiState.cantidadRecibida[id] = Math.min(max, cur+1);
+    renderRecibi();
+  }));
+  const abrirFirmaBtn = el.querySelector('#abrirFirmaBtn');
+  if(abrirFirmaBtn) abrirFirmaBtn.addEventListener('click', abrirFirmaModal);
 }
 function setupSignaturePad(canvas){
   currentSigCanvas = canvas;
@@ -1206,7 +1375,7 @@ function setupSignaturePad(canvas){
   canvas.addEventListener('pointermove', e=>{ if(!drawing) return; ctx.lineTo(...pos(e)); ctx.stroke(); recibiState.firmaVacia=false; e.preventDefault(); });
   window.addEventListener('pointerup', ()=> drawing=false);
 }
-async function confirmarRecepcion(){
+function abrirFirmaModal(){
   const tieneDestino = !!(recibiState.obraCodigo || recibiState.obraLibre);
   if(!tieneDestino){ recStep=1; renderRecibi(); badFlashStep('#panel-rec .step[data-step="1"]'); toast('Elige un destino'); return; }
   const pendientes = movimientosActivos().filter(m=>{
@@ -1216,24 +1385,70 @@ async function confirmarRecepcion(){
     return false;
   });
   const seleccionados = pendientes.filter(m=> recibiState.seleccion[m.id]!==false);
-  const nombre = (recibiState.nombre||'').trim();
   if(seleccionados.length===0){ recStep=2; renderRecibi(); badFlashStep('#panel-rec .step[data-step="2"]'); toast('Selecciona al menos un material'); return; }
-  if(!nombre){ recStep=3; renderRecibi(); badFlashStep('#panel-rec .step[data-step="3"]'); toast('Indica el nombre de quien recibe'); return; }
-  if(recibiState.firmaVacia){ recStep=3; renderRecibi(); badFlashStep('#panel-rec .step[data-step="3"]'); toast('Falta la firma'); return; }
+  for(const m of seleccionados){
+    const cant = Number(cantidadRecibidaFor(m));
+    if(isNaN(cant) || cant<=0){ recStep=2; renderRecibi(); badFlashStep('#panel-rec .step[data-step="2"]'); toast('Revisa la cantidad recibida de '+(findMaterial(m.codigoMaterial)?.descripcion||m.codigoMaterial)); return; }
+  }
+  recibiState.firmaVacia = true;
+  $('#recNombre').value = recibiState.nombre || '';
+  openModal('mFirma');
+  requestAnimationFrame(()=>{
+    const canvas = $('#sigCanvas');
+    if(canvas){ const ctx=canvas.getContext('2d'); ctx.clearRect(0,0,canvas.width,canvas.height); setupSignaturePad(canvas); }
+  });
+}
+$('#recNombre').addEventListener('input', e=> recibiState.nombre = e.target.value);
+$('#clearSigBtn').addEventListener('click', ()=>{
+  const ctx = currentSigCanvas.getContext('2d');
+  ctx.clearRect(0,0,currentSigCanvas.width,currentSigCanvas.height);
+  recibiState.firmaVacia = true;
+});
+async function confirmarRecepcion(){
+  const tieneDestino = !!(recibiState.obraCodigo || recibiState.obraLibre);
+  if(!tieneDestino) return;
+  const pendientes = movimientosActivos().filter(m=>{
+    if(m.tipo!=='Salida' || m.recibido) return false;
+    if(recibiState.obraCodigo) return m.codigoObra===recibiState.obraCodigo;
+    if(recibiState.obraLibre) return !m.codigoObra && m.obraLibre===recibiState.obraLibre;
+    return false;
+  });
+  const seleccionados = pendientes.filter(m=> recibiState.seleccion[m.id]!==false);
+  const nombre = (recibiState.nombre||'').trim();
+  if(!nombre){ toast('Indica el nombre de quien recibe'); return; }
+  if(recibiState.firmaVacia){ toast('Falta la firma'); return; }
   const firmaDataUrl = currentSigCanvas.toDataURL('image/png');
   const fecha = new Date().toISOString();
-  seleccionados.forEach(m=>{ m.recibido=true; m.recibidoPor=nombre; m.recibidoFirma=firmaDataUrl; m.recibidoFecha=fecha; touch(m); });
-  $('#recSaveBtn').disabled = true;
+  const ahora = Date.now();
+  let huboParcial = false;
+  seleccionados.forEach(m=>{
+    const cantRecibida = Number(cantidadRecibidaFor(m));
+    if(cantRecibida < m.cantidad){
+      huboParcial = true;
+      const restante = m.cantidad - cantRecibida;
+      state.movimientos.push(touch({
+        id: 'M'+ahora+'_rest_'+Math.floor(Math.random()*10000),
+        grupoId: m.grupoId, fecha: m.fecha,
+        tipo: m.tipo, codigoMaterial: m.codigoMaterial, cantidad: restante,
+        codigoObra: m.codigoObra, obraLibre: m.obraLibre, obraDetalle: m.obraDetalle,
+        responsableCodigo: m.responsableCodigo, nota: m.nota, recibido:false
+      }));
+      m.cantidad = cantRecibida;
+    }
+    m.recibido=true; m.recibidoPor=nombre; m.recibidoFirma=firmaDataUrl; m.recibidoFecha=fecha; touch(m);
+  });
+  const btn = $('#firmaConfirmBtn'); btn.disabled = true;
   const ok = await saveAll();
-  $('#recSaveBtn').disabled = false;
+  btn.disabled = false;
   if(ok){
-    toast('Recepción confirmada');
-    recibiState.obraCodigo=null; recibiState.obraLibre=''; recibiState.seleccion={}; recibiState.nombre=''; recibiState.firmaVacia=true;
+    toast(huboParcial ? 'Recepción parcial confirmada' : 'Recepción confirmada');
+    recibiState.obraCodigo=null; recibiState.obraLibre=''; recibiState.seleccion={}; recibiState.cantidadRecibida={}; recibiState.nombre=''; recibiState.firmaVacia=true;
     recStep=1;
+    closeModals();
+    renderRecibi();
   }
-  renderRecibi();
 }
-$('#recSaveBtn').addEventListener('click', confirmarRecepcion);
+$('#firmaConfirmBtn').addEventListener('click', confirmarRecepcion);
 
 /* ================= HISTORIAL ================= */
 function obraLabelHis(m){
@@ -1251,20 +1466,23 @@ function renderHistorial(){
       <select aria-label="Estado de la obra" id="hisEstado"><option value="activas">Obras activas</option><option value="todas">Todas</option><option value="cerradas">Cerradas</option></select>
       <select aria-label="Obra" id="hisObraSel"><option value="">Todas las obras</option>${state.obras.filter(o=>o.estado==='Activa'&&!o.eliminado).map(o=>`<option value="${o.codigo}">${escapeHtml(o.nombre)}</option>`).join('')}</select>
     </div>
+    <div class="field"><select aria-label="Grupo" id="hisGrupoSel"><option value="">Todos los grupos</option>${GRUPOS_MATERIAL.map(g=>`<option value="${g}">${g}</option>`).join('')}</select></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px" id="hisPills"></div>
     <div id="hisList"></div>
   `;
-  const searchInput=$('#hisSearch'), estadoSel=$('#hisEstado'), obraSel=$('#hisObraSel');
+  const searchInput=$('#hisSearch'), estadoSel=$('#hisEstado'), obraSel=$('#hisObraSel'), grupoSel=$('#hisGrupoSel');
   searchInput.addEventListener('input', ()=>{ hisPage=1; drawHistorial(); });
   estadoSel.addEventListener('change', ()=>{ hisPage=1; drawHistorial(); });
   obraSel.addEventListener('change', ()=>{ hisQuickObra=null; hisPage=1; drawHistorial(); });
+  grupoSel.addEventListener('change', ()=>{ hisPage=1; drawHistorial(); });
   drawHistorial();
 
   function drawHistorial(){
-    const fq=(searchInput.value||'').trim().toLowerCase(), fe=estadoSel.value, foSel=obraSel.value;
+    const fq=(searchInput.value||'').trim().toLowerCase(), fe=estadoSel.value, foSel=obraSel.value, fgrupo=grupoSel.value;
     const obraActiva = hisQuickObra || foSel || '';
     const tipoActivo = hisQuickTipo || '';
     let list = movimientosActivos().filter(m=> (!obraActiva||m.codigoObra===obraActiva) && (!tipoActivo||m.tipo===tipoActivo));
+    if(fgrupo) list = list.filter(m=>{ const mat=findMaterial(m.codigoMaterial); return mat && (mat.grupo||'Otros')===fgrupo; });
     if(fe==='activas') list = list.filter(m=> obraEstadoHis(m)!=='Cerrada');
     else if(fe==='cerradas') list = list.filter(m=> obraEstadoHis(m)==='Cerrada');
     if(hisQuickFecha) list = list.filter(m=> new Date(m.fecha).toDateString()===hisQuickFecha);
@@ -1319,25 +1537,27 @@ function renderHistorial(){
           <button class="tag click ${m0.tipo==='Entrada'?'in':'out'}" data-filtertipo="${m0.tipo}">${m0.tipo}</button>
           <b ${m0.codigoObra?`data-filterobra="${m0.codigoObra}"`:''}>${escapeHtml(obraLabelHis(m0))}</b>
           <span class="sp"></span><span class="muted" style="font-size:13.5px;font-weight:600">${hora}</span>
-          <span class="tag">${grupo.length} art.</span>${todosRecibidos?'<span class="tag in">Recibido</span>':''}
+          ${todosRecibidos?'<span class="tag in">Recibido</span>':''}
         </div>
         ${grupo.map(m=>{
           const mat=findMaterial(m.codigoMaterial);
-          return `<div class="row"><div class="t"><b>${escapeHtml(mat?mat.descripcion:m.codigoMaterial)}</b><small>${mat&&mat.codigoProveedor?escapeHtml(mat.codigoProveedor):''}</small></div>
-            <span style="font-weight:800">${m.cantidad}${mat?' '+escapeHtml(mat.unidad):''}</span>
+          return `<div class="row"><div class="t"><b class="cart-name" data-verficha="${m.codigoMaterial}">${escapeHtml(mat?mat.descripcion:m.codigoMaterial)}</b><small>${mat&&mat.codigoProveedor?escapeHtml(mat.codigoProveedor):''}</small></div>
+            <span style="font-weight:800">${m.cantidad}${mat?' '+escapeHtml(unidadAbrev(mat.unidad)):''}</span>
             <button class="icon-btn" data-editmov="${m.id}" aria-label="Editar">${ICON_EDIT}</button></div>`;
         }).join('')}
         <details class="more"><summary>Más info</summary>
           <dl><dt>Responsable</dt><dd>${resp?escapeHtml(resp.nombre):'—'}</dd>
           ${m0.nota?`<dt>Nota</dt><dd>${escapeHtml(m0.nota)}</dd>`:''}
           ${todosRecibidos?`<dt>Recibido</dt><dd>${escapeHtml(m0.recibidoPor||'')} · ${fmtDate(m0.recibidoFecha)}</dd>`:''}</dl>
+          <button class="btn btn-line btn-sm" data-albaran="${m0.grupoId||m0.id}" style="width:100%;margin-top:12px;">Descargar albarán</button>
         </details>
       </div>`;
     });
     html += pagerHtml(hisPage, totalPages, 'his');
     $('#hisList').innerHTML = html;
     $$('[data-editmov]').forEach(b=>b.addEventListener('click', ()=>{ const mov=state.movimientos.find(x=>x.id===b.dataset.editmov); if(mov) openEditMovModal(mov); }));
-    $$('[data-filtertipo]').forEach(b=>b.addEventListener('click', ()=>{ hisQuickTipo=b.dataset.filtertipo; hisPage=1; drawHistorial(); }));
+    $$('[data-verficha]').forEach(b=>b.addEventListener('click', ()=> openMaterialFicha(findMaterial(b.dataset.verficha))));
+    $$('[data-albaran]').forEach(b=>b.addEventListener('click', ()=> imprimirAlbaranByGrupoId(b.dataset.albaran)));
     $$('[data-filterobra]').forEach(b=>b.addEventListener('click', ()=>{ hisQuickObra=b.dataset.filterobra; hisPage=1; drawHistorial(); }));
     const hisPrev=$('#hisPrev'), hisNext=$('#hisNext');
     if(hisPrev) hisPrev.addEventListener('click', ()=>{ hisPage--; drawHistorial(); });
@@ -1354,12 +1574,7 @@ function exportHistorialCsv(){
       mat&&mat.codigoProveedor?mat.codigoProveedor:'', mat&&mat.codigoPropio?mat.codigoPropio:'', mat&&mat.proveedor?mat.proveedor:'',
       resp?resp.nombre:'', m.recibidoPor||'', m.nota||''];
   });
-  function csvCell(v){ v=String(v==null?'':v); return /[",;\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
-  const csv = [cab, ...filas].map(f=>f.map(csvCell).join(';')).join('\r\n');
-  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href=url; a.download='historial_'+new Date().toISOString().slice(0,10)+'.csv';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  downloadCsv('historial_'+new Date().toISOString().slice(0,10)+'.csv', cab, filas);
   toast('CSV descargado');
 }
 function openEditMovModal(mov){
@@ -1370,6 +1585,7 @@ function openEditMovModal(mov){
       <div class="field"><label for="eObra">Obra</label><select id="eObra">
         <option value="">Sin elegir de la lista</option>
         ${state.obras.filter(o=>!o.eliminado).map(o=>`<option value="obra:${o.codigo}" ${mov.codigoObra===o.codigo?'selected':''}>${escapeHtml(o.nombre)}</option>`).join('')}
+        <option value="libre:Nave" ${mov.obraLibre==='Nave'?'selected':''}>Nave (nuestro almacén)</option>
         <option value="libre:Operario" ${mov.obraLibre==='Operario'?'selected':''}>Operario</option>
         <option value="libre:Otros" ${mov.obraLibre==='Otros'?'selected':''}>Otros</option>
       </select></div>
@@ -1438,6 +1654,7 @@ function renderCatalogo(){
   if(catalogSub==='materiales') renderMaterialesTab($('#catBody')); else renderObrasTab($('#catBody'));
 }
 let matCatPage = 1;
+let matSeleccionados = new Set();
 function renderMaterialesTab(el){
   el.innerHTML = `
     <div class="two" style="margin-bottom:10px">
@@ -1445,20 +1662,28 @@ function renderMaterialesTab(el){
       <select id="matCatGrupo" aria-label="Grupo"><option value="">Todos los grupos</option>${GRUPOS_MATERIAL.map(g=>`<option value="${g}">${g}</option>`).join('')}</select>
     </div>
     <button class="btn btn-ink btn-block" style="margin-bottom:12px" id="addMatBtn">Añadir material</button>
+    ${matSeleccionados.size>0 ? `<div class="card" style="display:flex;align-items:center;gap:10px;">
+      <b style="font-size:14px;">${matSeleccionados.size} seleccionado${matSeleccionados.size===1?'':'s'}</b>
+      <span style="flex:1"></span>
+      <button class="btn btn-line btn-sm" id="matSelClearBtn">Cancelar</button>
+      <button class="btn btn-ink btn-sm" id="matSelPrintBtn">Imprimir etiquetas</button>
+    </div>` : ''}
     <div id="matCatList"></div>
   `;
   el.querySelector('#addMatBtn').addEventListener('click', ()=> openMaterialModal(null,''));
+  const clearBtn=el.querySelector('#matSelClearBtn'); if(clearBtn) clearBtn.addEventListener('click', ()=>{ matSeleccionados.clear(); renderMaterialesTab(el); });
+  const printSelBtn=el.querySelector('#matSelPrintBtn'); if(printSelBtn) printSelBtn.addEventListener('click', imprimirEtiquetasMultiples);
   const searchInput = el.querySelector('#matCatSearch');
   const grupoSel = el.querySelector('#matCatGrupo');
   searchInput.addEventListener('input', ()=>{ matCatPage=1; draw(); });
   grupoSel.addEventListener('change', ()=>{ matCatPage=1; draw(); });
   draw();
   function draw(){
-    const q=(searchInput.value||'').trim().toLowerCase();
+    const q=(searchInput.value||'').trim();
     const grupo = grupoSel.value;
     let list = state.materiales.filter(m=>!m.eliminado);
     if(grupo) list = list.filter(m=> (m.grupo||'Otros')===grupo);
-    if(q) list = list.filter(m=> m.descripcion.toLowerCase().includes(q) || m.codigo.toLowerCase().includes(q) || (m.codigoPropio&&m.codigoPropio.toLowerCase().includes(q)) || (m.codigoProveedor&&m.codigoProveedor.toLowerCase().includes(q)) || (m.proveedor&&m.proveedor.toLowerCase().includes(q)));
+    if(q) list = list.filter(m=> materialMatchesQuery(m, q));
     list.sort((a,b)=>a.descripcion.localeCompare(b.descripcion));
     const totalPages = Math.max(1, Math.ceil(list.length/PER_PAGE));
     matCatPage = Math.min(Math.max(1,matCatPage), totalPages);
@@ -1467,9 +1692,10 @@ function renderMaterialesTab(el){
       const foto = materialFoto(m);
       const provTxt = [m.proveedor, m.codigoProveedor?`<span class="code-copy" data-copy="${escapeHtml(m.codigoProveedor)}">${escapeHtml(m.codigoProveedor)}</span>`:null].filter(Boolean).join(' · ');
       return `<div class="cat-row" style="align-items:flex-start;">
+        <input type="checkbox" data-matsel="${m.codigo}" ${matSeleccionados.has(m.codigo)?'checked':''} style="width:22px;height:22px;flex:none;margin-top:2px;">
         ${foto?`<img class="thumb" src="${foto}">`:'<div class="thumb"></div>'}
         <div class="t">
-          <b>${escapeHtml(m.descripcion)}</b>
+          <b class="cart-name" data-verficha="${m.codigo}" style="font-size:15.5px;">${escapeHtml(m.descripcion)}</b>
           <small>${provTxt||'Sin proveedor'}</small>
         </div>
         <div class="acts">
@@ -1478,6 +1704,11 @@ function renderMaterialesTab(el){
         </div>
       </div>`;
     }).join('') + `</div>` : `<p class="empty">Aún no hay materiales dados de alta.</p>`) + pagerHtml(matCatPage, totalPages, 'matCat');
+    $$('[data-verficha]').forEach(b=>b.addEventListener('click', ()=> openMaterialFicha(findMaterial(b.dataset.verficha))));
+    $$('[data-matsel]').forEach(cb=>cb.addEventListener('change', e=>{
+      if(e.target.checked) matSeleccionados.add(e.target.dataset.matsel); else matSeleccionados.delete(e.target.dataset.matsel);
+      renderMaterialesTab(el);
+    }));
     $$('[data-addmov]').forEach(b=>b.addEventListener('click', ()=>{
       addMaterialALineas(b.dataset.addmov);
       const mat = findMaterial(b.dataset.addmov);
@@ -1490,6 +1721,28 @@ function renderMaterialesTab(el){
     if(prevBtn) prevBtn.addEventListener('click', ()=>{ matCatPage--; draw(); });
     if(nextBtn) nextBtn.addEventListener('click', ()=>{ matCatPage++; draw(); });
   }
+}
+function imprimirEtiquetasMultiples(){
+  const mats = [...matSeleccionados].map(c=>findMaterial(c)).filter(Boolean);
+  if(!mats.length){ toast('No hay materiales seleccionados'); return; }
+  const validos = mats.filter(m=>m.codigoPropio);
+  const sinCodigo = mats.length - validos.length;
+  if(!validos.length){ toast('Ninguno de los seleccionados tiene código propio'); return; }
+  const html = validos.map(m=>{
+    const qrTexto = [
+      m.codigoPropio,
+      m.proveedor ? 'Proveedor: '+m.proveedor : null,
+      m.codigoProveedor ? 'Cód. proveedor: '+m.codigoProveedor : null,
+      'Concepto: '+m.descripcion
+    ].filter(Boolean).join('\n');
+    return `<div class="label-sheet" style="margin-bottom:16px;">
+      <img class="qr" src="${qrImageUrl(qrTexto)}" width="118" height="118" alt="Código QR">
+      <div class="meta"><b>${escapeHtml(m.descripcion)}</b><small>${[m.proveedor,m.codigoProveedor].filter(Boolean).map(escapeHtml).join(' · ')}</small><div class="code">${escapeHtml(m.codigoPropio)}</div></div>
+    </div>`;
+  }).join('');
+  $('#printArea').innerHTML = html;
+  if(sinCodigo>0) toast(sinCodigo+' material(es) sin código propio no se imprimieron');
+  setTimeout(()=>window.print(), 200);
 }
 let obraCatPage = 1;
 function renderObrasTab(el){
@@ -1665,6 +1918,66 @@ function openEtiquetaModal(material){
   };
   openModal('mEtiqueta');
 }
+function generarAlbaranHtml(grupo){
+  const m0 = grupo[0];
+  const resp = m0.responsableCodigo ? findResponsable(m0.responsableCodigo) : null;
+  const filas = grupo.map(m=>{
+    const mat = findMaterial(m.codigoMaterial);
+    return `<tr><td style="padding:7px 0;border-bottom:1px solid #eee;">${escapeHtml(mat?mat.descripcion:m.codigoMaterial)}</td><td style="padding:7px 0;border-bottom:1px solid #eee;text-align:right;">${m.cantidad} ${escapeHtml(mat?unidadAbrev(mat.unidad):'')}</td></tr>`;
+  }).join('');
+  return `
+    <div style="font-family:Manrope,Arial,sans-serif;max-width:640px;color:#16171A;">
+      <h1 style="font-size:22px;margin:0 0 2px;">Vale de ${m0.tipo==='Salida'?'salida':'entrada'} de material</h1>
+      <p style="color:#666;margin:0 0 20px;">${fmtDate(m0.fecha)}</p>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:14.5px;">
+        <tr><td style="padding:4px 0;color:#666;width:120px;">Destino</td><td style="padding:4px 0;font-weight:700;">${escapeHtml(obraLabelHis(m0))}</td></tr>
+        <tr><td style="padding:4px 0;color:#666;">Responsable</td><td style="padding:4px 0;">${resp?escapeHtml(resp.nombre):'—'}</td></tr>
+        ${m0.nota?`<tr><td style="padding:4px 0;color:#666;">Nota</td><td style="padding:4px 0;">${escapeHtml(m0.nota)}</td></tr>`:''}
+      </table>
+      <table style="width:100%;border-collapse:collapse;font-size:14.5px;">
+        <thead><tr><th style="text-align:left;border-bottom:2px solid #16171A;padding:6px 0;">Material</th><th style="text-align:right;border-bottom:2px solid #16171A;padding:6px 0;">Cantidad</th></tr></thead>
+        <tbody>${filas}</tbody>
+      </table>
+      <div style="margin-top:50px;display:flex;justify-content:space-between;font-size:13.5px;color:#444;">
+        <div>Entrega:<br><br>_________________________</div>
+        <div>Recibe:<br><br>_________________________</div>
+      </div>
+    </div>
+  `;
+}
+function imprimirAlbaran(grupo){
+  if(!grupo || !grupo.length) return;
+  $('#printArea').innerHTML = generarAlbaranHtml(grupo);
+  setTimeout(()=>window.print(), 150);
+}
+function imprimirAlbaranByGrupoId(grupoId){
+  const grupo = movimientosActivos().filter(m=> (m.grupoId||m.id)===grupoId);
+  imprimirAlbaran(grupo);
+}
+function openMaterialFicha(material){
+  if(!material) return;
+  const foto = materialFoto(material);
+  const body = $('#mFichaBody');
+  body.innerHTML = `
+    <div style="text-align:center;margin-bottom:18px;">
+      ${foto ? `<img src="${foto}" style="width:100%;max-width:280px;aspect-ratio:1;object-fit:cover;border-radius:20px;">` :
+        `<div style="width:100%;max-width:280px;aspect-ratio:1;margin:0 auto;border-radius:20px;background:var(--sunk);display:flex;align-items:center;justify-content:center;color:var(--ink-3);">
+          <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="10.5" r="1.6"/><path d="m4 17 5-4 4 3 3-2 4 3"/></svg>
+        </div>`}
+    </div>
+    <h3 style="font-size:22px;line-height:1.15;margin-bottom:4px;">${escapeHtml(material.descripcion)}</h3>
+    <p class="note" style="margin-bottom:18px;">${escapeHtml(material.grupo||'Otros')}</p>
+    <dl style="display:grid;grid-template-columns:auto 1fr;gap:11px 18px;font-size:15px;margin:0;">
+      <dt class="muted" style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;">Unidad</dt><dd style="margin:0;">${escapeHtml(unidadAbrev(material.unidad))} (${escapeHtml(material.unidad)})</dd>
+      <dt class="muted" style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;">Proveedor</dt><dd style="margin:0;">${escapeHtml(material.proveedor||'—')}</dd>
+      <dt class="muted" style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;">Código proveedor</dt><dd style="margin:0;">${escapeHtml(material.codigoProveedor||'—')}</dd>
+      <dt class="muted" style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;">Código propio</dt><dd style="margin:0;">${escapeHtml(material.codigoPropio||material.codigo)}</dd>
+      ${material.stockMinimo!=null?`<dt class="muted" style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;">Stock mínimo</dt><dd style="margin:0;">${material.stockMinimo}</dd>`:''}
+    </dl>
+  `;
+  $('#mFichaEditBtn').onclick = ()=>{ closeModals(); openMaterialModal(material); };
+  openModal('mFicha');
+}
 function openResumenModal(obra){
   if(!obra) return;
   $('#mResumenTitle').textContent = obra.nombre;
@@ -1676,19 +1989,274 @@ function openResumenModal(obra){
   });
   const filas = Object.keys(mapa).map(codigo=>{
     const mat=findMaterial(codigo), {salida,entrada}=mapa[codigo];
-    return { nombre: mat?mat.descripcion:codigo, unidad: mat?mat.unidad:'', neto: salida-entrada };
+    return {
+      nombre: mat?mat.descripcion:codigo,
+      unidad: mat?mat.unidad:'',
+      proveedor: mat?mat.proveedor:'',
+      codigoProveedor: mat?mat.codigoProveedor:'',
+      codigoPropio: mat?(mat.codigoPropio||mat.codigo):codigo,
+      neto: salida-entrada
+    };
   }).sort((a,b)=>b.neto-a.neto);
-  const maxNeto = Math.max(1, ...filas.map(f=>Math.abs(f.neto)));
   const body = $('#mResumenBody');
   body.innerHTML = `
-    <p class="note" style="margin:0 0 14px">Total llevado a esta obra, descontando lo que ha vuelto.</p>
-    ${filas.length ? filas.map(f=>`<div class="total-row"><div class="t"><b style="font-size:15.5px">${escapeHtml(f.nombre)}</b><div class="bar"><i style="width:${Math.max(4,Math.round(Math.abs(f.neto)/maxNeto*100))}%"></i></div></div><b>${f.neto} ${escapeHtml(f.unidad)}</b></div>`).join('') : `<p class="empty">Todavía no hay movimientos para esta obra.</p>`}
+    <p class="note" style="margin:0 0 14px">Cantidad de cada material que hay actualmente en esta obra (salidas menos entradas/devoluciones).</p>
+    ${filas.length ? filas.map(f=>`
+      <div class="total-row" style="align-items:flex-start;">
+        <div class="t">
+          <b style="font-size:15.5px">${escapeHtml(f.nombre)}</b>
+          <div class="note" style="margin-top:3px;">${[f.proveedor,f.codigoProveedor?'Prov. '+f.codigoProveedor:null,'Cód. '+f.codigoPropio].filter(Boolean).map(escapeHtml).join(' · ')}</div>
+        </div>
+        <b>${f.neto} ${escapeHtml(unidadAbrev(f.unidad))}</b>
+      </div>
+    `).join('') : `<p class="empty">Todavía no hay movimientos para esta obra.</p>`}
   `;
   $('#mResumenPrint').onclick = ()=>{ $('#printArea').innerHTML = `<h2>${escapeHtml(obra.nombre)}</h2>` + body.innerHTML; setTimeout(()=>window.print(), 150); };
   openModal('mResumen');
 }
 
-/* ================= CONFIG ================= */
+/* ================= GASTOS / TICKETS ================= */
+const CATEGORIAS_GASTO = ['Material','Combustible','Comida','Otros'];
+let gastosPage = 1;
+let gastoLineasEdit = [];
+function loadTesseractIfNeeded(){
+  return new Promise((resolve, reject)=>{
+    if(window.Tesseract) return resolve();
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.0.4/dist/tesseract.min.js';
+    s.onload = ()=>resolve();
+    s.onerror = ()=>reject(new Error('No se pudo cargar el lector de texto'));
+    document.head.appendChild(s);
+  });
+}
+function parseTicketText(texto){
+  const lineasRaw = texto.split('\n').map(l=>l.trim()).filter(Boolean);
+  const proveedor = lineasRaw[0] || '';
+  const priceRegex = /(\d{1,4}[.,]\d{2})\s*€?\s*$/;
+  const lineas = [];
+  lineasRaw.forEach(l=>{
+    if(/total/i.test(l) || /\biva\b/i.test(l) || /cambio/i.test(l) || /\bnif\b|\bcif\b/i.test(l) || /subtotal/i.test(l)) return;
+    const m = l.match(priceRegex);
+    if(m){
+      const concepto = l.slice(0, m.index).replace(/[.\-x0-9]+$/,'').trim();
+      if(concepto && concepto.length>1) lineas.push({ concepto, importe: m[1].replace(',','.') });
+    }
+  });
+  let total = null;
+  const totalLine = lineasRaw.find(l=>/total/i.test(l) && !/subtotal/i.test(l));
+  if(totalLine){ const m = totalLine.match(priceRegex) || totalLine.match(/(\d{1,4}[.,]\d{2})/); if(m) total = m[1].replace(',','.'); }
+  let iva = null;
+  const ivaLine = lineasRaw.find(l=>/\biva\b/i.test(l));
+  if(ivaLine){ const m = ivaLine.match(/(\d{1,4}[.,]\d{2})/); if(m) iva = m[1].replace(',','.'); }
+  const dateRegex = /(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/;
+  const dm = texto.match(dateRegex);
+  let fecha = null;
+  if(dm){ let d=dm[1], mo=dm[2], y=dm[3]; if(y.length===2) y='20'+y; fecha = `${y}-${mo.padStart(2,'0')}-${d.padStart(2,'0')}`; }
+  return { proveedor, lineas, total, iva, fecha };
+}
+async function intentarLeerTicket(dataUrl, btn){
+  if(btn){ btn.disabled = true; btn.textContent = 'Leyendo...'; }
+  toast('Leyendo ticket, puede tardar unos segundos...');
+  try{
+    await loadTesseractIfNeeded();
+    const result = await Tesseract.recognize(dataUrl, 'spa');
+    const texto = (result && result.data && result.data.text) || '';
+    const datos = parseTicketText(texto);
+    if(datos.proveedor) $('#gProveedor').value = datos.proveedor;
+    if(datos.fecha) $('#gFecha').value = datos.fecha;
+    if(datos.iva) $('#gIva').value = datos.iva;
+    if(datos.total){ const t=$('#gTotal'); t.value = datos.total; t.dataset.tocado='1'; }
+    if(datos.lineas && datos.lineas.length){
+      gastoLineasEdit = datos.lineas;
+      $('#gLineasList').innerHTML = renderGastoLineasHtml();
+      wireGastoLineas();
+    }
+    toast('Datos leídos, revísalos antes de guardar');
+  }catch(e){
+    console.error(e);
+    toast('No se pudo leer el ticket automáticamente, rellena a mano');
+  }
+  if(btn){ btn.disabled = false; btn.textContent = 'Intentar leer datos del ticket'; }
+}
+function renderGastos(){
+  const el = $('#content-gas');
+  el.innerHTML = `
+    <div class="head"><div class="tx"><h1>Gastos</h1><p>Tickets de compra, combustible o dietas asignados a una obra.</p></div></div>
+    <button class="btn btn-ink btn-block" style="margin-bottom:12px" id="addGastoBtn">Añadir ticket</button>
+    <div id="gastosList"></div>
+  `;
+  el.querySelector('#addGastoBtn').addEventListener('click', ()=> openGastoModal(null));
+  const list = state.gastos.filter(g=>!g.eliminado).sort((a,b)=> new Date(b.fecha)-new Date(a.fecha));
+  const totalPages = Math.max(1, Math.ceil(list.length/PER_PAGE));
+  gastosPage = Math.min(Math.max(1,gastosPage), totalPages);
+  const pageList = list.slice((gastosPage-1)*PER_PAGE, gastosPage*PER_PAGE);
+  $('#gastosList').innerHTML = (list.length ? `<div class="card">` + pageList.map(g=>{
+    const foto = g.foto || (g.fotoId?state.assets[g.fotoId]:null);
+    const destino = g.codigoObra ? (findObra(g.codigoObra)?.nombre||g.codigoObra) : (g.obraLibre||'—');
+    const nLineas = (g.lineas||[]).length;
+    return `<div class="cat-row" data-vergasto="${g.id}" style="cursor:pointer;">
+      ${foto?`<img class="thumb" src="${foto}">`:'<div class="thumb"></div>'}
+      <div class="t"><b>${escapeHtml(g.proveedor||g.categoria||'Ticket')}</b><small>${escapeHtml(destino)} · ${nLineas} artículo${nLineas===1?'':'s'}${g.fecha?' · '+fmtDateOnly(g.fecha):''}</small></div>
+      <div class="acts"><b style="font-size:15.5px;">${g.importeTotal!=null&&g.importeTotal!==''?Number(g.importeTotal).toFixed(2)+' €':''}</b></div>
+    </div>`;
+  }).join('') + `</div>` : `<p class="empty">Todavía no hay tickets registrados.</p>`) + pagerHtml(gastosPage, totalPages, 'gastos');
+  $$('[data-vergasto]').forEach(row=>row.addEventListener('click', ()=> openGastoModal(state.gastos.find(g=>g.id===row.dataset.vergasto))));
+  const prevBtn=$('#gastosPrev'), nextBtn=$('#gastosNext');
+  if(prevBtn) prevBtn.addEventListener('click', ()=>{ gastosPage--; renderGastos(); });
+  if(nextBtn) nextBtn.addEventListener('click', ()=>{ gastosPage++; renderGastos(); });
+}
+function renderGastoLineasHtml(){
+  if(!gastoLineasEdit.length) return `<p class="note" style="padding:6px 2px;">Añade al menos un artículo.</p>`;
+  return `<div class="cart-table">
+    <div class="cart-head" style="grid-template-columns:1fr 74px 32px;"><span>Concepto</span><span>Importe €</span><span></span></div>
+    ${gastoLineasEdit.map((l,i)=>`
+      <div class="cart-row" style="grid-template-columns:1fr 74px 32px;">
+        <input type="text" data-glconcepto="${i}" value="${escapeHtml(l.concepto||'')}" placeholder="Artículo"
+          style="min-height:38px;padding:0 10px;background:var(--sunk);border:0;border-radius:10px;font-size:13.5px;color:var(--ink);">
+        <input type="text" inputmode="decimal" data-glimporte="${i}" value="${l.importe!=null?l.importe:''}" placeholder="0.00"
+          style="width:74px;height:38px;min-height:0;padding:0;text-align:center;background:var(--sunk);border:0;border-radius:10px;font:700 13.5px Manrope,sans-serif;color:var(--ink);">
+        <button class="icon-btn" data-glremove="${i}" aria-label="Quitar">${ICON_X}</button>
+      </div>
+    `).join('')}
+  </div>`;
+}
+function wireGastoLineas(){
+  const cont = $('#gLineasList');
+  if(!cont) return;
+  cont.querySelectorAll('[data-glconcepto]').forEach(inp=>inp.addEventListener('input', e=>{
+    gastoLineasEdit[Number(e.target.dataset.glconcepto)].concepto = e.target.value;
+  }));
+  cont.querySelectorAll('[data-glimporte]').forEach(inp=>{
+    inp.addEventListener('focus', e=>e.target.select());
+    inp.addEventListener('input', e=>{
+      gastoLineasEdit[Number(e.target.dataset.glimporte)].importe = e.target.value;
+      actualizarTotalSugerido();
+    });
+  });
+  cont.querySelectorAll('[data-glremove]').forEach(b=>b.addEventListener('click', ()=>{
+    gastoLineasEdit.splice(Number(b.dataset.glremove),1);
+    cont.innerHTML = renderGastoLineasHtml();
+    wireGastoLineas();
+    actualizarTotalSugerido();
+  }));
+}
+function actualizarTotalSugerido(){
+  const totalInput = $('#gTotal');
+  if(!totalInput || totalInput.dataset.tocado) return;
+  const suma = gastoLineasEdit.reduce((s,l)=> s + (parseFloat(String(l.importe||'').replace(',','.'))||0), 0);
+  totalInput.value = suma ? suma.toFixed(2) : '';
+}
+function openGastoModal(existing){
+  const isEdit = !!existing;
+  let fotoDataUrl = existing ? (existing.foto || (existing.fotoId?state.assets[existing.fotoId]:null)) : null;
+  let fotoCambiada = false;
+  const fotoId = existing?.fotoId || ('gasto_'+Date.now());
+  gastoLineasEdit = isEdit ? (existing.lineas ? existing.lineas.map(l=>({...l})) : []) : [{concepto:'', importe:''}];
+  $('#mGastoTitle').textContent = isEdit ? 'Editar ticket' : 'Nuevo ticket';
+  const obrasActivas = state.obras.filter(o=>o.estado==='Activa' && !o.eliminado);
+  const body = $('#mGastoBody');
+  body.innerHTML = `
+    <div class="field" style="text-align:center;">
+      <div class="prev" id="gFotoPrev" style="width:100%;max-width:260px;aspect-ratio:4/3;margin:0 auto 10px;border-radius:16px;background:var(--sunk);display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--ink-3);">
+        ${fotoDataUrl?`<img src="${fotoDataUrl}" style="width:100%;height:100%;object-fit:cover;">`:`<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="10.5" r="1.6"/><path d="m4 17 5-4 4 3 3-2 4 3"/></svg>`}
+      </div>
+      <input type="file" accept="image/*" capture="environment" id="gFotoInput" style="display:none">
+      <div class="btn-row" style="display:flex;gap:8px;">
+        <button class="btn btn-line btn-sm" id="gFotoBtn" type="button" style="flex:1;">${fotoDataUrl?'Cambiar foto':'Foto del ticket'}</button>
+        <button class="btn btn-signal btn-sm" id="gOcrBtn" type="button" style="flex:1;" ${fotoDataUrl?'':'disabled'}>Intentar leer datos del ticket</button>
+      </div>
+      <p class="note">Lectura automática orientativa — revisa siempre los datos antes de guardar.</p>
+    </div>
+    <div class="two">
+      <div class="field"><label for="gProveedor">Proveedor</label><input type="text" id="gProveedor" value="${escapeHtml(existing?.proveedor||'')}" placeholder="Ej. Ferretería López"></div>
+      <div class="field"><label for="gFecha">Fecha</label><input type="date" id="gFecha" value="${existing&&existing.fecha?existing.fecha.slice(0,10):new Date().toISOString().slice(0,10)}"></div>
+    </div>
+    <div class="two">
+      <div class="field"><label for="gCategoria">Categoría</label><select id="gCategoria">${CATEGORIAS_GASTO.map(c=>`<option value="${c}" ${existing&&existing.categoria===c?'selected':''}>${c}</option>`).join('')}</select></div>
+      <div class="field"><label for="gDestSel">Obra / destino</label>
+        <select id="gDestSel">
+          <option value="">Sin asignar</option>
+          ${obrasActivas.map(o=>`<option value="obra:${o.codigo}" ${existing&&existing.codigoObra===o.codigo?'selected':''}>${escapeHtml(o.nombre)}</option>`).join('')}
+          <option value="libre:Nave" ${existing&&existing.obraLibre==='Nave'?'selected':''}>Nave (nuestro almacén)</option>
+          <option value="libre:General" ${existing&&existing.obraLibre==='General'?'selected':''}>General / varias obras</option>
+        </select>
+      </div>
+    </div>
+    <label>Artículos del ticket</label>
+    <div id="gLineasList">${renderGastoLineasHtml()}</div>
+    <button class="btn btn-line btn-sm" id="gAddLineaBtn" type="button" style="margin:8px 0 14px;">+ Añadir artículo</button>
+    <div class="two">
+      <div class="field"><label for="gIva">IVA (€, opcional)</label><input type="text" inputmode="decimal" id="gIva" value="${existing&&existing.iva!=null?existing.iva:''}" placeholder="0.00"></div>
+      <div class="field"><label for="gTotal">Importe total (€)</label><input type="text" inputmode="decimal" id="gTotal" value="${existing&&existing.importeTotal!=null?existing.importeTotal:''}" placeholder="0.00"></div>
+    </div>
+    <p class="note">El total se sugiere solo sumando los artículos; puedes escribir el que salga en el ticket si no coincide exactamente.</p>
+    ${isEdit?`<button class="btn btn-red btn-block" style="margin-top:10px" id="gDelBtn" type="button">Eliminar ticket</button>`:''}
+  `;
+  wireGastoLineas();
+  $('#gAddLineaBtn').addEventListener('click', ()=>{
+    gastoLineasEdit.push({concepto:'', importe:''});
+    $('#gLineasList').innerHTML = renderGastoLineasHtml();
+    wireGastoLineas();
+  });
+  $('#gTotal').addEventListener('input', e=> e.target.dataset.tocado='1');
+  actualizarTotalSugerido();
+  body.querySelector('#gFotoBtn').addEventListener('click', ()=> body.querySelector('#gFotoInput').click());
+  body.querySelector('#gFotoInput').addEventListener('change', async e=>{
+    const file = e.target.files[0]; if(!file) return;
+    try{
+      fotoDataUrl = await resizeImageFile(file, 900, 900, 0.72);
+      fotoCambiada = true;
+      $('#gFotoPrev').innerHTML = `<img src="${fotoDataUrl}" style="width:100%;height:100%;object-fit:cover;">`;
+      $('#gOcrBtn').disabled = false;
+      $('#gFotoBtn').textContent = 'Cambiar foto';
+    }catch(err){ toast('No se pudo procesar la foto'); }
+  });
+  body.querySelector('#gOcrBtn').addEventListener('click', (e)=>{ if(fotoDataUrl) intentarLeerTicket(fotoDataUrl, e.target); });
+  if(isEdit){
+    body.querySelector('#gDelBtn').addEventListener('click', async ()=>{
+      if(confirm('¿Eliminar este ticket?')){
+        existing.eliminado = true; touch(existing);
+        const ok = await saveAll(); closeModals();
+        if(ok) toast('Ticket eliminado');
+        renderGastos();
+      }
+    });
+  }
+  $('#mGastoSave').onclick = async ()=>{
+    const proveedor = body.querySelector('#gProveedor').value.trim();
+    const categoria = body.querySelector('#gCategoria').value;
+    const destVal = body.querySelector('#gDestSel').value;
+    const fecha = body.querySelector('#gFecha').value;
+    const ivaRaw = body.querySelector('#gIva').value.trim().replace(',', '.');
+    const totalRaw = body.querySelector('#gTotal').value.trim().replace(',', '.');
+    const lineasValidas = gastoLineasEdit
+      .map(l=>({ concepto:(l.concepto||'').trim(), importe: l.importe!=null && l.importe!=='' ? Number(String(l.importe).replace(',','.')) : null }))
+      .filter(l=> l.concepto || l.importe!=null);
+    if(!proveedor){ toast('Indica el proveedor'); return; }
+    if(lineasValidas.length===0){ toast('Añade al menos un artículo'); return; }
+    if(!totalRaw){ toast('Indica el importe total'); return; }
+    let codigoObra=null, obraLibre='';
+    if(destVal.startsWith('obra:')) codigoObra = destVal.slice(5);
+    else if(destVal.startsWith('libre:')) obraLibre = destVal.slice(6);
+    const btn = $('#mGastoSave'); btn.disabled = true;
+    const usarAssetsBin = assetsConfigured();
+    const fotoFields = usarAssetsBin ? {fotoId: fotoDataUrl?fotoId:(existing?.fotoId||null), foto:null} : {foto: fotoDataUrl||existing?.foto||null, fotoId:null};
+    const datos = {
+      proveedor, categoria, codigoObra, obraLibre,
+      fecha: fecha||new Date().toISOString().slice(0,10),
+      lineas: lineasValidas,
+      iva: ivaRaw||null,
+      importeTotal: totalRaw||null,
+      ...fotoFields
+    };
+    if(isEdit){ touch(Object.assign(existing, datos)); }
+    else{ state.gastos.push(touch({ id:'GA'+Date.now()+'_'+Math.floor(Math.random()*10000), creadoPor: currentUsuario?currentUsuario.nombre:'', ...datos })); }
+    if(usarAssetsBin && fotoCambiada && fotoDataUrl) await saveAsset(fotoId, fotoDataUrl);
+    const ok = await saveAll(); btn.disabled = false; closeModals();
+    if(ok){ toast('Ticket guardado'); renderGastos(); }
+  };
+  openModal('mGasto');
+}
 function renderConfig(){
   const el = $('#content-cfg');
   const notifSupported = 'Notification' in window;
@@ -1703,8 +2271,16 @@ function renderConfig(){
     <p class="sec">Notificaciones</p>
     <button class="btn btn-line btn-block" id="notifBtn" ${notifGranted?'disabled':''}>${!notifSupported?'No disponibles en este navegador':(notifGranted?'Notificaciones activadas ✓':'Activar notificaciones del navegador')}</button>
     <p class="note">Además del aviso dentro de la app, esto te avisa aunque tengas otra pestaña abierta.</p>
+    <p class="sec">Copia de seguridad</p>
+    <button class="btn btn-line btn-block" id="exportCatalogoBtn">Exportar catálogo (CSV)</button>
+    <p class="note">Descarga materiales, obras y responsables en tres archivos CSV separados.</p>
     <p class="sec">Sesión</p>
     <button class="btn btn-line btn-block" id="cerrarSesionBtn">Cerrar sesión</button>
+    <p class="sec">Papelera</p>
+    <details class="more" style="background:var(--card);border-radius:var(--r);padding:14px 18px;">
+      <summary>Ver elementos eliminados</summary>
+      <div id="papeleraList" style="margin-top:10px;"></div>
+    </details>
     <p class="sec">Sugerencias</p>
     <div class="card">
       <p class="note" style="margin:0 0 10px">¿Se te ocurre algo que mejorar en la app? Escríbelo aquí.</p>
@@ -1742,6 +2318,8 @@ function renderConfig(){
       location.reload();
     }
   });
+  $('#exportCatalogoBtn').addEventListener('click', exportCatalogoCsv);
+  drawPapelera();
   $('#sugSendBtn').addEventListener('click', async ()=>{
     const texto = $('#sugText').value.trim();
     if(!texto){ toast('Escribe algo antes de enviar'); return; }
@@ -1759,6 +2337,49 @@ function renderConfig(){
     renderConfig();
   });
   drawSugerencias();
+}
+function csvCell(v){ v=String(v==null?'':v); return /[",;\n]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; }
+function downloadCsv(filename, cab, filas){
+  const csv = [cab, ...filas].map(f=>f.map(csvCell).join(';')).join('\r\n');
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download=filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+function exportCatalogoCsv(){
+  const fecha = new Date().toISOString().slice(0,10);
+  const mats = state.materiales.filter(m=>!m.eliminado);
+  downloadCsv('materiales_'+fecha+'.csv',
+    ['Codigo','Descripcion','Unidad','Grupo','Proveedor','Codigo proveedor','Codigo propio','Stock minimo'],
+    mats.map(m=>[m.codigo, m.descripcion, m.unidad, m.grupo||'', m.proveedor||'', m.codigoProveedor||'', m.codigoPropio||'', m.stockMinimo!=null?m.stockMinimo:'']));
+  const obs = state.obras.filter(o=>!o.eliminado);
+  downloadCsv('obras_'+fecha+'.csv',
+    ['Codigo','Nombre','Responsable','Estado'],
+    obs.map(o=>[o.codigo, o.nombre, o.responsable||'', o.estado]));
+  const resp = state.responsables.filter(r=>!r.eliminado);
+  downloadCsv('responsables_'+fecha+'.csv',
+    ['Codigo','Nombre','Con PIN'],
+    resp.map(r=>[r.codigo, r.nombre, r.pin?'Sí':'No']));
+  toast('Descargando 3 archivos CSV...');
+}
+function drawPapelera(){
+  const matsEliminados = state.materiales.filter(m=>m.eliminado).map(m=>({tipo:'material', item:m, nombre:m.descripcion}));
+  const obrasEliminadas = state.obras.filter(o=>o.eliminado).map(o=>({tipo:'obra', item:o, nombre:o.nombre}));
+  const respEliminados = state.responsables.filter(r=>r.eliminado).map(r=>({tipo:'responsable', item:r, nombre:r.nombre}));
+  const todos = [...matsEliminados, ...obrasEliminadas, ...respEliminados].sort((a,b)=>(b.item.actualizadoEn||0)-(a.item.actualizadoEn||0));
+  const el = $('#papeleraList');
+  if(!el) return;
+  el.innerHTML = todos.length ? `<div class="card">` + todos.map((x,i)=>`
+    <div class="cat-row"><div class="t"><b>${escapeHtml(x.nombre)}</b><small>${x.tipo==='material'?'Material':x.tipo==='obra'?'Obra':'Responsable'}</small></div>
+      <div class="acts"><button class="btn btn-line btn-sm" data-restaurar="${i}">Restaurar</button></div>
+    </div>`).join('') + `</div>` : `<p class="empty">La papelera está vacía.</p>`;
+  $$('[data-restaurar]').forEach(b=>b.addEventListener('click', async ()=>{
+    const x = todos[Number(b.dataset.restaurar)];
+    x.item.eliminado = false; touch(x.item);
+    const ok = await saveAll();
+    if(ok) toast('Restaurado');
+    renderConfig();
+  }));
 }
 function drawSugerencias(){
   const list = state.sugerencias.filter(s=>!s.eliminado).sort((a,b)=> new Date(b.fecha)-new Date(a.fecha));
@@ -1857,14 +2478,20 @@ function unlockApp(usuario){
 
 /* ================= ACTUALIZACIÓN AUTOMÁTICA Y AVISOS ================= */
 let lastKnownMovIds = new Set();
+let lastKnownSugIds = new Set();
 function startAutoRefresh(){
   lastKnownMovIds = new Set(movimientosActivos().map(m=>m.id));
+  lastKnownSugIds = new Set(state.sugerencias.filter(s=>!s.eliminado).map(s=>s.id));
   setInterval(async ()=>{
     if(document.visibilityState!=='visible' || scanning || $$('.scrim.on').length) return;
     await loadAll();
     const nuevos = movimientosActivos().filter(m=> !lastKnownMovIds.has(m.id));
     lastKnownMovIds = new Set(movimientosActivos().map(m=>m.id));
     if(nuevos.length) notifyNuevosMovimientos(nuevos);
+    const sugsActivas = state.sugerencias.filter(s=>!s.eliminado);
+    const nuevasSug = sugsActivas.filter(s=> !lastKnownSugIds.has(s.id));
+    lastKnownSugIds = new Set(sugsActivas.map(s=>s.id));
+    if(nuevasSug.length) notifyNuevasSugerencias(nuevasSug);
     renderCurrentPanel();
   }, 45000);
 }
@@ -1877,11 +2504,18 @@ function notifyNuevosMovimientos(nuevos){
     try{ new Notification('Control de Almacén', { body: texto }); }catch(e){}
   }
 }
+function notifyNuevasSugerencias(nuevas){
+  const texto = nuevas.length===1 ? 'Nueva sugerencia de '+(nuevas[0].autor||'Anónimo') : nuevas.length+' sugerencias nuevas';
+  toast(texto);
+  if('Notification' in window && Notification.permission==='granted'){
+    try{ new Notification('Control de Almacén', { body: texto }); }catch(e){}
+  }
+}
 
 /* ================= ARRANQUE ================= */
 async function startAppAfterUnlock(){
   if(!jsonbinConfigured()){
-    $('#content-ini').innerHTML = `<div class="head"><div class="tx"><h1>Inicio</h1></div></div>
+    $('#content-ini').innerHTML = `<div class="head"><div class="tx"><h1>${saludoUsuario()}</h1></div></div>
       <div class="card"><h3 style="margin-bottom:10px">Falta configurar el almacenamiento</h3>
       <p class="note">Abre el archivo HTML, busca JSONBIN_API_KEY y JSONBIN_BIN_ID cerca del principio del script y rellénalos con tus datos de jsonbin.io. Luego vuelve a subir el archivo.</p></div>`;
     return;
